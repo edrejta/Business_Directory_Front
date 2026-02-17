@@ -1,0 +1,685 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #F0EFEC;
+  --mist: #E7E3D8;
+  --sand: #D2CCC1;
+  --clay: #BBA794;
+  --oak: #9B8877;
+  --espresso: #433021;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(187, 167, 148, 0.22), transparent 30%),
+    radial-gradient(circle at 80% 0%, rgba(155, 136, 119, 0.2), transparent 35%),
+    linear-gradient(180deg, var(--paper) 0%, var(--mist) 100%);
+  color: var(--espresso);
+  overflow-x: hidden;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ambientDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) scale(1.02);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+
+.animate-soft-pop {
+  animation: softPop 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.ambient-drift {
+  animation: ambientDrift 8s ease-in-out infinite;
+}
+
+.stagger-fade > * {
+  opacity: 0;
+  animation: fadeUp 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+
+.stagger-fade > *:nth-child(1) {
+  animation-delay: 60ms;
+}
+.stagger-fade > *:nth-child(2) {
+  animation-delay: 120ms;
+}
+.stagger-fade > *:nth-child(3) {
+  animation-delay: 180ms;
+}
+.stagger-fade > *:nth-child(4) {
+  animation-delay: 240ms;
+}
+.stagger-fade > *:nth-child(5) {
+  animation-delay: 300ms;
+}
+
+/* Auth page – city skyline background & animations */
+.auth-page-bg {
+  position: relative;
+}
+
+.auth-bg-kenburns {
+  animation: kenBurns 25s ease-in-out infinite alternate;
+}
+
+.auth-water-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  animation: waterShimmer 6s ease-in-out infinite;
+}
+
+.auth-form-card {
+  animation: formFloatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-form-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(240, 239, 236, 0.4),
+    rgba(187, 167, 148, 0.15),
+    transparent
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.auth-form-card:hover::before {
+  opacity: 1;
+  animation: cardGlow 3s ease-in-out infinite;
+}
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1) translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: scale(1.08) translate(-1%, -1%) rotate(0.5deg);
+  }
+}
+
+@keyframes waterShimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes formFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cardGlow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Register / Login — extravagant animations (palette: #F0EFEC #E7E3D8 #D2CCC1 #BBA794 #9B8877 #433021) */
+@keyframes register-card-enter {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px) rotateX(8deg) translateY(80px) scale(0.88);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(-2deg) translateY(-8px) scale(1.01);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes register-field-slide {
+  0% {
+    opacity: 0;
+    transform: translateX(-40px) skewX(-4deg);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) skewX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes glow-border {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px hsl(30 24% 66% / 0.15),
+      0 0 60px hsl(30 24% 66% / 0.05),
+      inset 0 1px 0 hsl(40 22% 88% / 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 30px hsl(30 24% 66% / 0.3),
+      0 0 80px hsl(30 24% 66% / 0.1),
+      inset 0 1px 0 hsl(40 22% 88% / 0.5);
+  }
+}
+
+@keyframes title-reveal {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.5em;
+    transform: translateY(-20px);
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 0.8;
+    letter-spacing: 0.15em;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.05em;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes float-particle {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translateY(-30px) translateX(10px) scale(1.2);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-15px) translateX(-8px) scale(0.9);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateY(-40px) translateX(15px) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes line-draw {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes btn-pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsl(24 35% 20% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px hsl(24 35% 20% / 0);
+  }
+}
+
+@keyframes bg-zoom {
+  0% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes overlay-sweep {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes success-burst {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+    box-shadow: 0 0 60px hsl(30 24% 66% / 0.5);
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+@keyframes card-enter {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px) rotateX(6deg) translateY(40px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
+.animate-register-card {
+  animation: register-card-enter 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-register-field {
+  animation: register-field-slide 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.auth-form-fields .animate-register-field:nth-child(1) { animation-delay: 0.1s; }
+.auth-form-fields .animate-register-field:nth-child(2) { animation-delay: 0.18s; }
+.auth-form-fields .animate-register-field:nth-child(3) { animation-delay: 0.26s; }
+.auth-form-fields .animate-register-field:nth-child(4) { animation-delay: 0.34s; }
+.auth-form-fields .animate-register-field:nth-child(5) { animation-delay: 0.42s; }
+.auth-form-fields .animate-register-field:nth-child(6) { animation-delay: 0.5s; }
+.auth-form-fields .animate-register-field:nth-child(7) { animation-delay: 0.58s; }
+
+.animate-glow-border {
+  animation: glow-border 3s ease-in-out infinite;
+}
+
+.animate-title-reveal {
+  animation: title-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float-particle {
+  animation: float-particle 6s ease-in-out infinite;
+}
+
+.animate-line-draw {
+  animation: line-draw 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-btn-pulse {
+  animation: btn-pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-bg-zoom {
+  animation: bg-zoom 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-overlay-sweep {
+  animation: overlay-sweep 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-success-burst {
+  animation: success-burst 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-card-enter {
+  animation: card-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Login / auth extra (palette: #F0EFEC #E7E3D8 #D2CCC1 #BBA794 #9B8877 #433021) */
+@keyframes bg-slow-pan {
+  0% {
+    transform: scale(1.2) translateX(-2%);
+  }
+  100% {
+    transform: scale(1.05) translateX(0);
+  }
+}
+
+@keyframes vignette-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes login-card-enter {
+  0% {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(-6deg) translateX(-60px) scale(0.9);
+    filter: blur(12px);
+  }
+  40% {
+    opacity: 0.8;
+    filter: blur(3px);
+  }
+  70% {
+    transform: perspective(1400px) rotateY(1.5deg) translateX(5px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(0) translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes login-title {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.7);
+    filter: blur(16px);
+  }
+  60% {
+    transform: translateY(4px) scale(1.05);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes login-subtitle {
+  0% {
+    opacity: 0;
+    letter-spacing: 1em;
+    transform: scaleX(0.5);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.05em;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes login-field {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) rotateX(10deg);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes icon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ring-expand {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes key-turn {
+  0% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes orb-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translate(30px, -40px) scale(1.15);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+    opacity: 0.35;
+  }
+}
+
+@keyframes border-rotate {
+  0% {
+    --border-angle: 0deg;
+  }
+  100% {
+    --border-angle: 360deg;
+  }
+}
+
+@keyframes login-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08) translateY(-20px);
+    filter: blur(8px);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animate-bg-slow-pan {
+  animation: bg-slow-pan 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-vignette-in {
+  animation: vignette-in 1.5s ease-out forwards;
+}
+
+.animate-login-card-enter {
+  animation: login-card-enter 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-login-title {
+  opacity: 0;
+  animation: login-title 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+.animate-login-subtitle {
+  opacity: 0;
+  animation: login-subtitle 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+.animate-login-field {
+  opacity: 0;
+  animation: login-field 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-icon-float {
+  animation: icon-float 3s ease-in-out infinite;
+}
+
+.animate-ring-expand {
+  animation: ring-expand 2s ease-out infinite;
+}
+
+.animate-key-turn {
+  animation: key-turn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+}
+
+.animate-orb-drift {
+  animation: orb-drift 8s ease-in-out infinite;
+}
+
+.animate-border-rotate {
+  animation: border-rotate 4s linear infinite;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    hsl(30 24% 66% / 0.1),
+    hsl(30 24% 66% / 0.4),
+    hsl(40 22% 88% / 0.2),
+    hsl(30 24% 66% / 0.1)
+  );
+}
+
+.animate-login-exit {
+  animation: login-exit 0.6s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+.animate-scanline {
+  animation: scanline 0.3s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-soft-pop,
+  .ambient-drift,
+  .stagger-fade > *,
+  .auth-bg-kenburns,
+  .auth-water-shimmer,
+  .animate-register-card,
+  .animate-register-field,
+  .animate-glow-border,
+  .animate-title-reveal,
+  .animate-float-particle,
+  .animate-line-draw,
+  .animate-btn-pulse,
+  .animate-bg-zoom,
+  .animate-overlay-sweep,
+  .animate-success-burst,
+  .animate-card-enter,
+  .animate-bg-slow-pan,
+  .animate-vignette-in,
+  .animate-login-card-enter,
+  .animate-login-title,
+  .animate-login-subtitle,
+  .animate-login-field,
+  .animate-icon-float,
+  .animate-ring-expand,
+  .animate-key-turn,
+  .animate-orb-drift,
+  .animate-border-rotate,
+  .animate-login-exit,
+  .animate-scanline {
+    animation: none !important;
+    transform: none !important;
+  }
+  .auth-form-card,
+  .auth-form-card::before {
+    animation: none !important;
+  }
+  .stagger-fade > *,
+  .animate-fade-up,
+  .animate-register-field,
+  .animate-login-title,
+  .animate-login-subtitle,
+  .animate-login-field {
+    opacity: 1 !important;
+  }
+}
