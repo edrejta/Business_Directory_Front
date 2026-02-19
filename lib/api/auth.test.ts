@@ -22,14 +22,14 @@ describe("authApi", () => {
         json: () => Promise.resolve(mockData),
       });
 
-      const result = await register({ username: "john", email: "john@example.com", password: "password123" });
+      const result = await register({ username: "john", email: "john@example.com", password: "password123", role: 0 });
 
       expect(fetch).toHaveBeenCalledWith(
         `${API_URL}/api/auth/register`,
         expect.objectContaining({
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: "john", email: "john@example.com", password: "password123" }),
+          body: JSON.stringify({ username: "john", email: "john@example.com", password: "password123", role: 0 }),
         })
       );
       expect(result).toEqual(mockData);
@@ -43,7 +43,7 @@ describe("authApi", () => {
       });
 
       await expect(
-        register({ username: "j", email: "j@x.com", password: "password123" })
+        register({ username: "j", email: "j@x.com", password: "password123", role: 0 })
       ).rejects.toThrow("Një përdorues me këtë email ekziston tashmë.");
     });
   });
