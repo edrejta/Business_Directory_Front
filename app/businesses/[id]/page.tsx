@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ApiError, getApprovedBusinessById } from "@/lib/api/public";
+import { getApprovedBusinessById } from "@/lib/api/public";
 
 export const revalidate = 60;
+
+const isNotFoundApiError = (value: unknown): value is { status: number } =>
+  typeof value === "object" &&
+  value !== null &&
+  "status" in value &&
+  typeof (value as { status?: unknown }).status === "number" &&
+  (value as { status: number }).status === 404;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   try {
-    const business = await getApprovedBusinessById(resolvedParams.id, { next: { revalidate } });
+    const business = await getApprovedBusinessById(resolvedParams.id);
     return {
       title: `${business.name} | Business Directory`,
       description: business.description ?? "Approved business details.",
@@ -25,9 +32,9 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
   let business: Awaited<ReturnType<typeof getApprovedBusinessById>>;
 
   try {
-    business = await getApprovedBusinessById(resolvedParams.id, { next: { revalidate } });
+    business = await getApprovedBusinessById(resolvedParams.id);
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
+    if (isNotFoundApiError(err)) {
       notFound();
     }
     throw err;

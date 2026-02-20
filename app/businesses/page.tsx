@@ -27,14 +27,11 @@ export default async function BusinessesPage({
   let businesses = [] as Awaited<ReturnType<typeof getApprovedBusinesses>>;
 
   try {
-    businesses = await getApprovedBusinesses(
-      {
+      businesses = await getApprovedBusinesses({
         search: search || undefined,
         city: city || undefined,
         type: type || undefined,
-      },
-      { next: { revalidate } },
-    );
+      });
   } catch (err) {
     error = err instanceof Error ? err.message : "Ndodhi një gabim.";
   }
