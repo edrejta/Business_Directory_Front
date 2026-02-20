@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { register, login } from "./auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+import { API_URL } from "./config";
 
 describe("authApi", () => {
   beforeEach(() => {

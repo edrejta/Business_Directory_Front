@@ -1,7 +1,6 @@
 import { getToken } from "@/lib/auth/storage";
 import { clearSessionAndRedirect } from "@/lib/auth/session";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+import { API_URL } from "@/lib/api/config";
 
 export type AuthenticatedFetchOptions = RequestInit & {
   /** If false, do not add Authorization header (e.g. for public endpoints). Default true. */
@@ -18,7 +17,7 @@ export async function authenticatedFetch(
   options: AuthenticatedFetchOptions = {}
 ): Promise<Response> {
   const { requireAuth = true, headers = {}, ...rest } = options;
-  const token = typeof window !== "undefined" ? getToken() ?? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? getToken() : null;
 
   const requestHeaders = new Headers(headers);
   if (requireAuth && token) {

@@ -24,7 +24,16 @@ NEXT_PUBLIC_API_URL=http://localhost:5003
 
 ### Routes
 
-- `/auth`
+- `/` -> redirects to `/auth`
+- `/auth` (Project start guide)
+- `/businesses` (public ISR list)
+- `/businesses/[id]` (public ISR details)
+- `/login`
+- `/register`
 - `/dashboard-user`
-- `/dashboard-owner`
+- `/dashboard-business`
 - `/dashboard-admin`
+
+### Team guide
+
+- `docs/TEAM_START_HERE.md`
