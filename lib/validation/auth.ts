@@ -6,7 +6,7 @@ export const registerSchema = z.object({
   email: z.string().email("Email i pavlefshëm"),
   password: z.string().min(8, "Fjalëkalimi duhet të jetë së paku 8 karaktere"),
   role: z.union([z.literal(0), z.literal(1)], {
-    errorMap: () => ({ message: "Zgjidhni një rol të vlefshëm" }),
+    error: "Zgjidhni një rol të vlefshëm",
   }),
 });
 

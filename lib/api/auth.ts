@@ -1,6 +1,5 @@
 import type { RegisterInput, LoginInput, AuthResponse } from "@/lib/types/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+import { API_URL } from "@/lib/api/config";
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const data = (await response.json().catch(() => ({}))) as AuthResponse & { message?: string };

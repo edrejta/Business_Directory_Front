@@ -10,9 +10,9 @@ describe("auth storage", () => {
     });
   });
 
-  it("saveToken saves value under auth_token", () => {
+  it("saveToken saves value under token", () => {
     saveToken("xyz");
-    expect(localStorage.setItem).toHaveBeenCalledWith("auth_token", "xyz");
+    expect(localStorage.setItem).toHaveBeenCalledWith("token", "xyz");
   });
 
   it("getToken returns value from localStorage", () => {
@@ -25,8 +25,8 @@ describe("auth storage", () => {
     expect(getToken()).toBe(null);
   });
 
-  it("clearAuth removes auth_token from localStorage", () => {
+  it("clearAuth removes token from localStorage", () => {
     clearAuth();
-    expect(localStorage.removeItem).toHaveBeenCalledWith("auth_token");
+    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
   });
 });

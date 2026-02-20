@@ -1,4 +1,4 @@
-const AUTH_TOKEN_KEY = "auth_token";
+const AUTH_TOKEN_KEY = "token";
 
 export function saveToken(token: string): void {
   if (typeof window !== "undefined") {

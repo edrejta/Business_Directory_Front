@@ -30,16 +30,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const ONE_DAY = 60 * 60 * 24;
-const AUTH_ROLE_KEY = "auth_role";
 const AUTH_USERNAME_KEY = "username";
 const AUTH_EMAIL_KEY = "email";
 
 function persistAuth(data: AuthResponse) {
   saveToken(data.token);
   if (typeof window !== "undefined") {
-    localStorage.setItem("token", data.token);
     localStorage.setItem("role", String(data.role));
-    localStorage.setItem(AUTH_ROLE_KEY, String(data.role));
     if (data.username) localStorage.setItem(AUTH_USERNAME_KEY, data.username);
     if (data.email) localStorage.setItem(AUTH_EMAIL_KEY, data.email);
     document.cookie = `token=${encodeURIComponent(data.token)}; path=/; max-age=${ONE_DAY}; samesite=lax`;
@@ -52,8 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = getToken() ?? (typeof window !== "undefined" ? localStorage.getItem("token") : null);
-    const role = typeof window !== "undefined" ? (localStorage.getItem("role") ?? localStorage.getItem(AUTH_ROLE_KEY)) : null;
+    const token = getToken();
+    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
     const username = typeof window !== "undefined" ? localStorage.getItem(AUTH_USERNAME_KEY) || undefined : undefined;
     const email = typeof window !== "undefined" ? localStorage.getItem(AUTH_EMAIL_KEY) || undefined : undefined;
 
@@ -116,4 +113,3 @@ export function useAuth() {
   }
   return context;
 }
-
