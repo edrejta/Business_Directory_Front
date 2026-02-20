@@ -76,7 +76,24 @@ const res = await authenticatedFetch("/api/public", { requireAuth: false });
 
 ---
 
-## 4. URL dhe body (referencë)
+## 4. CORS (konfigurohet në backend)
+
+Kur frontend është në **http://localhost:3000** dhe backend në **http://localhost:5003**, shfletuesi bën *cross-origin* request. Pa CORS të aktivizuar në backend, request-et (p.sh. register/login) **dështojnë** (red X në Network, "Provisional headers are shown").
+
+**Backend duhet të:**
+
+- Lejojë origin: `http://localhost:3000` (ose `*` vetëm për dev).
+- Përgjigjet në **OPTIONS** (preflight) me header-at:
+  - `Access-Control-Allow-Origin: http://localhost:3000`
+  - `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS`
+  - `Access-Control-Allow-Headers: Content-Type, Authorization`
+- Për përgjigjet e request-ave reale (POST/GET), të përfshijë të paktën `Access-Control-Allow-Origin: http://localhost:3000`.
+
+Në ASP.NET Core, zakonisht mjafton shtimi i CORS në `Program.cs` (ose `Startup.cs`) me `AllowAnyOrigin()` / `WithOrigins("http://localhost:3000")` dhe `AllowAnyHeader()` / `WithHeaders("Content-Type", "Authorization")`, dhe `UseCors()` në pipeline.
+
+---
+
+## 5. URL dhe body (referencë)
 
 - **Base URL (dev):** `http://localhost:5003` (ose `NEXT_PUBLIC_API_URL`).
 - **Register:** `POST /api/auth/register` → `{ "username", "email", "password", "role": 0|1 }`.
