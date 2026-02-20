@@ -1,34 +1,77 @@
-import type { RegisterInput, LoginInput, AuthResponse } from "@/lib/types/auth";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:5003';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
-
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = (await response.json().catch(() => ({}))) as AuthResponse & { message?: string };
-  if (!response.ok) {
-    throw new Error(data.message ?? "Ndodhi një gabim.");
-  }
-  return data as T;
+export interface AuthResponse {
+  token: string;
+  id: string;
+  username: string;
+  email: string;
+  role: number;
 }
 
-export async function register(input: RegisterInput): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/api/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  return handleResponse<AuthResponse>(response);
+async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+      return data.message;
+    }
+  } catch {
+    // Ignore JSON parse failures and try text next.
+  }
+
+  if (typeof res.text === 'function') {
+    try {
+      const text = await res.text();
+      if (text) return text;
+    } catch {
+      // Ignore text read failures and use fallback.
+    }
+  }
+
+  return fallback;
 }
 
-export async function login(input: LoginInput): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+/** Dergon JSON te rregullt: { "email": string, "password": string }. */
+export async function login(input: {
+  email: string;
+  password: string;
+}): Promise<AuthResponse> {
+  const { email, password } = input;
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   });
-  const data = (await response.json().catch(() => ({}))) as AuthResponse & { message?: string };
-  if (!response.ok) {
-    const message = response.status === 401 ? "Email ose fjalëkalim i gabuar." : (data.message ?? "Ndodhi një gabim.");
-    throw new Error(message);
+  if (!res.ok) {
+    const errorText = await extractErrorMessage(res, 'Login failed');
+    throw new Error(errorText);
   }
-  return data as AuthResponse;
+  return res.json();
+}
+
+/** Dergon JSON te rregullt: { "username": string, "email": string, "password": string, "role": number }. */
+export async function register(input: {
+  username: string;
+  email: string;
+  password: string;
+  role: number;
+}): Promise<AuthResponse> {
+  const { username, email, password, role } = input;
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password, role }),
+  });
+  if (!res.ok) {
+    const errorText = await extractErrorMessage(res, 'Register failed');
+    throw new Error(errorText);
+  }
+  return res.json();
+}
+
+/** Ruaj token-in ne localStorage pas login/register per perdorim me pas */
+export function saveAuthToken(data: AuthResponse): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('token', data.token);
+  }
 }
