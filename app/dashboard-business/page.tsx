@@ -57,7 +57,7 @@ export default function DashboardBusinessOwner() {
   useEffect(() => {
     if (isLoading || !user) return;
     if (user.role === 1) load();
-  }, [isLoading, user?.role]);
+  }, [isLoading, user]);
 
   const headerText = useMemo(() => user?.username ?? "biznes", [user]);
 
