@@ -1,7 +1,7 @@
 import { getToken } from "@/lib/auth/storage";
 import { clearSessionAndRedirect } from "@/lib/auth/session";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://localhost:5003";
 
 export type AuthenticatedFetchOptions = RequestInit & {
   /** If false, do not add Authorization header (e.g. for public endpoints). Default true. */
@@ -48,11 +48,33 @@ export async function authenticatedFetch(
 /**
  * authenticatedFetch + parse JSON. Throws on non-ok (except 401/403 handled above).
  */
-export async function authenticatedJson<T>(path: string, options: AuthenticatedFetchOptions = {}): Promise<T> {
+export async function authenticatedJson<T>(
+  path: string,
+  options: AuthenticatedFetchOptions = {}
+): Promise<T> {
   const response = await authenticatedFetch(path, options);
-  const data = (await response.json().catch(() => ({}))) as T & { message?: string };
-  if (!response.ok) {
-    throw new Error((data as { message?: string }).message ?? "Ndodhi një gabim.");
+
+  if (response.ok) {
+    return (await response.json()) as T;
   }
-  return data as T;
+
+  let message = "Ndodhi një gabim.";
+
+  try {
+    const data = (await response.json()) as { message?: string; error?: string } | string;
+    if (typeof data === "string" && data.trim()) message = data;
+    else if (data && typeof (data as any).message === "string") message = (data as any).message;
+    else if (data && typeof (data as any).error === "string") message = (data as any).error;
+  } catch {
+    const anyRes = response as unknown as { text?: () => Promise<string> };
+    if (typeof anyRes.text === "function") {
+      try {
+        const t = await anyRes.text();
+        if (t.trim()) message = t;
+      } catch {
+      }
+    }
+  }
+
+  throw new Error(message);
 }
