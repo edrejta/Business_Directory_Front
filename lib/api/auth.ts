@@ -9,30 +9,30 @@ export interface AuthResponse {
   role: number;
 }
 
-type ErrorJson = { message?: string; error?: string } | string;
+type ErrorObj = { message?: unknown; error?: unknown };
 
-function hasJson(res: Response): res is Response & { json: () => Promise<unknown> } {
-  return typeof (res as unknown as { json?: unknown }).json === "function";
+function isErrorObj(v: unknown): v is ErrorObj {
+  return typeof v === "object" && v !== null;
 }
 
 async function readErrorMessage(res: Response): Promise<string> {
-  // Only use json() (tests mock this). Never call text().
-  if (hasJson(res)) {
-    try {
-      const data = (await res.json()) as ErrorJson;
+  try {
+    const data = (await res.json()) as unknown;
 
-      if (typeof data === "string" && data.trim()) return data;
-      if (data && typeof (data as any).message === "string") return (data as any).message;
-      if (data && typeof (data as any).error === "string") return (data as any).error;
-    } catch {
+    if (typeof data === "string" && data.trim()) return data;
+
+    if (isErrorObj(data)) {
+      if (typeof data.message === "string" && data.message.trim()) return data.message;
+      if (typeof data.error === "string" && data.error.trim()) return data.error;
     }
+  } catch {
   }
 
   if (res.status === 401) return "Email ose fjalëkalim i gabuar.";
   return "Ndodhi një gabim.";
 }
 
-/** Dërgon JSON të rregullt: { "email": string, "password": string }. */
+/** Dërgon JSON të rregullt: { email, password } */
 export async function login(input: {
   email: string;
   password: string;
@@ -44,14 +44,13 @@ export async function login(input: {
   });
 
   if (!res.ok) {
-    const msg = await readErrorMessage(res);
-    throw new Error(msg);
+    throw new Error(await readErrorMessage(res));
   }
 
   return (await res.json()) as AuthResponse;
 }
 
-/** Dërgon JSON të rregullt: { "username": string, "email": string, "password": string, "role": number }. */
+/** Dërgon JSON të rregullt: { username, email, password, role } */
 export async function register(input: {
   username: string;
   email: string;
@@ -65,8 +64,7 @@ export async function register(input: {
   });
 
   if (!res.ok) {
-    const msg = await readErrorMessage(res);
-    throw new Error(msg);
+    throw new Error(await readErrorMessage(res));
   }
 
   return (await res.json()) as AuthResponse;
