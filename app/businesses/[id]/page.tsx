@@ -17,8 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   try {
     const business = await getApprovedBusinessById(resolvedParams.id);
     return {
-      title: `${business.name} | Business Directory`,
-      description: business.description ?? "Approved business details.",
+      title: `${business.BusinessName} | Business Directory`,
+      description: business.Description ?? "Approved business details.",
     };
   } catch {
     return {
@@ -45,12 +45,12 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
       <div className="mx-auto max-w-4xl space-y-6">
         <section className="rounded-2xl border border-oak/35 bg-paper/90 p-6 shadow-panel">
           <p className="text-xs font-semibold uppercase tracking-wide text-espresso/70">Approved Business</p>
-          <h1 className="mt-2 text-2xl font-bold text-espresso md:text-3xl">{business.name}</h1>
+          <h1 className="mt-2 text-2xl font-bold text-espresso md:text-3xl">{business.BusinessName}</h1>
           <p className="mt-3 text-sm text-espresso/80">
-            {business.city ?? "Unknown city"} · {business.businessType ?? "General"} · {business.status ?? "Approved"}
+            {business.City ?? "Unknown city"} · {business.BusinessType ?? "General"} · {business.Status ?? "Approved"}
           </p>
           <p className="mt-4 text-sm leading-6 text-espresso/85">
-            {business.description ?? "No description provided yet."}
+            {business.Description ?? "No description provided yet."}
           </p>
         </section>
 
