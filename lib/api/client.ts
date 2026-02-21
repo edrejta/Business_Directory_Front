@@ -49,9 +49,26 @@ export async function authenticatedFetch(
  */
 export async function authenticatedJson<T>(path: string, options: AuthenticatedFetchOptions = {}): Promise<T> {
   const response = await authenticatedFetch(path, options);
-  const data = (await response.json().catch(() => ({}))) as T & { message?: string };
-  if (!response.ok) {
-    throw new Error((data as { message?: string }).message ?? "Ndodhi një gabim.");
+
+  const text = await response.text();
+
+  let data: any = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
   }
+
+  if (!response.ok) {
+    const validationErrors =
+      data?.errors && typeof data.errors === "object"
+        ? Object.entries(data.errors)
+            .map(([k, v]) => `${k}: ${(Array.isArray(v) ? v.join(", ") : String(v))}`)
+            .join(" | ")
+        : null;
+
+    throw new Error(validationErrors || data?.message || data?.title || "Ndodhi një gabim.");
+  }
+
   return data as T;
 }
