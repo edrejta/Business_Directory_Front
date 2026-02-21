@@ -52,22 +52,45 @@ export async function authenticatedJson<T>(path: string, options: AuthenticatedF
 
   const text = await response.text();
 
-  let data: any = {};
+  let data: unknown = {};
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
     data = { message: text };
   }
 
-  if (!response.ok) {
-    const validationErrors =
-      data?.errors && typeof data.errors === "object"
-        ? Object.entries(data.errors)
-            .map(([k, v]) => `${k}: ${(Array.isArray(v) ? v.join(", ") : String(v))}`)
-            .join(" | ")
-        : null;
+  const isRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null;
 
-    throw new Error(validationErrors || data?.message || data?.title || "Ndodhi një gabim.");
+  const getString = (obj: unknown, key: string): string | undefined => {
+    if (!isRecord(obj)) return undefined;
+    const val = obj[key];
+    return typeof val === "string" ? val : undefined;
+  };
+
+  const getValidationErrors = (obj: unknown): string | undefined => {
+    if (!isRecord(obj)) return undefined;
+    const errors = obj["errors"];
+    if (!isRecord(errors)) return undefined;
+
+    const parts: string[] = [];
+    for (const [field, val] of Object.entries(errors)) {
+      if (Array.isArray(val)) {
+        parts.push(`${field}: ${val.map(String).join(", ")}`);
+      } else {
+        parts.push(`${field}: ${String(val)}`);
+      }
+    }
+    return parts.length ? parts.join(" | ") : undefined;
+  };
+
+  if (!response.ok) {
+    throw new Error(
+      getValidationErrors(data) ||
+        getString(data, "message") ||
+        getString(data, "title") ||
+        `${response.status} ${response.statusText}`
+    );
   }
 
   return data as T;
