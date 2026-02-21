@@ -26,9 +26,6 @@ export class ApiError extends Error {
 const asRecord = (value: unknown): Record<string, unknown> =>
   typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
 
-const toStringOrUndefined = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim().length > 0 ? value : undefined;
-
 const unwrapPayload = (raw: unknown): unknown => {
   const root = asRecord(raw);
   return root.data ?? root.result ?? raw;
@@ -36,14 +33,20 @@ const unwrapPayload = (raw: unknown): unknown => {
 
 const normalizeBusiness = (raw: unknown): Business => {
   const item = asRecord(raw);
+
   return {
-    id: String(item.id ?? item.Id ?? ""),
-    name: String(item.name ?? item.Name ?? "Business"),
-    city: toStringOrUndefined(item.city ?? item.City),
-    businessType: toStringOrUndefined(item.businessType ?? item.BusinessType ?? item.type ?? item.Type),
-    status: toStringOrUndefined(item.status ?? item.Status),
-    description: toStringOrUndefined(item.description ?? item.Description),
-    ownerId: toStringOrUndefined(item.ownerId ?? item.OwnerId),
+    Id: String(item.Id ?? item.id ?? ""),
+    OwnerId: String(item.OwnerId ?? item.ownerId ?? ""),
+    BusinessName: String(item.BusinessName ?? item.businessName ?? item.Name ?? item.name ?? "Business"),
+    Address: String(item.Address ?? item.address ?? ""),
+    City: String(item.City ?? item.city ?? ""),
+    Email: String(item.Email ?? item.email ?? ""),
+    PhoneNumber: String(item.PhoneNumber ?? item.phoneNumber ?? ""),
+    BusinessType: Number(item.BusinessType ?? item.businessType ?? item.Type ?? item.type ?? 0),
+    Description: String(item.Description ?? item.description ?? ""),
+    ImageUrl: String(item.ImageUrl ?? item.imageUrl ?? ""),
+    Status: String(item.Status ?? item.status ?? ""),
+    CreatedAt: String(item.CreatedAt ?? item.createdAt ?? ""),
   };
 };
 
@@ -71,13 +74,13 @@ export async function getApprovedBusinesses(filters: PublicBusinessFilters = {},
   const query = params.toString();
   const data = await publicJson<unknown>(`/api/businesses${query ? `?${query}` : ""}`, options);
   const list = Array.isArray(data) ? data : [];
-  return list.map(normalizeBusiness).filter((item) => item.id.length > 0);
+  return list.map(normalizeBusiness).filter((item) => item.Id.length > 0);
 }
 
 export async function getApprovedBusinessById(id: string, options: PublicFetchOptions = {}) {
   const data = await publicJson<unknown>(`/api/businesses/${id}`, options);
   const business = normalizeBusiness(data);
-  if (!business.id) {
+  if (!business.Id) {
     throw new ApiError("Business not found", 404);
   }
   return business;
