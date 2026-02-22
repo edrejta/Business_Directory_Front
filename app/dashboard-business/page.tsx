@@ -56,11 +56,9 @@ export default function DashboardBusinessOwnerPage() {
     }
   }
 
-  // Load list once user is ready and owner role is correct
   useEffect(() => {
     if (isLoading || !user) return;
     if (user.role === 1) load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, user?.role]);
 
   const headerText = useMemo(() => user?.username ?? "biznes", [user]);
@@ -80,13 +78,16 @@ export default function DashboardBusinessOwnerPage() {
   }
 
   async function openEdit(b: Business) {
+    if (loadingEdit) return;
+
     setEditError(null);
     setLoadingEdit(true);
 
     try {
-      const fresh = await businessesApi.getBusinessById(b.Id);
+      const fresh = await businessesApi.getMyBusinessById(b.Id);
       setView({ mode: "edit", business: fresh });
     } catch (e) {
+      console.error("getMyBusinessById failed:", e);
       setEditError(e instanceof Error ? e.message : "Ndodhi një gabim.");
     } finally {
       setLoadingEdit(false);
@@ -174,16 +175,12 @@ export default function DashboardBusinessOwnerPage() {
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-3">
-                          <h3 className="truncate text-base font-semibold">
-                            {b.BusinessName}
-                          </h3>
+                          <h3 className="truncate text-base font-semibold">{b.BusinessName}</h3>
                           <StatusBadge status={String(b.Status)} />
                         </div>
 
                         {b.Description && (
-                          <p className="mt-1 line-clamp-2 text-sm text-gray-600">
-                            {b.Description}
-                          </p>
+                          <p className="mt-1 line-clamp-2 text-sm text-gray-600">{b.Description}</p>
                         )}
 
                         {(b.Address || b.City || b.Email || b.PhoneNumber) && (

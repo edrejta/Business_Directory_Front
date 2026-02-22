@@ -13,18 +13,18 @@ const normalizeBusiness = (raw: unknown): Business => {
   const r = asRecord(raw);
 
   return {
-    Id: String(r.Id ?? ""),
-    OwnerId: String(r.OwnerId ?? ""),
-    BusinessName: String(r.BusinessName ?? ""),
-    Address: String(r.Address ?? ""),
-    City: String(r.City ?? ""),
-    Email: String(r.Email ?? ""),
-    PhoneNumber: String(r.PhoneNumber ?? ""),
-    BusinessType: Number(r.BusinessType ?? 0),
-    Description: String(r.Description ?? ""),
-    ImageUrl: String(r.ImageUrl ?? ""),
-    Status: String(r.Status ?? ""),
-    CreatedAt: String(r.CreatedAt ?? ""),
+    Id: String(r.id ?? ""),
+    OwnerId: String(r.ownerId ?? ""),
+    BusinessName: String(r.businessName ?? ""),
+    Address: String(r.address ?? ""),
+    City: String(r.city ?? ""),
+    Email: String(r.email ?? ""),
+    PhoneNumber: String(r.phoneNumber ?? ""),
+    BusinessType: Number(r.businessType ?? 0),
+    Description: String(r.description ?? ""),
+    ImageUrl: String(r.imageUrl ?? ""),
+    Status: String(r.status ?? ""),
+    CreatedAt: String(r.createdAt ?? ""),
   };
 };
 
@@ -36,7 +36,6 @@ export async function createBusiness(input: CreateBusinessInput): Promise<Busine
     Email: input.Email,
     PhoneNumber: input.PhoneNumber,
     Description: input.Description,
-
     BusinessType: input.BusinessType ?? 0,
     ImageUrl: input.ImageUrl ?? "",
   };
@@ -57,7 +56,6 @@ export async function updateBusiness(id: string, input: UpdateBusinessInput): Pr
     Email: input.Email,
     PhoneNumber: input.PhoneNumber,
     Description: input.Description,
-
     BusinessType: input.BusinessType ?? 0,
     ImageUrl: input.ImageUrl ?? "",
   };
@@ -79,12 +77,17 @@ export async function getMyBusinesses(status?: string): Promise<Business[]> {
   const raw = await authenticatedJson(`/api/businesses/mine${query}`);
 
   const data = unwrapPayload(raw);
-  const list = Array.isArray(data) ? data : [];
+  const list = Array.isArray(data) ? data : Array.isArray(raw) ? raw : [];
 
   return list.map(normalizeBusiness).filter((b) => b.Id.length > 0);
 }
 
 export async function getBusinessById(id: string): Promise<Business> {
   const raw = await authenticatedJson(`/api/businesses/${id}`);
+  return normalizeBusiness(unwrapPayload(raw));
+}
+
+export async function getMyBusinessById(id: string): Promise<Business> {
+  const raw = await authenticatedJson(`/api/businesses/mine/${encodeURIComponent(id)}`);
   return normalizeBusiness(unwrapPayload(raw));
 }
