@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { registerSchema, loginSchema } from "./auth";
 
 describe("registerSchema", () => {
-  it("accepts valid username, email, password, role 0 or 1", () => {
+  it("accepts valid username, email, password, role 0", () => {
     expect(
       registerSchema.safeParse({
         username: "johndoe",
@@ -11,17 +11,19 @@ describe("registerSchema", () => {
         role: 0,
       }).success
     ).toBe(true);
-    expect(
-      registerSchema.safeParse({
-        username: "johndoe",
-        email: "john@example.com",
-        password: "password123",
-        role: 1,
-      }).success
-    ).toBe(true);
   });
 
-  it("rejects role 2 (Admin) – Admin nuk lejohet në signup", () => {
+  it("rejects role 1 (BusinessOwner) në signup", () => {
+    const result = registerSchema.safeParse({
+      username: "johndoe",
+      email: "john@example.com",
+      password: "password123",
+      role: 1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects role 2 (Admin) në signup", () => {
     const result = registerSchema.safeParse({
       username: "johndoe",
       email: "john@example.com",

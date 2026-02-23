@@ -27,6 +27,9 @@ const endpointGroups = [
     items: [
       "GET /api/admin/dashboard",
       "GET /api/admin/users",
+      "PATCH /api/admin/users/{id}/role",
+      "GET /api/admin/audit-logs?take=100",
+      "DELETE /api/admin/users/{id}?reason=...",
       "GET /api/admin/businesses*",
       "PATCH /api/admin/businesses/{id}/approve|reject|suspend",
     ],

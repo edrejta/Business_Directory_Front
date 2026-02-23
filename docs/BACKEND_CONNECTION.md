@@ -6,14 +6,14 @@ Ky dokument përshkruan **çfarë duhet të ketë backend-i (Business_Directory)
 
 ## 1. Adresa e API (dev)
 
-- Frontendi e thirr API-n në: **`http://localhost:5003`** (konfigurohet me `NEXT_PUBLIC_API_URL` në frontend).
+- Frontendi e thirr API-n në: **`https://api.yourdomain.com`** (konfigurohet me `NEXT_PUBLIC_API_URL` në frontend).
 - Backend duhet të dëgjojë në **portin 5003** (ose të përputhet me këtë URL).
 
 ---
 
 ## 2. CORS (obligativ – pa këtë lidhja nuk funksionon)
 
-Request-et vijnë nga **http://localhost:3000** (frontend) drejt **http://localhost:5003** (backend), pra janë *cross-origin*. Pa CORS të konfiguruar në backend:
+Request-et vijnë nga **http://localhost:3000** (frontend) drejt **https://api.yourdomain.com** (backend), pra janë *cross-origin*. Pa CORS të konfiguruar në backend:
 
 - Shfletuesi bllokon request-et.
 - Në UI shfaqet **"Failed to fetch"**.
@@ -60,7 +60,7 @@ app.UseAuthorization();
 
 | | |
 |--|--|
-| **URL** | `POST http://localhost:5003/api/auth/register` |
+| **URL** | `POST /api/auth/register` |
 | **Headers** | `Content-Type: application/json` |
 | **Body (JSON)** | `{ "username": string, "email": string, "password": string, "role": number }` |
 | **role** | `0` = Përdorues, `1` = Pronar biznesi (Admin nuk lejohet në signup) |
@@ -71,7 +71,7 @@ app.UseAuthorization();
 
 | | |
 |--|--|
-| **URL** | `POST http://localhost:5003/api/auth/login` |
+| **URL** | `POST /api/auth/login` |
 | **Headers** | `Content-Type: application/json` |
 | **Body (JSON)** | `{ "email": string, "password": string }` |
 | **Sukses** | 200, body: `{ "token", "id", "username", "email", "role" }` |
@@ -112,7 +112,7 @@ Frontendi:
 
 | Çfarë | Ku (backend) |
 |------|----------------|
-| **Port / URL** | API në `http://localhost:5003` |
+| **Port / URL** | API në `https://api.yourdomain.com` |
 | **CORS** | Lejoni origin `http://localhost:3000`, metodat e nevojshme, header-at `Content-Type`, `Authorization`; përgjigjuni OPTIONS dhe shtoni CORS header-at në response |
 | **Register** | `POST /api/auth/register` → body JSON me username, email, password, role; përgjigje me token, id, username, email, role |
 | **Login** | `POST /api/auth/login` → body JSON me email, password; përgjigje e njëjtë si register |
@@ -128,7 +128,7 @@ Pas konfigurimit të CORS dhe të këtyre kontratave, lidhja ndërmjet **Busines
 
 | Shkak | Çfarë të kontrollosh |
 |-------|----------------------|
-| **Backend nuk po nis** | Në folder-in e backend-it (Business_Directory): `dotnet run`. Kontrollo që në konsol shkruhet se dëgjon në `http://localhost:5003`. |
+| **Backend nuk po nis** | Në folder-in e backend-it (Business_Directory): `dotnet run`. Kontrollo që në konsol shkruhet se dëgjon në `https://api.yourdomain.com`. |
 | **CORS** | Backend duhet të ketë CORS si në seksionin 2 dhe `app.UseCors()` **para** `UseAuthentication()`. Pa këtë, shfletuesi bllokon request-in dhe shfaqen "Provisional headers". |
 | **OPTIONS nuk përgjigjet** | Në Network tab, shiko nëse ka një request **OPTIONS** për `register` (preflight). Nëse OPTIONS dështon ose nuk kthen header-at CORS, POST nuk dërgohet. |
 
@@ -142,9 +142,9 @@ Backend-i (Business_Directory) është përputhur me këtë dokument:
 
 | Pika | Konfigurimi |
 |------|--------------|
-| **Port 5003** | `Properties/launchSettings.json` → profili "http" me `applicationUrl`: `http://localhost:5003`. Nisni me `dotnet run` ose profilin "http". |
+| **Port 5003** | `Properties/launchSettings.json` → profili "http" me `applicationUrl`: `https://api.yourdomain.com`. Nisni me `dotnet run` ose profilin "http". |
 | **CORS** | `Program.cs`: **DefaultPolicy** me `WithOrigins("http://localhost:3000")`, `AllowAnyMethod()`, `AllowAnyHeader()`. Në pipeline: `app.UseCors()` **para** `UseAuthentication()` dhe `UseAuthorization()` (që preflight OPTIONS të marrë 200 me header-at e duhur). |
 | **Auth** | `POST /api/auth/register` dhe `POST /api/auth/login` me `[AllowAnonymous]`; body dhe përgjigje si në seksionet 3.1 dhe 3.2. |
 | **Endpoint të mbrojtura** | Autorizim global (401 pa token). `Authorization: Bearer <token>` pranohet nga CORS (`AllowAnyHeader()`). AdminController me `[Authorize(Roles = "Admin")]` → 403 për jo-admin. |
 
-**Frontend:** mbani `NEXT_PUBLIC_API_URL=http://localhost:5003` në `.env.local` dhe përdorni URL të plota (p.sh. `${API_BASE}/api/auth/login`), siç bën tashmë `lib/api/auth.ts` dhe `lib/api/client.ts`. Pas këtyre ndryshimeve, lidhja duhet të funksionojë pa "Failed to fetch" për shkak të CORS.
+**Frontend:** mbani `NEXT_PUBLIC_API_URL=https://api.yourdomain.com` në `.env.local` dhe përdorni URL të plota (p.sh. `${API_BASE}/api/auth/login`), siç bën tashmë `lib/api/auth.ts` dhe `lib/api/client.ts`. Pas këtyre ndryshimeve, lidhja duhet të funksionojë pa "Failed to fetch" për shkak të CORS.

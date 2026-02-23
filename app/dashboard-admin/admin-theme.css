@@ -1,0 +1,234 @@
+.admin-coffee {
+  --coffee-bg: #f0efec;
+  --coffee-surface: #e7e3d8;
+  --coffee-border: #d2ccc1;
+  --coffee-accent: #bba794;
+  --coffee-primary: #9b8877;
+  --coffee-text: #433021;
+  --coffee-muted: #9b8877;
+  overflow-x: clip;
+}
+
+.admin-coffee.bg-body-secondary {
+  background-color: var(--coffee-bg) !important;
+}
+
+.admin-coffee .navbar,
+.admin-coffee .offcanvas,
+.admin-coffee .card,
+.admin-coffee .modal-content,
+.admin-coffee .table thead,
+.admin-coffee .dropdown-menu {
+  background-color: var(--coffee-surface) !important;
+  color: var(--coffee-text);
+  border-color: var(--coffee-border) !important;
+}
+
+.admin-coffee .text-muted {
+  color: var(--coffee-muted) !important;
+}
+
+.admin-coffee .table {
+  --bs-table-color: var(--coffee-text);
+  --bs-table-hover-bg: var(--coffee-border);
+  --bs-table-bg: var(--coffee-surface);
+  --bs-table-border-color: var(--coffee-border);
+}
+
+.admin-coffee .table-light {
+  --bs-table-bg: var(--coffee-border);
+}
+
+.admin-coffee .btn-dark,
+.admin-coffee .btn-primary {
+  --bs-btn-bg: var(--coffee-primary);
+  --bs-btn-border-color: var(--coffee-primary);
+  --bs-btn-hover-bg: var(--coffee-text);
+  --bs-btn-hover-border-color: var(--coffee-text);
+}
+
+.admin-coffee .btn-outline-primary {
+  --bs-btn-color: var(--coffee-primary);
+  --bs-btn-border-color: var(--coffee-primary);
+  --bs-btn-hover-bg: var(--coffee-accent);
+  --bs-btn-hover-border-color: var(--coffee-accent);
+  --bs-btn-hover-color: var(--coffee-text);
+}
+
+.admin-coffee .btn-outline-secondary {
+  --bs-btn-color: var(--coffee-text);
+  --bs-btn-border-color: var(--coffee-border);
+  --bs-btn-hover-bg: var(--coffee-border);
+  --bs-btn-hover-border-color: var(--coffee-border);
+  --bs-btn-hover-color: var(--coffee-text);
+}
+
+.admin-coffee .text-primary,
+.admin-coffee .text-warning,
+.admin-coffee .text-success {
+  color: var(--coffee-primary) !important;
+}
+
+.admin-coffee .text-info {
+  color: var(--coffee-accent) !important;
+}
+
+.admin-coffee .text-bg-warning {
+  background-color: var(--coffee-border) !important;
+  color: var(--coffee-text) !important;
+}
+
+.admin-coffee .text-bg-success {
+  background-color: var(--coffee-accent) !important;
+  color: var(--coffee-text) !important;
+}
+
+.admin-coffee .text-bg-dark {
+  background-color: var(--coffee-text) !important;
+}
+
+.admin-coffee .text-bg-danger {
+  background-color: var(--coffee-primary) !important;
+  color: var(--coffee-bg) !important;
+}
+
+.admin-coffee .alert-danger {
+  --bs-alert-bg: var(--coffee-border);
+  --bs-alert-border-color: var(--coffee-accent);
+  --bs-alert-color: var(--coffee-text);
+}
+
+.admin-coffee .alert-warning {
+  --bs-alert-bg: var(--coffee-surface);
+  --bs-alert-border-color: var(--coffee-border);
+  --bs-alert-color: var(--coffee-text);
+}
+
+.admin-coffee .form-control,
+.admin-coffee .form-select,
+.admin-coffee .page-link,
+.admin-coffee .dropdown-item,
+.admin-coffee .dropdown-toggle {
+  color: var(--coffee-text);
+  border-color: var(--coffee-border);
+}
+
+.admin-coffee .nav-link,
+.admin-coffee .navbar-brand,
+.admin-coffee .btn-link {
+  color: var(--coffee-text) !important;
+}
+
+.admin-coffee .nav-link:hover,
+.admin-coffee .nav-link:focus {
+  color: var(--coffee-text) !important;
+  background-color: var(--coffee-border);
+}
+
+.admin-coffee .nav-pills .nav-link.active,
+.admin-coffee .nav-pills .show > .nav-link {
+  background-color: var(--coffee-primary);
+  color: var(--coffee-bg) !important;
+}
+
+.admin-coffee .form-control:focus,
+.admin-coffee .form-select:focus {
+  border-color: var(--coffee-primary);
+  box-shadow: 0 0 0 0.2rem rgba(155, 136, 119, 0.25);
+}
+
+.admin-coffee .page-item.active .page-link {
+  background-color: var(--coffee-primary);
+  border-color: var(--coffee-primary);
+  color: var(--coffee-bg);
+}
+
+.admin-coffee .table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-coffee [id] {
+  scroll-margin-top: 1rem;
+}
+
+.admin-coffee .admin-layout-shell,
+.admin-coffee .admin-main-shell {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .admin-coffee .admin-sidebar-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1020;
+  }
+
+  .admin-coffee .admin-main-shell {
+    margin-left: 260px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .admin-coffee .admin-main-shell {
+    width: 100%;
+  }
+
+  .admin-coffee .navbar .container-fluid {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    overflow-x: hidden;
+  }
+
+  .admin-coffee .navbar .btn-sm {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .admin-coffee .card .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .admin-coffee .navbar h1 {
+    font-size: 1rem;
+  }
+
+  .admin-coffee .navbar small {
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-coffee .navbar .btn {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    padding: 0.3rem 0.45rem;
+    white-space: nowrap;
+  }
+
+  .admin-coffee .navbar .d-flex.flex-nowrap {
+    gap: 0.25rem !important;
+  }
+
+  .admin-coffee .navbar .d-flex.flex-grow-1 {
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .admin-coffee .table {
+    font-size: 0.875rem;
+  }
+
+  .admin-coffee .pagination {
+    gap: 0.25rem;
+  }
+
+  .admin-coffee .pagination .page-link {
+    padding: 0.25rem 0.5rem;
+  }
+}
