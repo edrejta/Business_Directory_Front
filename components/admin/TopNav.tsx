@@ -32,7 +32,7 @@ export default function TopNav({ username, roleLabel, homeHref, roleHref, onLogo
             <span className="d-inline d-md-none">Role</span>
           </Link>
           <button className="btn btn-dark btn-sm" onClick={onLogout} type="button" aria-label="Logout">
-            Dil
+            Logout
           </button>
         </div>
       </div>

@@ -22,7 +22,7 @@ export type AdminUser = {
   username?: string;
   fullName?: string;
   email: string;
-  role: string | number;
+  role: number;
   createdAt?: string;
   status?: string;
 };
@@ -83,6 +83,26 @@ const toNumber = (value: unknown) => {
 const asRecord = (value: unknown): Record<string, unknown> =>
   typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
 
+const toOptionalString = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
+
+const normalizeAdminUser = (raw: unknown): AdminUser => {
+  const source = asRecord(raw);
+  return {
+    id: String(source.id ?? ""),
+    username: toOptionalString(source.username),
+    fullName: toOptionalString(source.fullName),
+    email: String(source.email ?? ""),
+    role: toNumber(source.role),
+    createdAt: toOptionalString(source.createdAt),
+    status: toOptionalString(source.status),
+  };
+};
+
+const normalizeAdminUsers = (raw: unknown): AdminUser[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((entry) => normalizeAdminUser(entry));
+};
+
 export const normalizeDashboard = (raw: unknown): DashboardPayload => {
   const root = asRecord(raw);
   const payload = asRecord(root.data ?? root.result ?? root);
@@ -128,14 +148,16 @@ export async function getAdminDashboard() {
 }
 
 export async function getAdminUsers() {
-  return authenticatedJson<AdminUser[]>("/api/admin/users");
+  const response = await authenticatedJson<unknown>("/api/admin/users");
+  return normalizeAdminUsers(response);
 }
 
 export async function updateAdminUserRole(id: string, role: number, reason?: string) {
-  return authenticatedJson<AdminUser>(`/api/admin/users/${id}/role`, {
+  const response = await authenticatedJson<unknown>(`/api/admin/users/${id}/role`, {
     method: "PATCH",
     body: JSON.stringify(reason ? { role, reason } : { role }),
   });
+  return normalizeAdminUser(response);
 }
 
 export async function getAdminAuditLogs(take = 100) {
@@ -164,10 +186,6 @@ export async function getHealthStatus() {
 export async function getAdminBusinesses(status?: string) {
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
   return authenticatedJson<AdminBusiness[]>(`/api/admin/businesses${query}`);
-}
-
-export async function getPendingAdminBusinesses() {
-  return authenticatedJson<AdminBusiness[]>("/api/admin/businesses/pending");
 }
 
 export async function getAdminBusinessById(id: string) {

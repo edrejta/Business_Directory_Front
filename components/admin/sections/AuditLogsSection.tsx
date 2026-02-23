@@ -72,7 +72,7 @@ export default function AuditLogsSection({
             <td>{entry.action ?? "-"}</td>
             <td className="text-nowrap">{getTargetEmail(entry.targetUserId)}</td>
             <td>{entry.reason ?? "-"}</td>
-            <td className="text-nowrap">{entry.targetUserId ?? entry.id}</td>
+            <td className="text-nowrap">{entry.id}</td>
             <td>{formatDateTime(entry.createdAt)}</td>
           </tr>
         ))}

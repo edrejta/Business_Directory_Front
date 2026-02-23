@@ -18,12 +18,12 @@ type RoleManagementSectionProps = {
   setUserSearch: Dispatch<SetStateAction<string>>;
   userRoleFilter: string;
   setUserRoleFilter: Dispatch<SetStateAction<string>>;
+  adminRole: number;
   roleOptions: readonly RoleOption[];
   rows: AdminUser[];
   columns: DataColumn[];
   busyKey: string | null;
-  getRoleValue: (value: number | string) => number;
-  getRoleLabel: (value: number | string) => string;
+  getRoleLabel: (value: number) => string;
   isAdminAccount: (user: AdminUser) => boolean;
   onChangeRoleRequest: (user: AdminUser, nextRole: number) => void;
   onDeleteUserRequest: (user: AdminUser) => void;
@@ -38,11 +38,11 @@ export default function RoleManagementSection({
   setUserSearch,
   userRoleFilter,
   setUserRoleFilter,
+  adminRole,
   roleOptions,
   rows,
   columns,
   busyKey,
-  getRoleValue,
   getRoleLabel,
   isAdminAccount,
   onChangeRoleRequest,
@@ -82,11 +82,11 @@ export default function RoleManagementSection({
 
       <DataTable columns={columns} loading={loadingData} empty={rows.length === 0} emptyMessage="No users found.">
         {rows.map((entry) => {
-          const currentRole = getRoleValue(entry.role);
+          const currentRole = entry.role;
           const protectedAdmin = isAdminAccount(entry);
 
           const roleActions: DropdownAction[] = roleOptions.map((role) => {
-            const cannotDowngradeAdmin = protectedAdmin && role.value !== 2;
+            const cannotDowngradeAdmin = protectedAdmin && role.value !== adminRole;
             const isSameRole = role.value === currentRole;
 
             return {
@@ -116,7 +116,7 @@ export default function RoleManagementSection({
               </td>
               <td>{entry.email}</td>
               <td>
-                <span className={`badge ${currentRole === 2 ? "text-bg-dark" : "text-bg-secondary"}`}>
+                <span className={`badge ${currentRole === adminRole ? "text-bg-dark" : "text-bg-secondary"}`}>
                   {getRoleLabel(entry.role)}
                 </span>
               </td>

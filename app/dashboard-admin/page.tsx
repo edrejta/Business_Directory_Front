@@ -8,23 +8,11 @@ import { useAuth } from "@/context/AuthContext";
 import {
   approveAdminBusiness,
   deleteAdminUser,
-  getAdminAuditLogs,
-  getAdminBusinesses,
-  getAdminCategories,
-  getAdminDashboard,
-  getAdminUsers,
-  getHealthStatus,
-  getReportSummary,
   rejectAdminBusiness,
   suspendAdminBusiness,
   updateAdminUserRole,
   type AdminBusiness,
   type AdminUser,
-  type AuditLog,
-  type Category,
-  type DashboardPayload,
-  type HealthStatus,
-  type ReportSummary,
 } from "@/lib/api/admin";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import type { DataColumn } from "@/components/admin/DataTable";
@@ -41,14 +29,13 @@ import TopNav from "@/components/admin/TopNav";
 import Toasts, { type ToastItem } from "@/components/admin/Toasts";
 import {
   ADMIN_ROLE,
-  APPROVED_STATUS,
   BUSINESS_ROLE,
   PAGE_SIZE,
-  PENDING_STATUS,
   ROLE_OPTIONS,
   SIDEBAR_ITEMS,
   USER_ROLE,
 } from "./constants";
+import { useAdminDashboardData } from "./useAdminDashboardData";
 import { clampPage, formatDateTime, getTotalPages, paginate } from "./utils";
 
 type ConfirmAction =
@@ -70,19 +57,7 @@ export default function DashboardAdmin() {
   const { user, isLoading, logoutUser } = useAuth();
   const router = useRouter();
 
-  // Data loaded from backend
-  const [dashboard, setDashboard] = useState<DashboardPayload | null>(null);
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [pendingBusinesses, setPendingBusinesses] = useState<AdminBusiness[]>([]);
-  const [approvedBusinesses, setApprovedBusinesses] = useState<AdminBusiness[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [reports, setReports] = useState<ReportSummary | null>(null);
-  const [health, setHealth] = useState<HealthStatus | null>(null);
-
   // Global UI states
-  const [loadingData, setLoadingData] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [sectionError, setSectionError] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);
 
@@ -114,6 +89,25 @@ export default function DashboardAdmin() {
   const [auditActionFilter, setAuditActionFilter] = useState("all");
   const [auditPage, setAuditPage] = useState(1);
 
+  const isAdminReady = !isLoading && !!user && user.role === ADMIN_ROLE;
+  const {
+    dashboard,
+    users,
+    pendingBusinesses,
+    approvedBusinesses,
+    auditLogs,
+    categories,
+    reports,
+    health,
+    loadingData,
+    error,
+    refreshDashboard,
+    refreshUsers,
+    refreshPendingBusinesses,
+    refreshApprovedBusinesses,
+    refreshAuditLogs,
+  } = useAdminDashboardData(isAdminReady);
+
   useEffect(() => {
     void import("bootstrap");
   }, []);
@@ -143,127 +137,47 @@ export default function DashboardAdmin() {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  const refreshDashboard = async () => {
-    const dashboardData = await getAdminDashboard();
-    setDashboard(dashboardData);
-  };
-
-  const refreshUsers = async () => {
-    const usersData = await getAdminUsers();
-    setUsers(Array.isArray(usersData) ? usersData : []);
-  };
-
-  const refreshPendingBusinesses = async () => {
-    const pendingData = await getAdminBusinesses(PENDING_STATUS);
-    setPendingBusinesses(Array.isArray(pendingData) ? pendingData : []);
-  };
-
-  const refreshApprovedBusinesses = async () => {
-    const approvedData = await getAdminBusinesses(APPROVED_STATUS);
-    setApprovedBusinesses(Array.isArray(approvedData) ? approvedData : []);
-  };
-
-  const refreshAuditLogs = async () => {
-    const logs = await getAdminAuditLogs(100);
-    setAuditLogs(Array.isArray(logs) ? logs : []);
-  };
-
-  useEffect(() => {
-    if (isLoading || !user || user.role !== ADMIN_ROLE) return;
-
-    let mounted = true;
-    const loadAdminData = async () => {
-      setLoadingData(true);
-      setError(null);
-      try {
-        const results = await Promise.allSettled([
-          getAdminDashboard(),
-          getAdminUsers(),
-          getAdminCategories(),
-          getReportSummary(),
-          getHealthStatus(),
-          getAdminBusinesses(PENDING_STATUS),
-          getAdminBusinesses(APPROVED_STATUS),
-          getAdminAuditLogs(100),
-        ]);
-
-        if (!mounted) return;
-
-        const endpointNames = [
-          "dashboard",
-          "users",
-          "categories",
-          "reports summary",
-          "health",
-          "pending businesses",
-          "approved businesses",
-          "audit logs",
-        ] as const;
-
-        const failedEndpoints: string[] = [];
-        results.forEach((result, index) => {
-          if (result.status === "rejected") {
-            failedEndpoints.push(endpointNames[index]);
-          }
-        });
-
-        const [dashboardResult, usersResult, categoriesResult, reportsResult, healthResult, pendingResult, approvedResult, logsResult] =
-          results;
-
-        if (dashboardResult.status === "fulfilled") {
-          setDashboard(dashboardResult.value);
-        }
-        if (usersResult.status === "fulfilled") {
-          setUsers(Array.isArray(usersResult.value) ? usersResult.value : []);
-        }
-        if (categoriesResult.status === "fulfilled") {
-          setCategories(Array.isArray(categoriesResult.value) ? categoriesResult.value : []);
-        }
-        if (reportsResult.status === "fulfilled") {
-          setReports(reportsResult.value);
-        }
-        if (healthResult.status === "fulfilled") {
-          setHealth(healthResult.value);
-        }
-        if (pendingResult.status === "fulfilled") {
-          setPendingBusinesses(Array.isArray(pendingResult.value) ? pendingResult.value : []);
-        }
-        if (approvedResult.status === "fulfilled") {
-          setApprovedBusinesses(Array.isArray(approvedResult.value) ? approvedResult.value : []);
-        }
-        if (logsResult.status === "fulfilled") {
-          setAuditLogs(Array.isArray(logsResult.value) ? logsResult.value : []);
-        }
-
-        if (failedEndpoints.length > 0) {
-          setError(`Some admin sections failed to load: ${failedEndpoints.join(", ")}.`);
-        }
-      } catch (err) {
-        if (!mounted) return;
-        setError(err instanceof Error ? err.message : "Failed to load admin dashboard.");
-      } finally {
-        if (mounted) setLoadingData(false);
-      }
-    };
-
-    void loadAdminData();
-
-    return () => {
-      mounted = false;
-    };
-  }, [isLoading, user]);
-
-  const getRoleValue = (value: number | string) => {
-    return typeof value === "number" ? value : Number(value);
-  };
-
-  const getRoleLabel = (value: number | string) => {
-    const roleValue = getRoleValue(value);
-    return ROLE_OPTIONS.find((role) => role.value === roleValue)?.label ?? String(value);
+  const getRoleLabel = (value: number) => {
+    return ROLE_OPTIONS.find((role) => role.value === value)?.label ?? String(value);
   };
 
   const isAdminAccount = (account: AdminUser) => {
-    return getRoleValue(account.role) === ADMIN_ROLE;
+    return account.role === ADMIN_ROLE;
+  };
+
+  type AdminActionOptions = {
+    key: string;
+    request: () => Promise<unknown>;
+    refresh?: Array<() => Promise<void>>;
+    successMessage: string;
+    successVariant?: ToastItem["variant"];
+    failureMessage: string;
+    failureVariant?: ToastItem["variant"];
+  };
+
+  const runAdminAction = async ({
+    key,
+    request,
+    refresh = [],
+    successMessage,
+    successVariant = "success",
+    failureMessage,
+    failureVariant = "danger",
+  }: AdminActionOptions) => {
+    setBusyKey(key);
+    setSectionError(null);
+    try {
+      await request();
+      if (refresh.length > 0) {
+        await Promise.all(refresh.map((refreshStep) => refreshStep()));
+      }
+      addToast(successMessage, successVariant);
+    } catch (err) {
+      setSectionError(err instanceof Error ? err.message : failureMessage);
+      addToast(failureMessage, failureVariant);
+    } finally {
+      setBusyKey(null);
+    }
   };
 
   const openReasonAction = (action: ReasonAction) => {
@@ -302,35 +216,25 @@ export default function DashboardAdmin() {
   };
 
   const runApproveBusiness = async (business: AdminBusiness) => {
-    const key = `approve-${business.id}`;
-    setBusyKey(key);
-    setSectionError(null);
-    try {
-      await approveAdminBusiness(business.id);
-      await Promise.all([refreshPendingBusinesses(), refreshDashboard()]);
-      addToast(`Approved ${business.name}.`, "success");
-    } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Approve failed.");
-      addToast("Approve failed.", "danger");
-    } finally {
-      setBusyKey(null);
-    }
+    await runAdminAction({
+      key: `approve-${business.id}`,
+      request: () => approveAdminBusiness(business.id),
+      refresh: [refreshPendingBusinesses, refreshDashboard],
+      successMessage: `Approved ${business.name}.`,
+      successVariant: "success",
+      failureMessage: "Approve failed.",
+    });
   };
 
   const runRejectBusiness = async (business: AdminBusiness) => {
-    const key = `reject-${business.id}`;
-    setBusyKey(key);
-    setSectionError(null);
-    try {
-      await rejectAdminBusiness(business.id);
-      await Promise.all([refreshPendingBusinesses(), refreshDashboard()]);
-      addToast(`Rejected ${business.name}.`, "warning");
-    } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Reject failed.");
-      addToast("Reject failed.", "danger");
-    } finally {
-      setBusyKey(null);
-    }
+    await runAdminAction({
+      key: `reject-${business.id}`,
+      request: () => rejectAdminBusiness(business.id),
+      refresh: [refreshPendingBusinesses, refreshDashboard],
+      successMessage: `Rejected ${business.name}.`,
+      successVariant: "warning",
+      failureMessage: "Reject failed.",
+    });
   };
 
   const runChangeRole = async (targetUser: AdminUser, nextRole: number, reason?: string) => {
@@ -340,19 +244,14 @@ export default function DashboardAdmin() {
       return;
     }
 
-    const key = `role-${targetUser.id}`;
-    setBusyKey(key);
-    setSectionError(null);
-    try {
-      await updateAdminUserRole(targetUser.id, nextRole, reason);
-      await Promise.all([refreshUsers(), refreshAuditLogs()]);
-      addToast(`Role updated for ${targetUser.email}.`, "success");
-    } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Role update failed.");
-      addToast("Role update failed.", "danger");
-    } finally {
-      setBusyKey(null);
-    }
+    await runAdminAction({
+      key: `role-${targetUser.id}`,
+      request: () => updateAdminUserRole(targetUser.id, nextRole, reason),
+      refresh: [refreshUsers, refreshAuditLogs],
+      successMessage: `Role updated for ${targetUser.email}.`,
+      successVariant: "success",
+      failureMessage: "Role update failed.",
+    });
   };
 
   const runDeleteUser = async (targetUser: AdminUser, reason?: string) => {
@@ -362,35 +261,25 @@ export default function DashboardAdmin() {
       return;
     }
 
-    const key = `delete-${targetUser.id}`;
-    setBusyKey(key);
-    setSectionError(null);
-    try {
-      await deleteAdminUser(targetUser.id, reason);
-      await Promise.all([refreshUsers(), refreshDashboard(), refreshAuditLogs()]);
-      addToast(`Deleted ${targetUser.email}.`, "warning");
-    } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "User delete failed.");
-      addToast("User delete failed.", "danger");
-    } finally {
-      setBusyKey(null);
-    }
+    await runAdminAction({
+      key: `delete-${targetUser.id}`,
+      request: () => deleteAdminUser(targetUser.id, reason),
+      refresh: [refreshUsers, refreshDashboard, refreshAuditLogs],
+      successMessage: `Deleted ${targetUser.email}.`,
+      successVariant: "warning",
+      failureMessage: "User delete failed.",
+    });
   };
 
   const runSuspendBusiness = async (business: AdminBusiness, reason?: string) => {
-    const key = `suspend-${business.id}`;
-    setBusyKey(key);
-    setSectionError(null);
-    try {
-      await suspendAdminBusiness(business.id, reason);
-      await Promise.all([refreshApprovedBusinesses(), refreshDashboard(), refreshAuditLogs()]);
-      addToast(`Suspended ${business.name}.`, "warning");
-    } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Suspend failed.");
-      addToast("Suspend failed.", "danger");
-    } finally {
-      setBusyKey(null);
-    }
+    await runAdminAction({
+      key: `suspend-${business.id}`,
+      request: () => suspendAdminBusiness(business.id, reason),
+      refresh: [refreshApprovedBusinesses, refreshDashboard, refreshAuditLogs],
+      successMessage: `Suspended ${business.name}.`,
+      successVariant: "warning",
+      failureMessage: "Suspend failed.",
+    });
   };
 
   const handleConfirmSubmit = async () => {
@@ -427,8 +316,7 @@ export default function DashboardAdmin() {
     const query = userSearch.trim().toLowerCase();
 
     return users.filter((entry) => {
-      const roleValue = getRoleValue(entry.role);
-      const matchesRole = userRoleFilter === "all" || String(roleValue) === userRoleFilter;
+      const matchesRole = userRoleFilter === "all" || String(entry.role) === userRoleFilter;
       const matchesQuery =
         query.length === 0 ||
         (entry.username ?? "").toLowerCase().includes(query) ||
@@ -520,10 +408,15 @@ export default function DashboardAdmin() {
   const totalApprovedPages = getTotalPages(filteredApprovedBusinesses.length, PAGE_SIZE);
   const totalAuditPages = getTotalPages(filteredAuditLogs.length, PAGE_SIZE);
 
-  const pagedUsers = paginate(filteredUsers, userPage, PAGE_SIZE);
-  const pagedPendingBusinesses = paginate(filteredPendingBusinesses, pendingPage, PAGE_SIZE);
-  const pagedApprovedBusinesses = paginate(filteredApprovedBusinesses, approvedPage, PAGE_SIZE);
-  const pagedAuditLogs = paginate(filteredAuditLogs, auditPage, PAGE_SIZE);
+  const currentUserPage = clampPage(userPage, totalUserPages);
+  const currentPendingPage = clampPage(pendingPage, totalPendingPages);
+  const currentApprovedPage = clampPage(approvedPage, totalApprovedPages);
+  const currentAuditPage = clampPage(auditPage, totalAuditPages);
+
+  const pagedUsers = paginate(filteredUsers, currentUserPage, PAGE_SIZE);
+  const pagedPendingBusinesses = paginate(filteredPendingBusinesses, currentPendingPage, PAGE_SIZE);
+  const pagedApprovedBusinesses = paginate(filteredApprovedBusinesses, currentApprovedPage, PAGE_SIZE);
+  const pagedAuditLogs = paginate(filteredAuditLogs, currentAuditPage, PAGE_SIZE);
   const totalUsersKpi =
     (dashboard?.metrics.totalUsers ?? 0) > 0 ? (dashboard?.metrics.totalUsers ?? 0) : users.length;
   const totalBusinessesKpi = dashboard?.metrics.totalBusinesses ?? 0;
@@ -673,7 +566,7 @@ export default function DashboardAdmin() {
                   busyKey={busyKey}
                   onApproveRequest={(business) => setConfirmAction({ type: "approve", business })}
                   onRejectRequest={(business) => setConfirmAction({ type: "reject", business })}
-                  currentPage={clampPage(pendingPage, totalPendingPages)}
+                  currentPage={currentPendingPage}
                   totalPages={totalPendingPages}
                   onPageChange={setPendingPage}
                   formatDateTime={formatDateTime}
@@ -687,18 +580,18 @@ export default function DashboardAdmin() {
                   setUserSearch={setUserSearch}
                   userRoleFilter={userRoleFilter}
                   setUserRoleFilter={setUserRoleFilter}
+                  adminRole={ADMIN_ROLE}
                   roleOptions={ROLE_OPTIONS}
                   rows={pagedUsers}
                   columns={userColumns}
                   busyKey={busyKey}
-                  getRoleValue={getRoleValue}
                   getRoleLabel={getRoleLabel}
                   isAdminAccount={isAdminAccount}
                   onChangeRoleRequest={(entry, nextRole) =>
                     openReasonAction({ type: "changeRole", user: entry, nextRole })
                   }
                   onDeleteUserRequest={(entry) => openReasonAction({ type: "deleteUser", user: entry })}
-                  currentPage={clampPage(userPage, totalUserPages)}
+                  currentPage={currentUserPage}
                   totalPages={totalUserPages}
                   onPageChange={setUserPage}
                 />
@@ -716,7 +609,7 @@ export default function DashboardAdmin() {
                   columns={approvedColumns}
                   busyKey={busyKey}
                   onSuspendRequest={(business) => openReasonAction({ type: "suspendBusiness", business })}
-                  currentPage={clampPage(approvedPage, totalApprovedPages)}
+                  currentPage={currentApprovedPage}
                   totalPages={totalApprovedPages}
                   onPageChange={setApprovedPage}
                 />
@@ -742,7 +635,7 @@ export default function DashboardAdmin() {
                   columns={auditColumns}
                   getTargetEmail={getTargetEmail}
                   formatDateTime={formatDateTime}
-                  currentPage={clampPage(auditPage, totalAuditPages)}
+                  currentPage={currentAuditPage}
                   totalPages={totalAuditPages}
                   onPageChange={setAuditPage}
                 />
