@@ -1,0 +1,36 @@
+name: CD Frontend
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+      - test/cd-frontend
+  pull_request:
+    branches:
+      - dev
+      - main
+      - test/cd-frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - run: az acr login --name ${{ secrets.ACR_NAME }}
+
+      - run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} .
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
+
+      - run: az aks get-credentials -g ${{ secrets.AKS_RESOURCE_GROUP }} -n ${{ secrets.AKS_CLUSTER_NAME }} --overwrite-existing
+
+      - run: kubectl -n dev set image deployment/bd-frontend bd-frontend=${{ secrets.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
+
+      - run: kubectl -n dev rollout status deployment/bd-frontend

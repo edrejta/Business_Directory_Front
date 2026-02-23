@@ -47,6 +47,17 @@ export type HealthStatus = {
   version?: string;
 };
 
+export type AuditLog = {
+  id: string;
+  action?: string;
+  actorUserId?: string;
+  targetUserId?: string;
+  oldValue?: string;
+  newValue?: string;
+  reason?: string;
+  createdAt?: string;
+};
+
 export type AdminBusinessStatus = "Pending" | "Approved" | "Rejected" | "Suspended" | string;
 
 export type AdminBusiness = {
@@ -113,6 +124,24 @@ export async function getAdminUsers() {
   return authenticatedJson<AdminUser[]>("/api/admin/users");
 }
 
+export async function updateAdminUserRole(id: string, role: number, reason?: string) {
+  return authenticatedJson<AdminUser>(`/api/admin/users/${id}/role`, {
+    method: "PATCH",
+    body: JSON.stringify(reason ? { role, reason } : { role }),
+  });
+}
+
+export async function getAdminAuditLogs(take = 100) {
+  return authenticatedJson<AuditLog[]>(`/api/admin/audit-logs?take=${encodeURIComponent(String(take))}`);
+}
+
+export async function deleteAdminUser(id: string, reason?: string) {
+  const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+  return authenticatedJson<{ success?: boolean; message?: string }>(`/api/admin/users/${id}${query}`, {
+    method: "DELETE",
+  });
+}
+
 export async function getReportSummary() {
   return authenticatedJson<ReportSummary>("/api/admin/reports/summary");
 }
@@ -150,8 +179,9 @@ export async function rejectAdminBusiness(id: string) {
   });
 }
 
-export async function suspendAdminBusiness(id: string) {
+export async function suspendAdminBusiness(id: string, reason?: string) {
   return authenticatedJson<AdminBusiness>(`/api/admin/businesses/${id}/suspend`, {
     method: "PATCH",
+    body: JSON.stringify(reason ? { reason } : {}),
   });
 }

@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { SIGNUP_ROLES } from "@/lib/constants/roles";
 
 export interface RegisterFormProps {
-  onSubmit: (data: { username: string; email: string; password: string; role: 0 | 1 }) => void;
+  onSubmit: (data: { username: string; email: string; password: string; role: 0 }) => void;
   error?: string | null;
   isLoading?: boolean;
-  fieldErrors?: { username?: string; email?: string; password?: string; role?: string };
+  fieldErrors?: { username?: string; email?: string; password?: string };
 }
 
 export default function RegisterForm({
@@ -19,12 +18,11 @@ export default function RegisterForm({
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<0 | 1>(0);
   const [showPassword, setShowPassword] = useState(false);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    onSubmit({ username, email, password, role });
+    onSubmit({ username, email, password, role: 0 });
   }
 
   return (
@@ -63,27 +61,6 @@ export default function RegisterForm({
         />
         {fieldErrors?.email && (
           <p className="mt-1 text-sm text-red-600" role="alert">{fieldErrors.email}</p>
-        )}
-      </label>
-      <label className="animate-register-field block">
-        <span className="mb-1 block text-sm font-medium text-espresso">Roli</span>
-        <select
-          value={role}
-          onChange={(e) => setRole(Number(e.target.value) as 0 | 1)}
-          className={`w-full rounded-lg border bg-white/70 px-3 py-2 outline-none transition focus:ring-1 ${
-            fieldErrors?.role ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : "border-oak/45 focus:border-espresso focus:ring-espresso/30"
-          }`}
-          aria-label="Roli"
-          aria-invalid={!!fieldErrors?.role}
-        >
-          {SIGNUP_ROLES.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-        {fieldErrors?.role && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{fieldErrors.role}</p>
         )}
       </label>
       <label className="animate-register-field block">

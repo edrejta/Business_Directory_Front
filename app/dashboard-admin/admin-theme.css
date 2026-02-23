@@ -1,0 +1,143 @@
+.admin-coffee {
+  --coffee-bg: #f0efec;
+  --coffee-surface: #e7e3d8;
+  --coffee-border: #d2ccc1;
+  --coffee-accent: #bba794;
+  --coffee-primary: #9b8877;
+  --coffee-text: #433021;
+  --coffee-muted: #9b8877;
+}
+
+.admin-coffee.bg-body-secondary {
+  background-color: var(--coffee-bg) !important;
+}
+
+.admin-coffee .navbar,
+.admin-coffee .offcanvas,
+.admin-coffee .card,
+.admin-coffee .modal-content,
+.admin-coffee .table thead,
+.admin-coffee .dropdown-menu {
+  background-color: var(--coffee-surface) !important;
+  color: var(--coffee-text);
+  border-color: var(--coffee-border) !important;
+}
+
+.admin-coffee .text-muted {
+  color: var(--coffee-muted) !important;
+}
+
+.admin-coffee .table {
+  --bs-table-color: var(--coffee-text);
+  --bs-table-hover-bg: var(--coffee-border);
+  --bs-table-bg: var(--coffee-surface);
+  --bs-table-border-color: var(--coffee-border);
+}
+
+.admin-coffee .table-light {
+  --bs-table-bg: var(--coffee-border);
+}
+
+.admin-coffee .btn-dark,
+.admin-coffee .btn-primary {
+  --bs-btn-bg: var(--coffee-primary);
+  --bs-btn-border-color: var(--coffee-primary);
+  --bs-btn-hover-bg: var(--coffee-text);
+  --bs-btn-hover-border-color: var(--coffee-text);
+}
+
+.admin-coffee .btn-outline-primary {
+  --bs-btn-color: var(--coffee-primary);
+  --bs-btn-border-color: var(--coffee-primary);
+  --bs-btn-hover-bg: var(--coffee-accent);
+  --bs-btn-hover-border-color: var(--coffee-accent);
+  --bs-btn-hover-color: var(--coffee-text);
+}
+
+.admin-coffee .btn-outline-secondary {
+  --bs-btn-color: var(--coffee-text);
+  --bs-btn-border-color: var(--coffee-border);
+  --bs-btn-hover-bg: var(--coffee-border);
+  --bs-btn-hover-border-color: var(--coffee-border);
+  --bs-btn-hover-color: var(--coffee-text);
+}
+
+.admin-coffee .text-primary,
+.admin-coffee .text-warning,
+.admin-coffee .text-success {
+  color: var(--coffee-primary) !important;
+}
+
+.admin-coffee .text-info {
+  color: var(--coffee-accent) !important;
+}
+
+.admin-coffee .text-bg-warning {
+  background-color: var(--coffee-border) !important;
+  color: var(--coffee-text) !important;
+}
+
+.admin-coffee .text-bg-success {
+  background-color: var(--coffee-accent) !important;
+  color: var(--coffee-text) !important;
+}
+
+.admin-coffee .text-bg-dark {
+  background-color: var(--coffee-text) !important;
+}
+
+.admin-coffee .text-bg-danger {
+  background-color: var(--coffee-primary) !important;
+  color: var(--coffee-bg) !important;
+}
+
+.admin-coffee .alert-danger {
+  --bs-alert-bg: var(--coffee-border);
+  --bs-alert-border-color: var(--coffee-accent);
+  --bs-alert-color: var(--coffee-text);
+}
+
+.admin-coffee .alert-warning {
+  --bs-alert-bg: var(--coffee-surface);
+  --bs-alert-border-color: var(--coffee-border);
+  --bs-alert-color: var(--coffee-text);
+}
+
+.admin-coffee .form-control,
+.admin-coffee .form-select,
+.admin-coffee .page-link,
+.admin-coffee .dropdown-item,
+.admin-coffee .dropdown-toggle {
+  color: var(--coffee-text);
+  border-color: var(--coffee-border);
+}
+
+.admin-coffee .nav-link,
+.admin-coffee .navbar-brand,
+.admin-coffee .btn-link {
+  color: var(--coffee-text) !important;
+}
+
+.admin-coffee .nav-link:hover,
+.admin-coffee .nav-link:focus {
+  color: var(--coffee-text) !important;
+  background-color: var(--coffee-border);
+}
+
+.admin-coffee .nav-pills .nav-link.active,
+.admin-coffee .nav-pills .show > .nav-link {
+  background-color: var(--coffee-primary);
+  color: var(--coffee-bg) !important;
+}
+
+.admin-coffee .form-control:focus,
+.admin-coffee .form-select:focus {
+  border-color: var(--coffee-primary);
+  box-shadow: 0 0 0 0.2rem rgba(155, 136, 119, 0.25);
+}
+
+.admin-coffee .page-item.active .page-link {
+  background-color: var(--coffee-primary);
+  border-color: var(--coffee-primary);
+  color: var(--coffee-bg);
+}

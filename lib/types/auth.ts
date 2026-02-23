@@ -2,7 +2,7 @@ export interface RegisterInput {
   username: string;
   email: string;
   password: string;
-  role: 0 | 1; // User | BusinessOwner; Admin (2) nuk lejohet në signup
+  role: 0; // User only
 }
 
 export interface LoginInput {
