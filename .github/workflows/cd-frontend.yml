@@ -43,6 +43,8 @@ jobs:
       - run: |
           docker build -t ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} .
           docker push ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
+          docker tag ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:latest
+          docker push ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:latest
 
       - run: az aks get-credentials -g ${{ vars.AKS_RESOURCE_GROUP }} -n ${{ vars.AKS_CLUSTER_NAME }} --overwrite-existing
 
