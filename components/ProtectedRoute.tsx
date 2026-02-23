@@ -13,12 +13,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) return; // wait until auth state loads
     if (!user) {
-      router.replace("/login");
+      router.replace("/login"); // redirect if not logged in
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user) return null;
+  if (isLoading || !user) return null; // optional: add a spinner instead of null
   return <>{children}</>;
 }

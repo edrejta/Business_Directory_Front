@@ -44,7 +44,10 @@ export default function RegisterPage() {
     }
     setIsSubmitting(true);
     try {
-      const response = await registerUser(parsed.data);
+      const response = await registerUser({
+        ...parsed.data,
+        role: parsed.data.role ?? 0,
+      });
       router.push(getRedirectPath(response.role));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Një përdorues me këtë email ekziston tashmë.");

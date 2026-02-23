@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 20% 94%;
+    --foreground: 25 36% 19%;
+    --card: 40 16% 91%;
+    --card-foreground: 25 36% 19%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 36% 19%;
+    --primary: 25 22% 66%;
+    --primary-foreground: 25 36% 19%;
+    --secondary: 37 15% 83%;
+    --secondary-foreground: 25 36% 19%;
+    --muted: 40 16% 87%;
+    --muted-foreground: 25 13% 55%;
+    --accent: 38 56% 82%;
+    --accent-foreground: 25 36% 19%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 37 14% 79%;
+    --input: 37 14% 79%;
+    --ring: 25 22% 66%;
+    --radius: 0.75rem;
+
+    --brand-light: 40 20% 94%;
+    --brand-secondary: 40 16% 87%;
+    --brand-muted: 37 14% 79%;
+    --brand-primary: 25 22% 66%;
+    --brand-secondary-accent: 25 13% 55%;
+    --brand-strong: 25 36% 19%;
+    --brand-highlight: 38 56% 82%;
+    --brand-dark: 22 20% 35%;
+    --brand-neutral: 37 15% 83%;
+
+    --sidebar-background: 40 16% 91%;
+    --sidebar-foreground: 25 36% 19%;
+    --sidebar-primary: 25 22% 66%;
+    --sidebar-primary-foreground: 25 36% 19%;
+    --sidebar-accent: 38 56% 82%;
+    --sidebar-accent-foreground: 25 36% 19%;
+    --sidebar-border: 37 14% 79%;
+    --sidebar-ring: 25 22% 66%;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: 'Playfair Display', serif;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer utilities {
+  .font-inter {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .font-playfair {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.4s ease-out forwards;
+  }
+
+  .card-tilt {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-tilt:hover {
+    transform: translateY(-8px) rotate(0.5deg);
+    box-shadow: 0 20px 40px -10px hsl(var(--brand-dark) / 0.25);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--brand-strong)), hsl(var(--brand-dark)));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glass {
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .hero-overlay {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--brand-strong) / 0.55) 0%,
+      hsl(var(--brand-strong) / 0.3) 50%,
+      hsl(var(--brand-strong) / 0.7) 100%
+    );
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .badge-verified {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .badge-top-rated {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .badge-new {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, hsl(var(--brand-primary) / 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .ripple:active::after {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--brand-primary) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px hsl(var(--brand-primary) / 0);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--brand-primary));
+  border-radius: 3px;
+}
