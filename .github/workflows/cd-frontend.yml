@@ -20,32 +20,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate required secrets
+      - name: Validate required config
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-          ACR_NAME: ${{ secrets.ACR_NAME }}
-          ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
-          AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
-          AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+          ACR_NAME: ${{ vars.ACR_NAME }}
+          ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
+          AKS_RESOURCE_GROUP: ${{ vars.AKS_RESOURCE_GROUP }}
+          AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
         run: |
           [ -n "$AZURE_CREDENTIALS" ] || { echo "Missing secret: AZURE_CREDENTIALS"; exit 1; }
-          [ -n "$ACR_NAME" ] || { echo "Missing secret: ACR_NAME"; exit 1; }
-          [ -n "$ACR_LOGIN_SERVER" ] || { echo "Missing secret: ACR_LOGIN_SERVER"; exit 1; }
-          [ -n "$AKS_RESOURCE_GROUP" ] || { echo "Missing secret: AKS_RESOURCE_GROUP"; exit 1; }
-          [ -n "$AKS_CLUSTER_NAME" ] || { echo "Missing secret: AKS_CLUSTER_NAME"; exit 1; }
+          [ -n "$ACR_NAME" ] || { echo "Missing variable: ACR_NAME"; exit 1; }
+          [ -n "$ACR_LOGIN_SERVER" ] || { echo "Missing variable: ACR_LOGIN_SERVER"; exit 1; }
+          [ -n "$AKS_RESOURCE_GROUP" ] || { echo "Missing variable: AKS_RESOURCE_GROUP"; exit 1; }
+          [ -n "$AKS_CLUSTER_NAME" ] || { echo "Missing variable: AKS_CLUSTER_NAME"; exit 1; }
 
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - run: az acr login --name ${{ secrets.ACR_NAME }}
+      - run: az acr login --name ${{ vars.ACR_NAME }}
 
       - run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} .
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
+          docker build -t ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} .
+          docker push ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
 
-      - run: az aks get-credentials -g ${{ secrets.AKS_RESOURCE_GROUP }} -n ${{ secrets.AKS_CLUSTER_NAME }} --overwrite-existing
+      - run: az aks get-credentials -g ${{ vars.AKS_RESOURCE_GROUP }} -n ${{ vars.AKS_CLUSTER_NAME }} --overwrite-existing
 
-      - run: kubectl -n dev set image deployment/bd-frontend bd-frontend=${{ secrets.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
+      - run: kubectl -n dev set image deployment/bd-frontend bd-frontend=${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
 
       - run: kubectl -n dev rollout status deployment/bd-frontend
