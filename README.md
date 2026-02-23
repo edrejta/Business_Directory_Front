@@ -37,3 +37,5 @@ NEXT_PUBLIC_API_URL=http://localhost:5003
 ### Team guide
 
 - `docs/TEAM_START_HERE.md`
+
+CD test trigger change: 2026-02-23
