@@ -577,7 +577,7 @@ export default function DashboardAdmin() {
       <div className="d-flex">
         <SidebarNav items={SIDEBAR_ITEMS} />
 
-        <div className="flex-grow-1 admin-main-content">
+        <div className="flex-grow-1">
           <TopNav
             username={user.username}
             roleLabel={getRoleLabel(user.role)}
