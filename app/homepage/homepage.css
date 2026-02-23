@@ -1558,7 +1558,9 @@
   }
 
   .kb-map-view {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .kb-listings-grid {

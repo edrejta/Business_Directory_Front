@@ -114,7 +114,14 @@ function App() {
     safeFetch<Deal[]>('/promotions', []).then((data) => {
       setPromotions(data.length > 0 ? data : seedPromotions)
     })
-    runSearch()
+    const initialSearch = async () => {
+      setIsLoading(true)
+      const data = await safeFetch<Business[]>('/search', [])
+      setResults(data)
+      setActivePage(1)
+      setIsLoading(false)
+    }
+    void initialSearch()
   }, [])
 
   useEffect(() => {
@@ -148,11 +155,9 @@ function App() {
 
   useEffect(() => {
     if (!query.trim()) {
-      setSuggestions([])
-      setSearchOpen(false)
       return
     }
-    safeFetch<Business[]>(
+    void safeFetch<Business[]>(
       `/search?keyword=${encodeURIComponent(query)}&limit=5`,
       [],
     ).then((data) => {
@@ -256,7 +261,13 @@ function App() {
               value={query}
               onFocus={() => setSearchOpen(suggestions.length > 0)}
               onBlur={() => setTimeout(() => setSearchOpen(false), 120)}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                const nextQuery = e.target.value
+                setQuery(nextQuery)
+                if (!nextQuery.trim()) {
+                  setSearchOpen(false)
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') runSearch()
               }}

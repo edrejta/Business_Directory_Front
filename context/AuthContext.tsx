@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { saveToken, getToken } from "@/lib/auth/storage";
 import { clearSessionAndRedirect } from "@/lib/auth/session";
 import { getRedirectPath } from "@/lib/auth/redirect";
@@ -48,22 +48,20 @@ function persistAuth(data: AuthResponse) {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
+  const [user, setUser] = useState<AuthUser | null>(() => {
     const token = getToken() ?? (typeof window !== "undefined" ? localStorage.getItem("token") : null);
     const role = typeof window !== "undefined" ? (localStorage.getItem("role") ?? localStorage.getItem(AUTH_ROLE_KEY)) : null;
     const username = typeof window !== "undefined" ? localStorage.getItem(AUTH_USERNAME_KEY) || undefined : undefined;
     const email = typeof window !== "undefined" ? localStorage.getItem(AUTH_EMAIL_KEY) || undefined : undefined;
 
     if (token && role !== null) {
-      setUser({ token, role: Number(role), username, email });
+      return { token, role: Number(role), username, email };
     }
-    setIsLoading(false);
-  }, []);
+    return null;
+  });
+  const [isLoading] = useState(false);
 
-  function loginUser(data: AuthResponse) {
+  const loginUser = useCallback((data: AuthResponse) => {
     persistAuth(data);
     setUser({
       token: data.token,
@@ -71,24 +69,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       username: data.username,
       email: data.email,
     });
-  }
+  }, []);
 
-  async function login(input: LoginInput): Promise<AuthResponse> {
+  const login = useCallback(async (input: LoginInput): Promise<AuthResponse> => {
     const data = await authApi.login(input);
     loginUser(data);
     return data;
-  }
+  }, [loginUser]);
 
-  async function register(input: RegisterInput): Promise<AuthResponse> {
+  const register = useCallback(async (input: RegisterInput): Promise<AuthResponse> => {
     const data = await authApi.register(input);
     loginUser(data);
     return data;
-  }
+  }, [loginUser]);
 
-  function logoutUser() {
+  const logoutUser = useCallback(() => {
     setUser(null);
     clearSessionAndRedirect();
-  }
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -103,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logoutUser,
       getRedirectPath,
     }),
-    [user, isLoading],
+    [user, isLoading, login, register, logoutUser, loginUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
