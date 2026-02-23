@@ -577,7 +577,7 @@ export default function DashboardAdmin() {
       <div className="d-flex">
         <SidebarNav items={SIDEBAR_ITEMS} />
 
-        <div className="flex-grow-1">
+        <div className="flex-grow-1 admin-main-content">
           <TopNav
             username={user.username}
             roleLabel={getRoleLabel(user.role)}
@@ -586,7 +586,7 @@ export default function DashboardAdmin() {
             onLogout={logoutUser}
           />
 
-          <main className="container-fluid p-4 p-lg-5">
+          <main className="container-fluid p-3 p-lg-5">
             {error && <div className="alert alert-danger">{error}</div>}
             {sectionError && <div className="alert alert-warning">{sectionError}</div>}
 

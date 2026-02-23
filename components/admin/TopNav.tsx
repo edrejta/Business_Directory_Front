@@ -13,8 +13,8 @@ type TopNavProps = {
 export default function TopNav({ username, roleLabel, homeHref, roleHref, onLogout }: TopNavProps) {
   return (
     <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top z-3">
-      <div className="container-fluid px-3 px-lg-4">
-        <div className="d-flex align-items-center gap-2">
+      <div className="container-fluid px-3 px-lg-4 py-2 d-flex flex-wrap align-items-center gap-2">
+        <div className="d-flex align-items-center gap-2 flex-grow-1">
           <button
             className="btn btn-outline-secondary d-lg-none"
             type="button"
@@ -31,7 +31,7 @@ export default function TopNav({ username, roleLabel, homeHref, roleHref, onLogo
           </div>
         </div>
 
-        <div className="d-flex align-items-center gap-2">
+        <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end ms-2">
           <Link href={homeHref} className="btn btn-outline-primary btn-sm" aria-label="Go to home page">
             Home
           </Link>

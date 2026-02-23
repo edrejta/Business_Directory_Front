@@ -38,10 +38,7 @@ function SidebarContent({ items, mobile }: { items: SidebarItem[]; mobile: boole
 export default function SidebarNav({ items }: SidebarNavProps) {
   return (
     <>
-      <aside
-        className="d-none d-lg-flex flex-column flex-shrink-0 p-3 border-end bg-body-tertiary"
-        style={{ width: 260, minHeight: "100vh", position: "sticky", top: 0 }}
-      >
+      <aside className="admin-sidebar-desktop d-none d-lg-flex flex-column flex-shrink-0 p-3 border-end bg-body-tertiary">
         <SidebarContent items={items} mobile={false} />
       </aside>
 

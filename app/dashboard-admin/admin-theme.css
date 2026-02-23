@@ -141,3 +141,52 @@
   border-color: var(--coffee-primary);
   color: var(--coffee-bg);
 }
+
+.admin-coffee .table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 992px) {
+  .admin-coffee .admin-sidebar-desktop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1020;
+  }
+
+  .admin-coffee .admin-main-content {
+    margin-left: 260px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .admin-coffee .navbar .container-fluid {
+    align-items: flex-start !important;
+  }
+
+  .admin-coffee .navbar .btn-sm {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .admin-coffee .card .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .admin-coffee .table {
+    font-size: 0.875rem;
+  }
+
+  .admin-coffee .pagination {
+    gap: 0.25rem;
+  }
+
+  .admin-coffee .pagination .page-link {
+    padding: 0.25rem 0.5rem;
+  }
+}
