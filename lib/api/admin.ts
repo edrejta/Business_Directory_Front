@@ -89,12 +89,19 @@ export const normalizeDashboard = (raw: unknown): DashboardPayload => {
   const metricsSource = asRecord(payload.metrics ?? payload.Metrics ?? payload);
 
   const metrics: DashboardMetrics = {
-    totalBusinesses: toNumber(metricsSource.totalBusinesses ?? metricsSource.TotalBusinesses),
+    totalBusinesses: toNumber(
+      metricsSource.totalBusinesses ??
+        metricsSource.TotalBusinesses ??
+        metricsSource.businessCount ??
+        metricsSource.BusinessCount,
+    ),
     pendingBusinesses: toNumber(metricsSource.pendingBusinesses ?? metricsSource.PendingBusinesses),
     approvedBusinesses: toNumber(metricsSource.approvedBusinesses ?? metricsSource.ApprovedBusinesses),
     totalUsers: toNumber(
       metricsSource.totalUsers ??
         metricsSource.TotalUsers ??
+        metricsSource.userCount ??
+        metricsSource.UserCount ??
         metricsSource.usersCount ??
         metricsSource.UsersCount ??
         metricsSource.currentUsers ??
