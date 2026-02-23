@@ -12,7 +12,14 @@ describe("publicApi", () => {
       ok: true,
       json: () =>
         Promise.resolve({
-          data: [{ Id: "b1", Name: "Cafe Uno", City: "Tirana", Type: "Cafe" }],
+          data: [
+            {
+              id: "b1",
+              businessName: "Cafe Uno",
+              city: "Tirana",
+              businessType: 0,
+            },
+          ],
         }),
     });
 
@@ -22,15 +29,21 @@ describe("publicApi", () => {
       `${API_URL}/api/businesses?search=cafe&city=Tirana&type=Cafe`,
       expect.anything(),
     );
+
     expect(result).toEqual([
       {
-        id: "b1",
-        name: "Cafe Uno",
-        city: "Tirana",
-        businessType: "Cafe",
-        status: undefined,
-        description: undefined,
-        ownerId: undefined,
+        Id: "b1",
+        OwnerId: "",
+        BusinessName: "Cafe Uno",
+        Address: "",
+        City: "Tirana",
+        Email: "",
+        PhoneNumber: "",
+        BusinessType: 0,
+        Description: "",
+        ImageUrl: "",
+        Status: "",
+        CreatedAt: "",
       },
     ]);
   });
@@ -38,18 +51,24 @@ describe("publicApi", () => {
   it("gets business by id", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ id: "x1", name: "Bakery 21", city: "Prishtina" }),
+      json: () =>
+        Promise.resolve({
+          id: "x1",
+          businessName: "Bakery 21",
+          city: "Prishtina",
+          businessType: 0,
+        }),
     });
 
     const result = await getApprovedBusinessById("x1");
-    expect(result.id).toBe("x1");
-    expect(result.name).toBe("Bakery 21");
+    expect(result.Id).toBe("x1");
+    expect(result.BusinessName).toBe("Bakery 21");
   });
 
   it("throws ApiError on not found business payload", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ name: "No id here" }),
+      json: () => Promise.resolve({ businessName: "No id here" }), // missing id/Id
     });
 
     await expect(getApprovedBusinessById("missing-id")).rejects.toBeInstanceOf(ApiError);

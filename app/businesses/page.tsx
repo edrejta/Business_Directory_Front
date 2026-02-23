@@ -84,15 +84,15 @@ export default async function BusinessesPage({
         {!error && businesses.length > 0 && (
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {businesses.map((business) => (
-              <article key={business.id} className="rounded-2xl border border-oak/30 bg-white/90 p-5">
-                <h2 className="text-lg font-semibold text-espresso">{business.name}</h2>
+              <article key={business.Id} className="rounded-2xl border border-oak/30 bg-white/90 p-5">
+                <h2 className="text-lg font-semibold text-espresso">{business.BusinessName}</h2>
                 <p className="mt-1 text-sm text-espresso/75">
-                  {business.city ?? "Unknown city"} · {business.businessType ?? "General"}
+                  {business.City ?? "Unknown city"} · {business.BusinessType ?? "General"}
                 </p>
                 <p className="mt-3 text-sm text-espresso/80">
-                  {business.description ?? "No description provided yet."}
+                  {business.Description ?? "No description provided yet."}
                 </p>
-                <Link className="mt-4 inline-block text-sm font-semibold underline" href={`/businesses/${business.id}`}>
+                <Link className="mt-4 inline-block text-sm font-semibold underline" href={`/businesses/${business.Id}`}>
                   View details
                 </Link>
               </article>
