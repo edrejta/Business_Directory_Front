@@ -8,11 +8,23 @@ import { useAuth } from "@/context/AuthContext";
 import {
   approveAdminBusiness,
   deleteAdminUser,
+  getAdminAuditLogs,
+  getAdminBusinesses,
+  getAdminCategories,
+  getAdminDashboard,
+  getAdminUsers,
+  getHealthStatus,
+  getReportSummary,
   rejectAdminBusiness,
   suspendAdminBusiness,
   updateAdminUserRole,
   type AdminBusiness,
   type AdminUser,
+  type AuditLog,
+  type Category,
+  type DashboardPayload,
+  type HealthStatus,
+  type ReportSummary,
 } from "@/lib/api/admin";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import type { DataColumn } from "@/components/admin/DataTable";
@@ -26,16 +38,16 @@ import RoleManagementSection from "@/components/admin/sections/RoleManagementSec
 import SystemInfoSection from "@/components/admin/sections/SystemInfoSection";
 import SidebarNav from "@/components/admin/SidebarNav";
 import TopNav from "@/components/admin/TopNav";
-import Toasts, { type ToastItem } from "@/components/admin/Toasts";
 import {
   ADMIN_ROLE,
+  APPROVED_STATUS,
   BUSINESS_ROLE,
   PAGE_SIZE,
+  PENDING_STATUS,
   ROLE_OPTIONS,
   SIDEBAR_ITEMS,
   USER_ROLE,
 } from "./constants";
-import { useAdminDashboardData } from "./useAdminDashboardData";
 import { clampPage, formatDateTime, getTotalPages, paginate } from "./utils";
 
 type ConfirmAction =
@@ -57,7 +69,19 @@ export default function DashboardAdmin() {
   const { user, isLoading, logoutUser } = useAuth();
   const router = useRouter();
 
+  // Data loaded from backend
+  const [dashboard, setDashboard] = useState<DashboardPayload | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [pendingBusinesses, setPendingBusinesses] = useState<AdminBusiness[]>([]);
+  const [approvedBusinesses, setApprovedBusinesses] = useState<AdminBusiness[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [reports, setReports] = useState<ReportSummary | null>(null);
+  const [health, setHealth] = useState<HealthStatus | null>(null);
+
   // Global UI states
+  const [loadingData, setLoadingData] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sectionError, setSectionError] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);
 
@@ -65,9 +89,6 @@ export default function DashboardAdmin() {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
   const [modalReason, setModalReason] = useState("");
-
-  // Toast notifications
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   // Filters + pagination (Users)
   const [userSearch, setUserSearch] = useState("");
@@ -89,25 +110,6 @@ export default function DashboardAdmin() {
   const [auditActionFilter, setAuditActionFilter] = useState("all");
   const [auditPage, setAuditPage] = useState(1);
 
-  const isAdminReady = !isLoading && !!user && user.role === ADMIN_ROLE;
-  const {
-    dashboard,
-    users,
-    pendingBusinesses,
-    approvedBusinesses,
-    auditLogs,
-    categories,
-    reports,
-    health,
-    loadingData,
-    error,
-    refreshDashboard,
-    refreshUsers,
-    refreshPendingBusinesses,
-    refreshApprovedBusinesses,
-    refreshAuditLogs,
-  } = useAdminDashboardData(isAdminReady);
-
   useEffect(() => {
     void import("bootstrap");
   }, []);
@@ -125,17 +127,75 @@ export default function DashboardAdmin() {
     }
   }, [isLoading, router, user]);
 
-  const addToast = (message: string, variant: ToastItem["variant"] = "success") => {
-    const id = Date.now() + Math.floor(Math.random() * 1000);
-    setToasts((prev) => [...prev, { id, message, variant }]);
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 3500);
+  const refreshDashboard = async () => {
+    const data = await getAdminDashboard();
+    setDashboard(data);
   };
 
-  const removeToast = (id: number) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  const refreshUsers = async () => {
+    const data = await getAdminUsers();
+    setUsers(Array.isArray(data) ? data : []);
   };
+
+  const refreshPendingBusinesses = async () => {
+    const data = await getAdminBusinesses(PENDING_STATUS);
+    setPendingBusinesses(Array.isArray(data) ? data : []);
+  };
+
+  const refreshApprovedBusinesses = async () => {
+    const data = await getAdminBusinesses(APPROVED_STATUS);
+    setApprovedBusinesses(Array.isArray(data) ? data : []);
+  };
+
+  const refreshAuditLogs = async () => {
+    const data = await getAdminAuditLogs(100);
+    setAuditLogs(Array.isArray(data) ? data : []);
+  };
+
+  useEffect(() => {
+    if (isLoading || !user || user.role !== ADMIN_ROLE) return;
+
+    let mounted = true;
+    const loadAdminData = async () => {
+      setLoadingData(true);
+      setError(null);
+      try {
+        const [dashboardData, usersData, categoriesData, reportsData, healthData, pendingData, approvedData, logsData] =
+          await Promise.all([
+            getAdminDashboard(),
+            getAdminUsers(),
+            getAdminCategories(),
+            getReportSummary(),
+            getHealthStatus(),
+            getAdminBusinesses(PENDING_STATUS),
+            getAdminBusinesses(APPROVED_STATUS),
+            getAdminAuditLogs(100),
+          ]);
+
+        if (!mounted) return;
+
+        setDashboard(dashboardData);
+        setUsers(Array.isArray(usersData) ? usersData : []);
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        setReports(reportsData);
+        setHealth(healthData);
+        setPendingBusinesses(Array.isArray(pendingData) ? pendingData : []);
+        setApprovedBusinesses(Array.isArray(approvedData) ? approvedData : []);
+        setAuditLogs(Array.isArray(logsData) ? logsData : []);
+      } catch (err) {
+        if (!mounted) return;
+        setError(err instanceof Error ? err.message : "Failed to load admin dashboard.");
+      } finally {
+        if (mounted) setLoadingData(false);
+      }
+    };
+
+    void loadAdminData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isLoading, user]);
 
   const getRoleLabel = (value: number) => {
     return ROLE_OPTIONS.find((role) => role.value === value)?.label ?? String(value);
@@ -149,20 +209,14 @@ export default function DashboardAdmin() {
     key: string;
     request: () => Promise<unknown>;
     refresh?: Array<() => Promise<void>>;
-    successMessage: string;
-    successVariant?: ToastItem["variant"];
     failureMessage: string;
-    failureVariant?: ToastItem["variant"];
   };
 
   const runAdminAction = async ({
     key,
     request,
     refresh = [],
-    successMessage,
-    successVariant = "success",
     failureMessage,
-    failureVariant = "danger",
   }: AdminActionOptions) => {
     setBusyKey(key);
     setSectionError(null);
@@ -171,10 +225,8 @@ export default function DashboardAdmin() {
       if (refresh.length > 0) {
         await Promise.all(refresh.map((refreshStep) => refreshStep()));
       }
-      addToast(successMessage, successVariant);
     } catch (err) {
       setSectionError(err instanceof Error ? err.message : failureMessage);
-      addToast(failureMessage, failureVariant);
     } finally {
       setBusyKey(null);
     }
@@ -220,8 +272,6 @@ export default function DashboardAdmin() {
       key: `approve-${business.id}`,
       request: () => approveAdminBusiness(business.id),
       refresh: [refreshPendingBusinesses, refreshDashboard],
-      successMessage: `Approved ${business.name}.`,
-      successVariant: "success",
       failureMessage: "Approve failed.",
     });
   };
@@ -231,8 +281,6 @@ export default function DashboardAdmin() {
       key: `reject-${business.id}`,
       request: () => rejectAdminBusiness(business.id),
       refresh: [refreshPendingBusinesses, refreshDashboard],
-      successMessage: `Rejected ${business.name}.`,
-      successVariant: "warning",
       failureMessage: "Reject failed.",
     });
   };
@@ -240,7 +288,6 @@ export default function DashboardAdmin() {
   const runChangeRole = async (targetUser: AdminUser, nextRole: number, reason?: string) => {
     if (isAdminAccount(targetUser) && nextRole !== ADMIN_ROLE) {
       setSectionError("Admin accounts cannot be downgraded from this panel.");
-      addToast("Admin safety guard blocked downgrade.", "warning");
       return;
     }
 
@@ -248,8 +295,6 @@ export default function DashboardAdmin() {
       key: `role-${targetUser.id}`,
       request: () => updateAdminUserRole(targetUser.id, nextRole, reason),
       refresh: [refreshUsers, refreshAuditLogs],
-      successMessage: `Role updated for ${targetUser.email}.`,
-      successVariant: "success",
       failureMessage: "Role update failed.",
     });
   };
@@ -257,7 +302,6 @@ export default function DashboardAdmin() {
   const runDeleteUser = async (targetUser: AdminUser, reason?: string) => {
     if (isAdminAccount(targetUser)) {
       setSectionError("Admin accounts cannot be deleted from this panel.");
-      addToast("Admin safety guard blocked delete.", "warning");
       return;
     }
 
@@ -265,8 +309,6 @@ export default function DashboardAdmin() {
       key: `delete-${targetUser.id}`,
       request: () => deleteAdminUser(targetUser.id, reason),
       refresh: [refreshUsers, refreshDashboard, refreshAuditLogs],
-      successMessage: `Deleted ${targetUser.email}.`,
-      successVariant: "warning",
       failureMessage: "User delete failed.",
     });
   };
@@ -276,8 +318,6 @@ export default function DashboardAdmin() {
       key: `suspend-${business.id}`,
       request: () => suspendAdminBusiness(business.id, reason),
       refresh: [refreshApprovedBusinesses, refreshDashboard, refreshAuditLogs],
-      successMessage: `Suspended ${business.name}.`,
-      successVariant: "warning",
       failureMessage: "Suspend failed.",
     });
   };
@@ -694,7 +734,6 @@ export default function DashboardAdmin() {
         }
       />
 
-      <Toasts items={toasts} onClose={removeToast} />
     </div>
   );
 }
