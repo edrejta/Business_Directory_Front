@@ -16,10 +16,10 @@ Aplikacioni hapet ne `http://localhost:3000`.
 
 ### Environment
 
-Krijo `.env.local` dhe vendos:
+Krijo `.env.local` (opsionale) vetem nese API eshte ne domain tjeter:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:5003
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
 ```
 
 ### Routes
