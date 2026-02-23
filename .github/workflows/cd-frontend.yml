@@ -14,10 +14,25 @@ on:
 
 jobs:
   deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          ACR_NAME: ${{ secrets.ACR_NAME }}
+          ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+          AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+          AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+        run: |
+          [ -n "$AZURE_CREDENTIALS" ] || { echo "Missing secret: AZURE_CREDENTIALS"; exit 1; }
+          [ -n "$ACR_NAME" ] || { echo "Missing secret: ACR_NAME"; exit 1; }
+          [ -n "$ACR_LOGIN_SERVER" ] || { echo "Missing secret: ACR_LOGIN_SERVER"; exit 1; }
+          [ -n "$AKS_RESOURCE_GROUP" ] || { echo "Missing secret: AKS_RESOURCE_GROUP"; exit 1; }
+          [ -n "$AKS_CLUSTER_NAME" ] || { echo "Missing secret: AKS_CLUSTER_NAME"; exit 1; }
 
       - uses: azure/login@v2
         with:
