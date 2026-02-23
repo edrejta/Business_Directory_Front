@@ -176,16 +176,7 @@ export default function DashboardAdmin() {
       setLoadingData(true);
       setError(null);
       try {
-        const [
-          dashboardData,
-          usersData,
-          categoriesData,
-          reportsData,
-          healthData,
-          pendingData,
-          approvedData,
-          logs,
-        ] = await Promise.all([
+        const results = await Promise.allSettled([
           getAdminDashboard(),
           getAdminUsers(),
           getAdminCategories(),
@@ -198,14 +189,55 @@ export default function DashboardAdmin() {
 
         if (!mounted) return;
 
-        setDashboard(dashboardData);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-        setReports(reportsData);
-        setHealth(healthData);
-        setPendingBusinesses(Array.isArray(pendingData) ? pendingData : []);
-        setApprovedBusinesses(Array.isArray(approvedData) ? approvedData : []);
-        setAuditLogs(Array.isArray(logs) ? logs : []);
+        const endpointNames = [
+          "dashboard",
+          "users",
+          "categories",
+          "reports summary",
+          "health",
+          "pending businesses",
+          "approved businesses",
+          "audit logs",
+        ] as const;
+
+        const failedEndpoints: string[] = [];
+        results.forEach((result, index) => {
+          if (result.status === "rejected") {
+            failedEndpoints.push(endpointNames[index]);
+          }
+        });
+
+        const [dashboardResult, usersResult, categoriesResult, reportsResult, healthResult, pendingResult, approvedResult, logsResult] =
+          results;
+
+        if (dashboardResult.status === "fulfilled") {
+          setDashboard(dashboardResult.value);
+        }
+        if (usersResult.status === "fulfilled") {
+          setUsers(Array.isArray(usersResult.value) ? usersResult.value : []);
+        }
+        if (categoriesResult.status === "fulfilled") {
+          setCategories(Array.isArray(categoriesResult.value) ? categoriesResult.value : []);
+        }
+        if (reportsResult.status === "fulfilled") {
+          setReports(reportsResult.value);
+        }
+        if (healthResult.status === "fulfilled") {
+          setHealth(healthResult.value);
+        }
+        if (pendingResult.status === "fulfilled") {
+          setPendingBusinesses(Array.isArray(pendingResult.value) ? pendingResult.value : []);
+        }
+        if (approvedResult.status === "fulfilled") {
+          setApprovedBusinesses(Array.isArray(approvedResult.value) ? approvedResult.value : []);
+        }
+        if (logsResult.status === "fulfilled") {
+          setAuditLogs(Array.isArray(logsResult.value) ? logsResult.value : []);
+        }
+
+        if (failedEndpoints.length > 0) {
+          setError(`Some admin sections failed to load: ${failedEndpoints.join(", ")}.`);
+        }
       } catch (err) {
         if (!mounted) return;
         setError(err instanceof Error ? err.message : "Failed to load admin dashboard.");
