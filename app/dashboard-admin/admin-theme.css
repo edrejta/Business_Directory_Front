@@ -6,6 +6,7 @@
   --coffee-primary: #9b8877;
   --coffee-text: #433021;
   --coffee-muted: #9b8877;
+  overflow-x: clip;
 }
 
 .admin-coffee.bg-body-secondary {
@@ -146,9 +147,39 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.admin-coffee [id] {
+  scroll-margin-top: 1rem;
+}
+
+.admin-coffee .admin-layout-shell,
+.admin-coffee .admin-main-shell {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .admin-coffee .admin-sidebar-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1020;
+  }
+
+  .admin-coffee .admin-main-shell {
+    margin-left: 260px;
+  }
+}
+
 @media (max-width: 991.98px) {
+  .admin-coffee .admin-main-shell {
+    width: 100%;
+  }
+
   .admin-coffee .navbar .container-fluid {
-    align-items: flex-start !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    overflow-x: hidden;
   }
 
   .admin-coffee .navbar .btn-sm {
@@ -162,6 +193,33 @@
 }
 
 @media (max-width: 575.98px) {
+  .admin-coffee .navbar h1 {
+    font-size: 1rem;
+  }
+
+  .admin-coffee .navbar small {
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-coffee .navbar .btn {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    padding: 0.3rem 0.45rem;
+    white-space: nowrap;
+  }
+
+  .admin-coffee .navbar .d-flex.flex-nowrap {
+    gap: 0.25rem !important;
+  }
+
+  .admin-coffee .navbar .d-flex.flex-grow-1 {
+    overflow: hidden;
+    min-width: 0;
+  }
+
   .admin-coffee .table {
     font-size: 0.875rem;
   }

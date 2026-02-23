@@ -563,9 +563,9 @@ export default function DashboardAdmin() {
 
   const auditColumns: DataColumn[] = [
     { key: "action", label: "Action" },
-    { key: "target", label: "Target Email" },
+    { key: "target", label: "Target Email", className: "text-nowrap" },
     { key: "reason", label: "Reason" },
-    { key: "log", label: "Log ID" },
+    { key: "log", label: "Log ID", className: "text-nowrap" },
     { key: "time", label: "Time" },
   ];
   const reasonModalConfig = getReasonModalConfig(reasonAction);
@@ -574,10 +574,10 @@ export default function DashboardAdmin() {
 
   return (
     <div className="admin-coffee bg-body-secondary min-vh-100">
-      <div className="d-flex">
+      <div className="d-flex admin-layout-shell">
         <SidebarNav items={SIDEBAR_ITEMS} />
 
-        <div className="flex-grow-1">
+        <div className="flex-grow-1 admin-main-shell">
           <TopNav
             username={user.username}
             roleLabel={getRoleLabel(user.role)}
