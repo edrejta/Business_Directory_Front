@@ -1,5 +1,4 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:5003';
+import { API_URL } from "@/lib/api/config";
 
 export interface AuthResponse {
   token: string;
@@ -37,7 +36,7 @@ export async function login(input: {
   password: string;
 }): Promise<AuthResponse> {
   const { email, password } = input;
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -57,7 +56,7 @@ export async function register(input: {
   role: number;
 }): Promise<AuthResponse> {
   const { username, email, password, role } = input;
-  const res = await fetch(`${API_BASE}/api/auth/register`, {
+  const res = await fetch(`${API_URL}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, email, password, role }),

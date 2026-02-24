@@ -21,9 +21,37 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://
 
 async function getBusiness(id: string): Promise<BusinessDetail | null> {
   try {
-    const res = await fetch(`${API_BASE}/businesses/${id}`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/api/businesses/public/${id}`, { cache: "no-store" });
     if (!res.ok) return null;
-    return (await res.json()) as BusinessDetail;
+    const raw = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const payload =
+      typeof raw.data === "object" && raw.data !== null
+        ? (raw.data as Record<string, unknown>)
+        : typeof raw.result === "object" && raw.result !== null
+          ? (raw.result as Record<string, unknown>)
+          : raw;
+
+    const city = String(payload.city ?? payload.City ?? "");
+    const businessType = String(payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type ?? "");
+
+    return {
+      id: String(payload.id ?? payload.Id ?? id),
+      name: String(payload.name ?? payload.Name ?? "Business"),
+      description: String(payload.description ?? payload.Description ?? ""),
+      category: businessType || "General",
+      address: String(payload.address ?? payload.Address ?? city),
+      location: city,
+      phone: String(payload.phone ?? payload.Phone ?? ""),
+      email: String(payload.email ?? payload.Email ?? ""),
+      logo: String(payload.logo ?? payload.Logo ?? ""),
+      rating: Number(payload.rating ?? payload.Rating ?? 0),
+      reviewsCount: Number(payload.reviewsCount ?? payload.ReviewsCount ?? 0),
+      coordinates:
+        typeof payload.coordinates === "object" && payload.coordinates !== null
+          ? (payload.coordinates as { lat: number; lng: number })
+          : null,
+      photos: Array.isArray(payload.photos) ? (payload.photos as string[]) : [],
+    };
   } catch {
     return null;
   }

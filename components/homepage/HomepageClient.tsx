@@ -21,6 +21,26 @@ type Business = {
   coordinates?: { lat: number; lng: number } | null;
 };
 
+type ApiBusiness = {
+  id?: string;
+  Id?: string;
+  name?: string;
+  Name?: string;
+  description?: string;
+  Description?: string;
+  businessType?: string;
+  BusinessType?: string;
+  type?: string;
+  Type?: string;
+  city?: string;
+  City?: string;
+  phone?: string;
+  Phone?: string;
+  logo?: string;
+  Logo?: string;
+  coordinates?: { lat: number; lng: number } | null;
+};
+
 type ApiResult<T> = {
   data: T;
   error: string | null;
@@ -71,14 +91,48 @@ function normalizeSearchKeyword(rawKeyword: string) {
 async function fetchJson<T>(path: string, fallback: T): Promise<ApiResult<T>> {
   try {
     const response = await fetch(`${API_BASE}${path}`);
-    const data = (await response.json().catch(() => fallback)) as T & { message?: string };
+    const raw = (await response.json().catch(() => fallback)) as T & {
+      message?: string;
+      data?: unknown;
+      result?: unknown;
+    };
     if (!response.ok) {
-      return { data: fallback, error: data?.message ?? "Request failed." };
+      return { data: fallback, error: raw?.message ?? "Request failed." };
     }
-    return { data: data as T, error: null };
+    const payload = (raw.data ?? raw.result ?? raw) as T;
+    return { data: payload, error: null };
   } catch {
     return { data: fallback, error: "Unable to reach backend." };
   }
+}
+
+const toText = (value: unknown) => (typeof value === "string" ? value : "");
+
+function normalizeBusiness(item: ApiBusiness): Business {
+  return {
+    id: toText(item.id ?? item.Id),
+    name: toText(item.name ?? item.Name) || "Business",
+    description: toText(item.description ?? item.Description) || undefined,
+    category: toText(item.businessType ?? item.BusinessType ?? item.type ?? item.Type) || undefined,
+    location: toText(item.city ?? item.City) || undefined,
+    phone: toText(item.phone ?? item.Phone) || undefined,
+    logo: toText(item.logo ?? item.Logo) || undefined,
+    coordinates: item.coordinates ?? null,
+  };
+}
+
+function normalizeCities(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry) => {
+      if (typeof entry === "string") return entry;
+      if (typeof entry === "object" && entry !== null) {
+        const row = entry as Record<string, unknown>;
+        return toText(row.name ?? row.Name ?? row.city ?? row.City);
+      }
+      return "";
+    })
+    .filter((value) => value.length > 0);
 }
 
 function buildStars(value: number) {
@@ -125,21 +179,16 @@ export default function HomepageClient() {
     const categoryValues = options?.categories ?? selectedCategories;
     const cityValues = options?.cities ?? selectedCities;
 
-    if (keyword?.trim()) {
-      params.set("keyword", keyword.trim());
-    }
-    if (categoryValues.length > 0) {
-      params.set("category", categoryValues.join(","));
-    }
-    if (cityValues.length > 0) {
-      params.set("location", cityValues.join(","));
-    }
-    params.set("limit", "20");
-    params.set("page", "1");
-    params.set("sortBy", "createdAt");
+    if (keyword?.trim()) params.set("search", keyword.trim());
+    if (categoryValues.length > 0) params.set("type", categoryValues[0]);
+    if (cityValues.length > 0) params.set("city", cityValues[0]);
 
-    const { data, error: apiError } = await fetchJson<Business[]>(`/search?${params.toString()}`, []);
-    setResults(data);
+    const { data, error: apiError } = await fetchJson<ApiBusiness[]>(
+      `/api/businesses/public${params.toString() ? `?${params.toString()}` : ""}`,
+      [],
+    );
+    const normalized = Array.isArray(data) ? data.map(normalizeBusiness).filter((item) => item.id.length > 0) : [];
+    setResults(normalized);
     setError(apiError);
     setLoading(false);
   };
@@ -148,22 +197,31 @@ export default function HomepageClient() {
     let mounted = true;
 
     const load = async () => {
-      const [searchRes, featuredRes, categoriesRes, locationsRes] = await Promise.all([
-        fetchJson<Business[]>("/search?limit=20&page=1&sortBy=createdAt", []),
-        fetchJson<Business[]>("/featured-businesses?limit=10", []),
-        fetchJson<string[]>("/categories", []),
-        fetchJson<string[]>("/locations", []),
+      const [businessesRes, citiesRes] = await Promise.all([
+        fetchJson<ApiBusiness[]>("/api/businesses/public", []),
+        fetchJson<unknown>("/api/cities", []),
       ]);
 
       if (!mounted) {
         return;
       }
 
-      setResults(searchRes.data);
-      setFeatured(featuredRes.data);
-      setCategories(categoriesRes.data);
-      setLocations(locationsRes.data);
-      setError(searchRes.error || featuredRes.error || categoriesRes.error || locationsRes.error);
+      const normalizedBusinesses = Array.isArray(businessesRes.data)
+        ? businessesRes.data.map(normalizeBusiness).filter((item) => item.id.length > 0)
+        : [];
+      const normalizedCities = normalizeCities(citiesRes.data);
+      const derivedCategories = Array.from(
+        new Set(normalizedBusinesses.map((item) => item.category).filter((value): value is string => !!value)),
+      );
+      const derivedCities = Array.from(
+        new Set(normalizedBusinesses.map((item) => item.location).filter((value): value is string => !!value)),
+      );
+
+      setResults(normalizedBusinesses);
+      setFeatured(normalizedBusinesses.slice(0, 10));
+      setCategories(derivedCategories);
+      setLocations(normalizedCities.length > 0 ? normalizedCities : derivedCities);
+      setError(businessesRes.error || citiesRes.error);
       setLoading(false);
     };
 
