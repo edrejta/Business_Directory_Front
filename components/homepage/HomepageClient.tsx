@@ -201,19 +201,17 @@ export default function HomepageClient() {
       mitrovice: { lat: 42.8914, lng: 20.866 },
     };
 
+    const defaultCity = cityFallback.prishtine;
+
     return results
       .map((item) => {
         if (item.coordinates?.lat && item.coordinates?.lng) {
           return { ...item, lat: item.coordinates.lat, lng: item.coordinates.lng };
         }
         const key = normalizeText(item.location || "");
-        const fallback = cityFallback[key];
-        if (fallback) {
-          return { ...item, lat: fallback.lat, lng: fallback.lng };
-        }
-        return null;
+        const fallback = cityFallback[key] ?? defaultCity;
+        return { ...item, lat: fallback.lat, lng: fallback.lng };
       })
-      .filter((item): item is Business & { lat: number; lng: number } => item !== null)
       .slice(0, 25);
   }, [results]);
 
