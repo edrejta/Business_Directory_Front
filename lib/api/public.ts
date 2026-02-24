@@ -69,15 +69,16 @@ export async function getApprovedBusinesses(filters: PublicBusinessFilters = {},
   if (filters.type) params.set("type", filters.type);
 
   const query = params.toString();
-  const data = await publicJson<unknown>(`/api/businesses${query ? `?${query}` : ""}`, options);
+  const data = await publicJson<unknown>(`/api/businesses/public${query ? `?${query}` : ""}`, options);
   const list = Array.isArray(data) ? data : [];
   return list.map(normalizeBusiness).filter((item) => item.id.length > 0);
 }
 
 export async function getApprovedBusinessById(id: string, options: PublicFetchOptions = {}) {
-  const data = await publicJson<unknown>(`/api/businesses/${id}`, options);
-  const business = normalizeBusiness(data);
-  if (!business.id) {
+  const data = await publicJson<unknown>("/api/businesses/public", options);
+  const list = Array.isArray(data) ? data : [];
+  const business = list.map(normalizeBusiness).find((item) => item.id === id);
+  if (!business) {
     throw new ApiError("Business not found", 404);
   }
   return business;

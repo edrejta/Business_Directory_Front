@@ -4,11 +4,10 @@ import userEvent from "@testing-library/user-event";
 import RegisterForm from "./RegisterForm";
 
 describe("RegisterForm", () => {
-  it("renders Username, Email, Roli, Password and Regjistrohu button", () => {
+  it("renders Username, Email, Password and Regjistrohu button", () => {
     render(<RegisterForm onSubmit={vi.fn()} />);
     expect(screen.getByLabelText("Emri i përdoruesit")).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Roli")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /regjistrohu/i })).toBeInTheDocument();
   });
@@ -27,20 +26,6 @@ describe("RegisterForm", () => {
       password: "password123",
       role: 0,
     });
-  });
-
-  it("submits role 1 when Pronar Biznesi is selected", async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    render(<RegisterForm onSubmit={onSubmit} />);
-    await user.selectOptions(screen.getByLabelText("Roli"), "1");
-    await user.type(screen.getByLabelText("Emri i përdoruesit"), "owner");
-    await user.type(screen.getByLabelText("Email"), "owner@test.com");
-    await user.type(screen.getByPlaceholderText("••••••••"), "password123");
-    await user.click(screen.getByRole("button", { name: /regjistrohu/i }));
-    expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 1 })
-    );
   });
 
   it("shows error when error prop is set", () => {

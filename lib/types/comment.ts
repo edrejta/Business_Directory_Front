@@ -2,14 +2,17 @@ export interface BusinessComment {
   id: string;
   businessId: string;
   userId: string;
-  content: string;
+  text: string;
+  rate: number;
 }
 
 export interface CreateCommentInput {
   businessId: string;
-  content: string;
+  text: string;
+  rate: number;
 }
 
 export interface UpdateCommentInput {
-  content: string;
+  text: string;
+  rate: number;
 }

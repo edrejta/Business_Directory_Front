@@ -19,7 +19,7 @@ describe("publicApi", () => {
     const result = await getApprovedBusinesses({ search: "cafe", city: "Tirana", type: "Cafe" });
 
     expect(fetch).toHaveBeenCalledWith(
-      `${API_URL}/api/businesses?search=cafe&city=Tirana&type=Cafe`,
+      `${API_URL}/api/businesses/public?search=cafe&city=Tirana&type=Cafe`,
       expect.anything(),
     );
     expect(result).toEqual([
@@ -38,7 +38,13 @@ describe("publicApi", () => {
   it("gets business by id", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ id: "x1", name: "Bakery 21", city: "Prishtina" }),
+      json: () =>
+        Promise.resolve({
+          data: [
+            { id: "x1", name: "Bakery 21", city: "Prishtina" },
+            { id: "x2", name: "Cafe 22", city: "Prizren" },
+          ],
+        }),
     });
 
     const result = await getApprovedBusinessById("x1");
@@ -49,7 +55,7 @@ describe("publicApi", () => {
   it("throws ApiError on not found business payload", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ name: "No id here" }),
+      json: () => Promise.resolve({ data: [{ id: "x1", name: "Bakery 21" }] }),
     });
 
     await expect(getApprovedBusinessById("missing-id")).rejects.toBeInstanceOf(ApiError);

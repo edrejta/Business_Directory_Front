@@ -1,0 +1,307 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap");
+
+:root {
+  --htu-bg: #efede9;
+  --htu-line: #d8d1c8;
+  --htu-text: #3a2d28;
+  --htu-muted: #7b6d61;
+  --htu-brown: #946f4e;
+  --htu-dark: #3a2923;
+}
+
+.htu-page {
+  min-height: 100vh;
+  background: var(--htu-bg);
+  color: var(--htu-text);
+  font-family: "Manrope", "Segoe UI", Tahoma, sans-serif;
+}
+
+.htu-page h1,
+.htu-page h2,
+.htu-page h3,
+.htu-page strong {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.htu-wrap {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.htu-topbar {
+  height: 78px;
+  width: 100%;
+  padding: 0 clamp(20px, 8vw, 180px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(216, 209, 200, 0.65);
+  background: rgba(239, 237, 233, 0.98);
+}
+
+.htu-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 44px;
+}
+
+.htu-brand span {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--htu-brown);
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.htu-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.htu-nav a {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  color: #8a7d70;
+}
+
+.htu-btn {
+  min-width: 84px;
+  text-align: center;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+}
+
+.htu-btn-outline {
+  border-color: #b8aca0;
+  color: #4f4037;
+}
+
+.htu-btn-solid {
+  border-color: var(--htu-brown);
+  background: var(--htu-brown);
+  color: #fff;
+}
+
+.htu-hero {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 82px 20px 92px;
+  text-align: center;
+  position: relative;
+}
+
+.htu-bg-mark {
+  position: absolute;
+  right: -72px;
+  top: 46px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 360px;
+  line-height: 0.8;
+  color: rgba(216, 209, 200, 0.42);
+  pointer-events: none;
+}
+
+.htu-kicker {
+  margin: 0;
+  color: #9e7b5d;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+}
+
+.htu-hero h1 {
+  margin: 16px 0 0;
+  font-size: clamp(62px, 5.8vw, 92px);
+  line-height: 0.93;
+}
+
+.htu-hero h1 em {
+  font-style: italic;
+  color: var(--htu-brown);
+}
+
+.htu-subtitle {
+  margin: 24px 0 0;
+  color: #7a6b60;
+  font-size: clamp(18px, 1.2vw, 22px);
+}
+
+.htu-cards {
+  margin-top: 58px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.htu-card {
+  border: 1px solid var(--htu-line);
+  background: #f1ede8;
+  padding: 42px 32px 30px;
+  text-align: center;
+  min-height: 264px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.htu-card:hover {
+  transform: translateY(-2px);
+  border-color: #c8bbab;
+}
+
+.htu-icon {
+  margin: 0 auto 22px;
+  width: 66px;
+  height: 66px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #e6dfd7;
+}
+
+.htu-icon svg {
+  width: 32px;
+  height: 32px;
+  fill: #89694a;
+}
+
+.htu-card h2 {
+  margin: 0;
+  color: #2f241f;
+  font-size: clamp(44px, 2.65vw, 52px);
+}
+
+.htu-card p {
+  margin: 14px 0 0;
+  color: #7e7065;
+  font-size: clamp(17px, 1.1vw, 21px);
+  line-height: 1.45;
+}
+
+.htu-card small {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  color: #8a6a4b;
+  text-transform: uppercase;
+}
+
+.htu-footer {
+  background: var(--htu-dark);
+  color: #fff;
+  padding: 50px 0 18px;
+}
+
+.htu-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+}
+
+.htu-footer h3 {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 2.2vw, 42px);
+}
+
+.htu-footer p {
+  margin: 8px 0;
+  color: #b9aba0;
+  font-size: clamp(16px, 1vw, 20px);
+  line-height: 1.45;
+}
+
+.htu-socials {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.htu-socials span {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #5a4a43;
+  color: #fff;
+  font-size: 12px;
+}
+
+.htu-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.htu-footer-brand span {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #5a4a43;
+  color: #fff;
+  font-size: 12px;
+}
+
+.htu-footer-brand strong {
+  font-size: 46px;
+  color: #fff;
+}
+
+.htu-copyright {
+  max-width: 1150px;
+  margin: 34px auto 0;
+  padding: 14px 20px 0;
+  border-top: 1px solid #52433a;
+  text-align: center;
+  color: #978b80;
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .htu-topbar {
+    height: auto;
+    padding: 14px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .htu-nav {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .htu-bg-mark {
+    display: none;
+  }
+
+  .htu-hero {
+    padding: 44px 14px 56px;
+  }
+
+  .htu-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .htu-card {
+    min-height: auto;
+    padding: 34px 20px 24px;
+  }
+
+  .htu-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

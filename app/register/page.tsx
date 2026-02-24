@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register: registerUser, user, isLoading, getRedirectPath } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ username?: string; email?: string; password?: string; role?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ username?: string; email?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function RegisterPage() {
     username: string;
     email: string;
     password: string;
-    role: 0 | 1;
+    role: 0;
   }) {
     setError(null);
     setFieldErrors({});
@@ -37,14 +37,16 @@ export default function RegisterPage() {
         username: fl.fieldErrors.username?.[0],
         email: fl.fieldErrors.email?.[0],
         password: fl.fieldErrors.password?.[0],
-        role: fl.fieldErrors.role?.[0],
       });
       setError(parsed.error.issues[0]?.message ?? "Të dhëna të pavlefshme.");
       return;
     }
     setIsSubmitting(true);
     try {
-      const response = await registerUser(parsed.data);
+      const response = await registerUser({
+        ...parsed.data,
+        role: parsed.data.role ?? 0,
+      });
       router.push(getRedirectPath(response.role));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Një përdorues me këtë email ekziston tashmë.");
