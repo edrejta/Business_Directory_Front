@@ -1,7 +1,6 @@
 import Link from "next/link";
 import "./about.css";
 import heroMainImage from "@/src/assets/image (7).jpg";
-import heroSmallImage from "@/src/assets/image (3).jpg";
 import marketImage from "@/src/assets/image (2).jpg";
 
 const featureItems = [

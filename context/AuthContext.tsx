@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { saveToken, getToken } from "@/lib/auth/storage";
 import { clearSessionAndRedirect } from "@/lib/auth/session";
 import { getRedirectPath } from "@/lib/auth/redirect";
@@ -44,21 +44,26 @@ function persistAuth(data: AuthResponse) {
   }
 }
 
+function getStoredUser(): AuthUser | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const token = getToken();
+  const role = localStorage.getItem("role");
+  const username = localStorage.getItem(AUTH_USERNAME_KEY) || undefined;
+  const email = localStorage.getItem(AUTH_EMAIL_KEY) || undefined;
+
+  if (!token || role === null) {
+    return null;
+  }
+
+  return { token, role: Number(role), username, email };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const token = getToken();
-    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
-    const username = typeof window !== "undefined" ? localStorage.getItem(AUTH_USERNAME_KEY) || undefined : undefined;
-    const email = typeof window !== "undefined" ? localStorage.getItem(AUTH_EMAIL_KEY) || undefined : undefined;
-
-    if (token && role !== null) {
-      setUser({ token, role: Number(role), username, email });
-    }
-    setIsLoading(false);
-  }, []);
+  const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
+  const isLoading = false;
 
   function loginUser(data: AuthResponse) {
     persistAuth(data);
@@ -87,21 +92,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSessionAndRedirect();
   }
 
-  const value = useMemo(
-    () => ({
-      user,
-      token: user?.token ?? null,
-      isLoading,
-      isAuthenticated: !!user,
-      login,
-      register,
-      logout: logoutUser,
-      loginUser,
-      logoutUser,
-      getRedirectPath,
-    }),
-    [user, isLoading],
-  );
+  const value = {
+    user,
+    token: user?.token ?? null,
+    isLoading,
+    isAuthenticated: !!user,
+    login,
+    register,
+    logout: logoutUser,
+    loginUser,
+    logoutUser,
+    getRedirectPath,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
