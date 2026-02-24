@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 const CITY_BG_URL =
   "https://i.pinimg.com/1200x/19/02/a0/1902a0b6f1475ef606c1f9353edfa3db.jpg";
 
@@ -10,6 +12,13 @@ interface AuthPageLayoutProps {
 export default function AuthPageLayout({ children }: AuthPageLayoutProps) {
   return (
     <main className="auth-page-bg relative flex min-h-screen items-center justify-center overflow-hidden p-6">
+      <Link
+        href="/homepage"
+        className="absolute left-4 top-4 z-20 rounded-full border border-paper/60 bg-espresso/55 px-4 py-2 text-sm font-semibold text-paper backdrop-blur transition hover:bg-espresso/70 md:left-6 md:top-6"
+      >
+        Home
+      </Link>
+
       {/* City skyline — zoom in on load */}
       <div
         className="auth-bg-kenburns animate-bg-zoom pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
