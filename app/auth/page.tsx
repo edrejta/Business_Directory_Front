@@ -4,7 +4,7 @@ const endpointGroups = [
   {
     title: "Public",
     path: "lib/api/public.ts",
-    items: ["GET /health", "GET /api/businesses/public", "GET /api/businesses/public/{id}", "GET /api/cities"],
+    items: ["GET /health", "GET /api/businesses/public", "GET /api/cities"],
   },
   {
     title: "Auth",

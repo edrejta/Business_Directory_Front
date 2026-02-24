@@ -72,7 +72,7 @@ export default function DashboardBusiness() {
       if (!user?.token) return;
       setOpenDaysLoading(true);
       try {
-        const response = await fetch(`${API_BASE}/owner/opendays`, {
+        const response = await fetch(`${API_BASE}/api/owner/opendays`, {
           headers: { Authorization: `Bearer ${user.token}` },
         });
         if (!response.ok) return;
@@ -102,7 +102,7 @@ export default function DashboardBusiness() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE}/promotions`, {
+      const response = await fetch(`${API_BASE}/api/promotions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,8 +138,8 @@ export default function DashboardBusiness() {
     setOpenDaysMessage(null);
     setOpenDaysLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/owner/opendays`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE}/api/owner/opendays`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user.token}`,

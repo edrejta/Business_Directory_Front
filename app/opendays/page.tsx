@@ -16,7 +16,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://
 async function getOpenDays(businessId?: string): Promise<OpenDays | null> {
   if (!businessId) return null;
   try {
-    const response = await fetch(`${API_BASE}/opendays?businessId=${encodeURIComponent(businessId)}`, { cache: "no-store" });
+    const response = await fetch(`${API_BASE}/api/opendays?businessId=${encodeURIComponent(businessId)}`, {
+      cache: "no-store",
+    });
     if (!response.ok) return null;
     return (await response.json()) as OpenDays;
   } catch {

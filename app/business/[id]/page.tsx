@@ -21,15 +21,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://
 
 async function getBusiness(id: string): Promise<BusinessDetail | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/businesses/public/${id}`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/api/businesses/public`, { cache: "no-store" });
     if (!res.ok) return null;
-    const raw = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-    const payload =
-      typeof raw.data === "object" && raw.data !== null
-        ? (raw.data as Record<string, unknown>)
-        : typeof raw.result === "object" && raw.result !== null
-          ? (raw.result as Record<string, unknown>)
-          : raw;
+    const raw = (await res.json().catch(() => [])) as unknown;
+    const root = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
+    const list = Array.isArray(root.data ?? root.result ?? raw) ? (root.data ?? root.result ?? raw) : [];
+    const payload = (list as Record<string, unknown>[]).find((item) => String(item.id ?? item.Id ?? "") === id);
+    if (!payload) return null;
 
     const city = String(payload.city ?? payload.City ?? "");
     const businessType = String(payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type ?? "");
