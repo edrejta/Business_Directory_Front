@@ -98,7 +98,7 @@ function App() {
   const [recommendations, setRecommendations] = useState<Business[]>([])
   const [promotions, setPromotions] = useState<Deal[]>([])
   const [activePage, setActivePage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [suggestions, setSuggestions] = useState<Business[]>([])
   const [mapMode, setMapMode] = useState<'list' | 'map'>('list')
   const [flippedCards, setFlippedCards] = useState<string[]>([])
@@ -114,7 +114,11 @@ function App() {
     safeFetch<Deal[]>('/promotions', []).then((data) => {
       setPromotions(data.length > 0 ? data : seedPromotions)
     })
-    runSearch()
+    safeFetch<Business[]>('/search', []).then((data) => {
+      setResults(data)
+      setActivePage(1)
+      setIsLoading(false)
+    })
   }, [])
 
   useEffect(() => {
@@ -148,8 +152,6 @@ function App() {
 
   useEffect(() => {
     if (!query.trim()) {
-      setSuggestions([])
-      setSearchOpen(false)
       return
     }
     safeFetch<Business[]>(
@@ -256,7 +258,14 @@ function App() {
               value={query}
               onFocus={() => setSearchOpen(suggestions.length > 0)}
               onBlur={() => setTimeout(() => setSearchOpen(false), 120)}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                const nextQuery = e.target.value
+                setQuery(nextQuery)
+                if (!nextQuery.trim()) {
+                  setSuggestions([])
+                  setSearchOpen(false)
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') runSearch()
               }}
