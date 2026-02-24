@@ -10,7 +10,7 @@ Dokument që përshkruan të gjitha ndryshimet e bëra për detyrën Login & Reg
 |------|------------|
 | 0.1–0.2 | Shtuar varësitë: `zod`, `axios`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`, `jsdom`, `@vitejs/plugin-react` |
 | 0.4 | Krijuar `vitest.config.ts` (globals, jsdom, setupFiles) dhe `vitest.setup.ts` |
-| 0.5 | `.env.local.example` ekzistonte tashmë me `NEXT_PUBLIC_API_URL=https://api.yourdomain.com` |
+| 0.5 | `.env.local.example` ekzistonte tashmë me `NEXT_PUBLIC_API_URL=http://localhost:5003` |
 | 0.6 | Shtuar script `"test": "vitest"` në `package.json` |
 
 ---

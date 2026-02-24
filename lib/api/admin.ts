@@ -22,7 +22,7 @@ export type AdminUser = {
   username?: string;
   fullName?: string;
   email: string;
-  role: number;
+  role: string | number;
   createdAt?: string;
   status?: string;
 };
@@ -45,17 +45,6 @@ export type HealthStatus = {
   status?: string;
   timestamp?: string;
   version?: string;
-};
-
-export type AuditLog = {
-  id: string;
-  action?: string;
-  actorUserId?: string;
-  targetUserId?: string;
-  oldValue?: string;
-  newValue?: string;
-  reason?: string;
-  createdAt?: string;
 };
 
 export type AdminBusinessStatus = "Pending" | "Approved" | "Rejected" | "Suspended" | string;
@@ -83,45 +72,18 @@ const toNumber = (value: unknown) => {
 const asRecord = (value: unknown): Record<string, unknown> =>
   typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
 
-const toOptionalString = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
-
-const normalizeAdminUser = (raw: unknown): AdminUser => {
-  const source = asRecord(raw);
-  return {
-    id: String(source.id ?? ""),
-    username: toOptionalString(source.username),
-    fullName: toOptionalString(source.fullName),
-    email: String(source.email ?? ""),
-    role: toNumber(source.role),
-    createdAt: toOptionalString(source.createdAt),
-    status: toOptionalString(source.status),
-  };
-};
-
-const normalizeAdminUsers = (raw: unknown): AdminUser[] => {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((entry) => normalizeAdminUser(entry));
-};
-
 export const normalizeDashboard = (raw: unknown): DashboardPayload => {
   const root = asRecord(raw);
   const payload = asRecord(root.data ?? root.result ?? root);
   const metricsSource = asRecord(payload.metrics ?? payload.Metrics ?? payload);
 
   const metrics: DashboardMetrics = {
-    totalBusinesses: toNumber(
-      metricsSource.totalBusinesses ??
-        metricsSource.TotalBusinesses ??
-        metricsSource.businessCount ??
-        metricsSource.BusinessCount,
-    ),
+    totalBusinesses: toNumber(metricsSource.totalBusinesses ?? metricsSource.TotalBusinesses),
     pendingBusinesses: toNumber(metricsSource.pendingBusinesses ?? metricsSource.PendingBusinesses),
     approvedBusinesses: toNumber(metricsSource.approvedBusinesses ?? metricsSource.ApprovedBusinesses),
     totalUsers: toNumber(
       metricsSource.totalUsers ??
         metricsSource.TotalUsers ??
-        metricsSource.userCount ??
-        metricsSource.UserCount ??
         metricsSource.usersCount ??
         metricsSource.UsersCount ??
         metricsSource.currentUsers ??
@@ -148,27 +110,7 @@ export async function getAdminDashboard() {
 }
 
 export async function getAdminUsers() {
-  const response = await authenticatedJson<unknown>("/api/admin/users");
-  return normalizeAdminUsers(response);
-}
-
-export async function updateAdminUserRole(id: string, role: number, reason?: string) {
-  const response = await authenticatedJson<unknown>(`/api/admin/users/${id}/role`, {
-    method: "PATCH",
-    body: JSON.stringify(reason ? { role, reason } : { role }),
-  });
-  return normalizeAdminUser(response);
-}
-
-export async function getAdminAuditLogs(take = 100) {
-  return authenticatedJson<AuditLog[]>(`/api/admin/audit-logs?take=${encodeURIComponent(String(take))}`);
-}
-
-export async function deleteAdminUser(id: string, reason?: string) {
-  const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
-  return authenticatedJson<{ success?: boolean; message?: string }>(`/api/admin/users/${id}${query}`, {
-    method: "DELETE",
-  });
+  return authenticatedJson<AdminUser[]>("/api/admin/users");
 }
 
 export async function getReportSummary() {
@@ -188,6 +130,10 @@ export async function getAdminBusinesses(status?: string) {
   return authenticatedJson<AdminBusiness[]>(`/api/admin/businesses${query}`);
 }
 
+export async function getPendingAdminBusinesses() {
+  return authenticatedJson<AdminBusiness[]>("/api/admin/businesses/pending");
+}
+
 export async function getAdminBusinessById(id: string) {
   return authenticatedJson<AdminBusiness>(`/api/admin/businesses/${id}`);
 }
@@ -204,9 +150,8 @@ export async function rejectAdminBusiness(id: string) {
   });
 }
 
-export async function suspendAdminBusiness(id: string, reason?: string) {
+export async function suspendAdminBusiness(id: string) {
   return authenticatedJson<AdminBusiness>(`/api/admin/businesses/${id}/suspend`, {
     method: "PATCH",
-    body: JSON.stringify(reason ? { reason } : {}),
   });
 }

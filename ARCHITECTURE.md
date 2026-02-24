@@ -37,7 +37,7 @@ middleware.ts
 Create `.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+NEXT_PUBLIC_API_URL=http://localhost:5003
 ```
 
 ## Scripts

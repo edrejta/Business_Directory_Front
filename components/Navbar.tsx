@@ -32,19 +32,9 @@ export default function Navbar() {
         </Link>
 
         <div className="stagger-fade flex items-center gap-3">
-          <Link
-            className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
-            href="/"
-          >
-            Home
-          </Link>
-
-          <Link
-            className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
-            href={homePath}
-          >
+          <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-espresso">
             {user ? roleToLabel[user.role] || "User" : "Guest"}
-          </Link>
+          </span>
 
           {user ? (
             <button
