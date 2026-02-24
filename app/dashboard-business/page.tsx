@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
+
+import type { Business, CreateBusinessInput, UpdateBusinessInput } from "@/lib/types/business";
+import { getMyBusinesses, createBusiness, updateBusiness } from "@/lib/api/businesses";
+import { createBusinessSchema, updateBusinessSchema, normalizeUrl } from "@/lib/validation/business";
 
 type DealForm = {
   title: string;
@@ -24,9 +28,23 @@ type OpenDaysForm = {
   sundayOpen: boolean;
 };
 
+type BusinessFormState = {
+  name: string;
+  city: string;
+  type: string;
+  description: string;
+  businessNumber: string;
+  businessUrl: string;
+};
+
+type BusinessView =
+  | { mode: "list" }
+  | { mode: "create" }
+  | { mode: "edit"; business: Business };
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
 
-const initialForm: DealForm = {
+const initialDealForm: DealForm = {
   title: "",
   description: "",
   category: "Discounts",
@@ -35,10 +53,19 @@ const initialForm: DealForm = {
   expiresAt: "",
 };
 
+const initialBusinessForm: BusinessFormState = {
+  name: "",
+  city: "",
+  type: "",
+  description: "",
+  businessNumber: "",
+  businessUrl: "",
+};
+
 export default function DashboardBusiness() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState<DealForm>(initialForm);
+  const [form, setForm] = useState<DealForm>(initialDealForm);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -53,6 +80,23 @@ export default function DashboardBusiness() {
   });
   const [openDaysLoading, setOpenDaysLoading] = useState(false);
   const [openDaysMessage, setOpenDaysMessage] = useState<string | null>(null);
+
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [bizLoading, setBizLoading] = useState(false);
+  const [bizError, setBizError] = useState<string | null>(null);
+  const [bizMessage, setBizMessage] = useState<string | null>(null);
+  const [bizView, setBizView] = useState<BusinessView>({ mode: "list" });
+  const [bizSubmitting, setBizSubmitting] = useState(false);
+  const [bizForm, setBizForm] = useState<BusinessFormState>(initialBusinessForm);
+  const [bizFieldErrors, setBizFieldErrors] = useState<Record<string, string>>({});
+
+  const isEditBusiness = bizView.mode === "edit";
+  const activeBusiness = bizView.mode === "edit" ? bizView.business : null;
+
+  const bizSchema = useMemo(
+    () => (isEditBusiness ? updateBusinessSchema : createBusinessSchema),
+    [isEditBusiness],
+  );
 
   useEffect(() => {
     if (isLoading) return;
@@ -93,7 +137,22 @@ export default function DashboardBusiness() {
     void loadOpenDays();
   }, [user?.token]);
 
-  if (isLoading || !user) return null;
+  useEffect(() => {
+    const loadMyBusinesses = async () => {
+      if (!user?.token) return;
+      setBizLoading(true);
+      setBizError(null);
+      try {
+        const items = await getMyBusinesses(user.token);
+        setBusinesses(items);
+      } catch (e: any) {
+        setBizError(e?.message ?? "Failed to load your businesses.");
+      } finally {
+        setBizLoading(false);
+      }
+    };
+    void loadMyBusinesses();
+  }, [user?.token]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,8 +182,16 @@ export default function DashboardBusiness() {
         throw new Error(payload.message ?? "Failed to create deal.");
       }
 
-      setMessage(`Deal u krijua me sukses te /${form.category === "FlashSales" ? "flash-sales" : form.category === "EarlyAccess" ? "early-access" : "discounts"}`);
-      setForm(initialForm);
+      setMessage(
+        `Deal u krijua me sukses te /${
+          form.category === "FlashSales"
+            ? "flash-sales"
+            : form.category === "EarlyAccess"
+              ? "early-access"
+              : "discounts"
+        }`,
+      );
+      setForm(initialDealForm);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ndodhi nje gabim.");
     } finally {
@@ -158,117 +225,382 @@ export default function DashboardBusiness() {
     }
   };
 
+  function startCreateBusiness() {
+    setBizMessage(null);
+    setBizError(null);
+    setBizFieldErrors({});
+    setBizForm(initialBusinessForm);
+    setBizView({ mode: "create" });
+  }
+
+  function startEditBusiness(b: Business) {
+    setBizMessage(null);
+    setBizError(null);
+    setBizFieldErrors({});
+    setBizForm({
+      name: b.name ?? "",
+      city: b.city ?? "",
+      type: b.type ?? "",
+      description: b.description ?? "",
+      businessNumber: b.businessNumber ?? "",
+      businessUrl: b.businessUrl ?? "",
+    });
+    setBizView({ mode: "edit", business: b });
+  }
+
+  function cancelBusinessForm() {
+    setBizFieldErrors({});
+    setBizMessage(null);
+    setBizError(null);
+    setBizView({ mode: "list" });
+    setBizForm(initialBusinessForm);
+  }
+
+  async function submitBusinessForm(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user?.token) return;
+
+    setBizSubmitting(true);
+    setBizMessage(null);
+    setBizError(null);
+    setBizFieldErrors({});
+
+    const normalizedUrl = normalizeUrl(bizForm.businessUrl);
+
+    const toValidate = {
+      ...bizForm,
+      businessUrl: normalizedUrl,
+    };
+
+    const result = bizSchema.safeParse(toValidate);
+    if (!result.success) {
+      const errs: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const k = issue.path[0];
+        if (typeof k === "string") errs[k] = issue.message;
+      }
+      setBizFieldErrors(errs);
+      setBizSubmitting(false);
+      return;
+    }
+
+    try {
+      if (isEditBusiness && activeBusiness) {
+        const input: UpdateBusinessInput = {
+          name: bizForm.name.trim(),
+          city: bizForm.city.trim(),
+          type: bizForm.type.trim(),
+          description: bizForm.description.trim() || undefined,
+          businessUrl: normalizedUrl || undefined,
+        };
+
+        const updated = await updateBusiness(user.token, activeBusiness.id, input);
+        setBusinesses((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+        setBizMessage("Business updated successfully.");
+        setBizView({ mode: "list" });
+      } else {
+        const input: CreateBusinessInput = {
+          name: bizForm.name.trim(),
+          city: bizForm.city.trim(),
+          type: bizForm.type.trim(),
+          description: bizForm.description.trim() || undefined,
+          businessNumber: bizForm.businessNumber.trim(),
+          businessUrl: normalizedUrl || undefined,
+        };
+
+        const created = await createBusiness(user.token, input);
+        setBusinesses((prev) => [created, ...prev]);
+        setBizMessage("Business submitted successfully.");
+        setBizView({ mode: "list" });
+      }
+
+      setBizForm(initialBusinessForm);
+    } catch (e: any) {
+      setBizError(e?.message ?? "Failed to submit business.");
+    } finally {
+      setBizSubmitting(false);
+    }
+  }
+
+  if (isLoading || !user) return null;
+
   return (
     <>
       <Navbar />
       <main className="min-h-screen px-6 py-10">
-        <div className="mx-auto max-w-5xl rounded-2xl border border-oak/35 bg-paper/95 p-8 shadow-panel">
-          <h1 className="text-3xl font-bold text-espresso">Deals & Promotions</h1>
-          <p className="mt-2 text-espresso/80">
-            Zgjedh kategorine ne dropdown dhe deal paraqitet automatikisht te /discounts, /flash-sales ose /early-access.
-          </p>
+        <div className="mx-auto max-w-5xl space-y-10">
+          <section className="rounded-2xl border border-oak/35 bg-paper/95 p-8 shadow-panel">
+            <h1 className="text-3xl font-bold text-espresso">Deals & Promotions</h1>
+            <p className="mt-2 text-espresso/80">
+              Zgjedh kategorine ne dropdown dhe deal paraqitet automatikisht te /discounts, /flash-sales ose /early-access.
+            </p>
 
-          <form className="mt-6 grid gap-4" onSubmit={onSubmit}>
-            <input
-              className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-              placeholder="Deal title"
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
-            <textarea
-              className="min-h-24 rounded-lg border border-oak/30 bg-white px-3 py-2"
-              placeholder="Deal description"
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              required
-            />
+            <form className="mt-6 grid gap-4" onSubmit={onSubmit}>
+              <input
+                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                placeholder="Deal title"
+                value={form.title}
+                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                required
+              />
+              <textarea
+                className="min-h-24 rounded-lg border border-oak/30 bg-white px-3 py-2"
+                placeholder="Deal description"
+                value={form.description}
+                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                required
+              />
 
-            <select
-              className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-              value={form.category}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, category: e.target.value as DealForm["category"] }))
-              }
-            >
-              <option value="Discounts">Discounts</option>
-              <option value="FlashSales">Flash Sales</option>
-              <option value="EarlyAccess">Early Access</option>
-            </select>
+              <select
+                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                value={form.category}
+                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value as DealForm["category"] }))}
+              >
+                <option value="Discounts">Discounts</option>
+                <option value="FlashSales">Flash Sales</option>
+                <option value="EarlyAccess">Early Access</option>
+              </select>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <input
-                type="number"
-                step="0.01"
-                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                placeholder="Original price"
-                value={form.originalPrice}
-                onChange={(e) => setForm((prev) => ({ ...prev, originalPrice: e.target.value }))}
-              />
-              <input
-                type="number"
-                step="0.01"
-                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                placeholder="Discounted price"
-                value={form.discountedPrice}
-                onChange={(e) => setForm((prev) => ({ ...prev, discountedPrice: e.target.value }))}
-              />
-              <input
-                type="datetime-local"
-                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                value={form.expiresAt}
-                onChange={(e) => setForm((prev) => ({ ...prev, expiresAt: e.target.value }))}
-              />
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <input
+                  type="number"
+                  step="0.01"
+                  className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                  placeholder="Original price"
+                  value={form.originalPrice}
+                  onChange={(e) => setForm((prev) => ({ ...prev, originalPrice: e.target.value }))}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                  placeholder="Discounted price"
+                  value={form.discountedPrice}
+                  onChange={(e) => setForm((prev) => ({ ...prev, discountedPrice: e.target.value }))}
+                />
+                <input
+                  type="datetime-local"
+                  className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                  value={form.expiresAt}
+                  onChange={(e) => setForm((prev) => ({ ...prev, expiresAt: e.target.value }))}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
+              >
+                {submitting ? "Saving..." : "Create Deal"}
+              </button>
+
+              {message ? <p className="text-green-700">{message}</p> : null}
+              {error ? <p className="text-red-700">{error}</p> : null}
+            </form>
+          </section>
+
+          <section className="rounded-2xl border border-oak/35 bg-paper/95 p-8 shadow-panel">
+            <h2 className="text-2xl font-bold text-espresso">Open Days Checklist</h2>
+            <p className="mt-2 text-espresso/80">Menaxho ditet e hapura per biznesin tend. Kjo shfaqet te /opendays.</p>
+
+            <form className="mt-4 grid gap-3" onSubmit={onSaveOpenDays}>
+              {[
+                ["mondayOpen", "Monday"],
+                ["tuesdayOpen", "Tuesday"],
+                ["wednesdayOpen", "Wednesday"],
+                ["thursdayOpen", "Thursday"],
+                ["fridayOpen", "Friday"],
+                ["saturdayOpen", "Saturday"],
+                ["sundayOpen", "Sunday"],
+              ].map(([key, label]) => (
+                <label key={key} className="flex items-center gap-3 text-espresso">
+                  <input
+                    type="checkbox"
+                    checked={openDays[key as keyof OpenDaysForm]}
+                    onChange={(e) => setOpenDays((prev) => ({ ...prev, [key]: e.target.checked }))}
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+
+              <button
+                type="submit"
+                disabled={openDaysLoading}
+                className="mt-2 w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
+              >
+                {openDaysLoading ? "Saving..." : "Save Open Days"}
+              </button>
+
+              {openDaysMessage ? <p className="text-espresso">{openDaysMessage}</p> : null}
+            </form>
+          </section>
+
+          <section className="rounded-2xl border border-oak/35 bg-paper/95 p-8 shadow-panel">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-espresso">My Businesses</h2>
+                <p className="mt-1 text-espresso/80">Submit a new business or edit an existing one.</p>
+              </div>
+
+              {bizView.mode === "list" ? (
+                <button
+                  type="button"
+                  onClick={startCreateBusiness}
+                  className="w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper"
+                >
+                  Submit New Business
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={cancelBusinessForm}
+                  className="w-fit rounded-lg border border-oak/40 bg-white px-4 py-2 font-semibold text-espresso"
+                >
+                  Back to list
+                </button>
+              )}
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
-            >
-              {submitting ? "Saving..." : "Create Deal"}
-            </button>
+            {bizMessage ? <p className="mt-4 text-green-700">{bizMessage}</p> : null}
+            {bizError ? <p className="mt-4 text-red-700">{bizError}</p> : null}
 
-            {message ? <p className="text-green-700">{message}</p> : null}
-            {error ? <p className="text-red-700">{error}</p> : null}
-          </form>
+            {bizView.mode === "list" ? (
+              <div className="mt-6">
+                {bizLoading ? (
+                  <p className="text-espresso/80">Loading...</p>
+                ) : businesses.length === 0 ? (
+                  <p className="text-espresso/80">You haven’t submitted any businesses yet.</p>
+                ) : (
+                  <div className="grid gap-3">
+                    {businesses.map((b) => (
+                      <div key={b.id} className="rounded-xl border border-oak/25 bg-white p-4">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                          <div>
+                            <p className="text-lg font-bold text-espresso">{b.name}</p>
+                            <p className="text-sm text-espresso/70">
+                              {b.city ?? "—"} · {b.type ?? "—"} · Status: {b.status ?? "—"}
+                            </p>
+                            <p className="mt-1 text-sm text-espresso/70">Business number: {b.businessNumber ?? "—"}</p>
+                            <p className="text-sm text-espresso/70">
+                              Website:{" "}
+                              {b.businessUrl ? (
+                                <a className="underline" href={b.businessUrl} target="_blank" rel="noreferrer">
+                                  {b.businessUrl}
+                                </a>
+                              ) : (
+                                "—"
+                              )}
+                            </p>
+                          </div>
 
-          <hr className="my-8 border-oak/20" />
+                          <button
+                            type="button"
+                            onClick={() => startEditBusiness(b)}
+                            className="w-fit rounded-lg border border-oak/40 bg-white px-4 py-2 font-semibold text-espresso"
+                          >
+                            Edit
+                          </button>
+                        </div>
 
-          <h2 className="text-2xl font-bold text-espresso">Open Days Checklist</h2>
-          <p className="mt-2 text-espresso/80">Menaxho ditet e hapura per biznesin tend. Kjo shfaqet te /opendays.</p>
-          <form className="mt-4 grid gap-3" onSubmit={onSaveOpenDays}>
-            {[
-              ["mondayOpen", "Monday"],
-              ["tuesdayOpen", "Tuesday"],
-              ["wednesdayOpen", "Wednesday"],
-              ["thursdayOpen", "Thursday"],
-              ["fridayOpen", "Friday"],
-              ["saturdayOpen", "Saturday"],
-              ["sundayOpen", "Sunday"],
-            ].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-3 text-espresso">
-                <input
-                  type="checkbox"
-                  checked={openDays[key as keyof OpenDaysForm]}
-                  onChange={(e) =>
-                    setOpenDays((prev) => ({ ...prev, [key]: e.target.checked }))
-                  }
-                />
-                <span>{label}</span>
-              </label>
-            ))}
+                        {b.description ? <p className="mt-3 text-espresso/80">{b.description}</p> : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <form className="mt-6 grid gap-4" onSubmit={submitBusinessForm}>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">Business Name</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.name}
+                      onChange={(e) => setBizForm((p) => ({ ...p, name: e.target.value }))}
+                      placeholder="Cafe Uno"
+                    />
+                    {bizFieldErrors.name ? <p className="text-sm text-red-700">{bizFieldErrors.name}</p> : null}
+                  </div>
 
-            <button
-              type="submit"
-              disabled={openDaysLoading}
-              className="mt-2 w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
-            >
-              {openDaysLoading ? "Saving..." : "Save Open Days"}
-            </button>
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">City</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.city}
+                      onChange={(e) => setBizForm((p) => ({ ...p, city: e.target.value }))}
+                      placeholder="Prishtina"
+                    />
+                    {bizFieldErrors.city ? <p className="text-sm text-red-700">{bizFieldErrors.city}</p> : null}
+                  </div>
+                </div>
 
-            {openDaysMessage ? <p className="text-espresso">{openDaysMessage}</p> : null}
-          </form>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">Type</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.type}
+                      onChange={(e) => setBizForm((p) => ({ ...p, type: e.target.value }))}
+                      placeholder="Cafe"
+                    />
+                    {bizFieldErrors.type ? <p className="text-sm text-red-700">{bizFieldErrors.type}</p> : null}
+                  </div>
+
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">
+                      Business Number {isEditBusiness ? "(locked)" : ""}
+                    </label>
+                    <input
+                      className={`rounded-lg border border-oak/30 px-3 py-2 ${
+                        isEditBusiness ? "bg-gray-100 text-gray-700" : "bg-white"
+                      }`}
+                      value={bizForm.businessNumber}
+                      onChange={(e) => setBizForm((p) => ({ ...p, businessNumber: e.target.value }))}
+                      placeholder="Registration number"
+                      disabled={isEditBusiness}
+                    />
+                    {!isEditBusiness && bizFieldErrors.businessNumber ? (
+                      <p className="text-sm text-red-700">{bizFieldErrors.businessNumber}</p>
+                    ) : null}
+                    {isEditBusiness ? (
+                      <p className="text-xs text-espresso/60">Business number can’t be changed after creation.</p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="grid gap-1">
+                  <label className="text-sm font-semibold text-espresso">Business URL</label>
+                  <input
+                    className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                    value={bizForm.businessUrl}
+                    onChange={(e) => setBizForm((p) => ({ ...p, businessUrl: e.target.value }))}
+                    placeholder="example.com or https://example.com"
+                  />
+                  {bizFieldErrors.businessUrl ? <p className="text-sm text-red-700">{bizFieldErrors.businessUrl}</p> : null}
+                  <p className="text-xs text-espresso/60">Tip: you can type example.com — we’ll add https:// automatically.</p>
+                </div>
+
+                <div className="grid gap-1">
+                  <label className="text-sm font-semibold text-espresso">Description</label>
+                  <textarea
+                    className="min-h-24 rounded-lg border border-oak/30 bg-white px-3 py-2"
+                    value={bizForm.description}
+                    onChange={(e) => setBizForm((p) => ({ ...p, description: e.target.value }))}
+                    placeholder="Describe your business..."
+                  />
+                  {bizFieldErrors.description ? <p className="text-sm text-red-700">{bizFieldErrors.description}</p> : null}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={bizSubmitting}
+                  className="w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
+                >
+                  {bizSubmitting ? "Saving..." : isEditBusiness ? "Save Changes" : "Submit Business"}
+                </button>
+              </form>
+            )}
+          </section>
         </div>
       </main>
     </>
