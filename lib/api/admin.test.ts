@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAdminUsers, normalizeDashboard } from "./admin";
+import { getAdminUsers, getHealthStatus, normalizeDashboard } from "./admin";
 import { authenticatedJson } from "./client";
 
 vi.mock("./client", () => ({
@@ -53,5 +53,20 @@ describe("normalizeDashboard", () => {
         status: undefined,
       },
     ]);
+  });
+
+  it("falls back to /api/health when /health fails", async () => {
+    authenticatedJsonMock.mockRejectedValueOnce(new Error("Not found"));
+    authenticatedJsonMock.mockResolvedValueOnce({ status: "ok", version: "1.0.0" });
+
+    const health = await getHealthStatus();
+
+    expect(health).toEqual({
+      status: "ok",
+      timestamp: undefined,
+      version: "1.0.0",
+    });
+    expect(authenticatedJsonMock).toHaveBeenNthCalledWith(1, "/health", { requireAuth: false });
+    expect(authenticatedJsonMock).toHaveBeenNthCalledWith(2, "/api/health", { requireAuth: false });
   });
 });

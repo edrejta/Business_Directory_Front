@@ -276,8 +276,13 @@ export async function getAdminCategories() {
 }
 
 export async function getHealthStatus() {
-  const response = await authenticatedJson<unknown>("/health", { requireAuth: false });
-  return normalizeHealthStatus(response);
+  try {
+    const response = await authenticatedJson<unknown>("/health", { requireAuth: false });
+    return normalizeHealthStatus(response);
+  } catch {
+    const fallback = await authenticatedJson<unknown>("/api/health", { requireAuth: false });
+    return normalizeHealthStatus(fallback);
+  }
 }
 
 export async function getAdminBusinesses(status?: string) {
