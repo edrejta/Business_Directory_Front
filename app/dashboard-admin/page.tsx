@@ -159,29 +159,51 @@ export default function DashboardAdmin() {
     const loadAdminData = async () => {
       setLoadingData(true);
       setError(null);
+      setSectionError(null);
       try {
-        const [dashboardData, usersData, categoriesData, reportsData, healthData, pendingData, approvedData, logsData] =
-          await Promise.all([
-            getAdminDashboard(),
-            getAdminUsers(),
-            getAdminCategories(),
-            getReportSummary(),
-            getHealthStatus(),
-            getAdminBusinesses(PENDING_STATUS),
-            getAdminBusinesses(APPROVED_STATUS),
-            getAdminAuditLogs(100),
-          ]);
+        const results = await Promise.allSettled([
+          getAdminDashboard(),
+          getAdminUsers(),
+          getAdminCategories(),
+          getReportSummary(),
+          getHealthStatus(),
+          getAdminBusinesses(PENDING_STATUS),
+          getAdminBusinesses(APPROVED_STATUS),
+          getAdminAuditLogs(100),
+        ]);
 
         if (!mounted) return;
 
-        setDashboard(dashboardData);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-        setReports(reportsData);
-        setHealth(healthData);
-        setPendingBusinesses(Array.isArray(pendingData) ? pendingData : []);
-        setApprovedBusinesses(Array.isArray(approvedData) ? approvedData : []);
-        setAuditLogs(Array.isArray(logsData) ? logsData : []);
+        const [
+          dashboardResult,
+          usersResult,
+          categoriesResult,
+          reportsResult,
+          healthResult,
+          pendingResult,
+          approvedResult,
+          logsResult,
+        ] = results;
+
+        if (dashboardResult.status === "fulfilled") setDashboard(dashboardResult.value);
+        if (usersResult.status === "fulfilled") setUsers(Array.isArray(usersResult.value) ? usersResult.value : []);
+        if (categoriesResult.status === "fulfilled") {
+          setCategories(Array.isArray(categoriesResult.value) ? categoriesResult.value : []);
+        }
+        if (reportsResult.status === "fulfilled") setReports(reportsResult.value);
+        if (healthResult.status === "fulfilled") setHealth(healthResult.value);
+        if (pendingResult.status === "fulfilled") {
+          setPendingBusinesses(Array.isArray(pendingResult.value) ? pendingResult.value : []);
+        }
+        if (approvedResult.status === "fulfilled") {
+          setApprovedBusinesses(Array.isArray(approvedResult.value) ? approvedResult.value : []);
+        }
+        if (logsResult.status === "fulfilled") setAuditLogs(Array.isArray(logsResult.value) ? logsResult.value : []);
+
+        const failed = results.filter((result) => result.status === "rejected");
+        if (failed.length > 0) {
+          setSectionError("Some dashboard sections could not be loaded.");
+        }
       } catch (err) {
         if (!mounted) return;
         setError(err instanceof Error ? err.message : "Failed to load admin dashboard.");
@@ -457,11 +479,18 @@ export default function DashboardAdmin() {
   const pagedPendingBusinesses = paginate(filteredPendingBusinesses, currentPendingPage, PAGE_SIZE);
   const pagedApprovedBusinesses = paginate(filteredApprovedBusinesses, currentApprovedPage, PAGE_SIZE);
   const pagedAuditLogs = paginate(filteredAuditLogs, currentAuditPage, PAGE_SIZE);
-  const totalUsersKpi =
-    (dashboard?.metrics.totalUsers ?? 0) > 0 ? (dashboard?.metrics.totalUsers ?? 0) : users.length;
-  const totalBusinessesKpi = dashboard?.metrics.totalBusinesses ?? 0;
-  const pendingBusinessesKpi = dashboard?.metrics.pendingBusinesses ?? 0;
-  const approvedBusinessesKpi = dashboard?.metrics.approvedBusinesses ?? 0;
+  const pendingBusinessesKpi =
+    (dashboard?.metrics.pendingBusinesses ?? 0) > 0
+      ? (dashboard?.metrics.pendingBusinesses ?? 0)
+      : pendingBusinesses.length;
+  const approvedBusinessesKpi =
+    (dashboard?.metrics.approvedBusinesses ?? 0) > 0
+      ? (dashboard?.metrics.approvedBusinesses ?? 0)
+      : approvedBusinesses.length;
+  const totalBusinessesFallback = pendingBusinesses.length + approvedBusinesses.length;
+  const totalBusinessesKpi =
+    (dashboard?.metrics.totalBusinesses ?? 0) > 0 ? (dashboard?.metrics.totalBusinesses ?? 0) : totalBusinessesFallback;
+  const totalUsersKpi = (dashboard?.metrics.totalUsers ?? 0) > 0 ? (dashboard?.metrics.totalUsers ?? 0) : users.length;
   const kpiScaleMax = Math.max(totalBusinessesKpi, pendingBusinessesKpi, approvedBusinessesKpi, totalUsersKpi, 1);
   const toKpiProgress = (value: number) => Math.round((value / kpiScaleMax) * 100);
 
