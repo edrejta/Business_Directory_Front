@@ -67,11 +67,15 @@
   gap: 22px;
 }
 
-.kb-nav a {
+.kb-nav a,
+.kb-nav button {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 11px;
   color: #8c7f72;
+  font-family: inherit;
+  background: transparent;
+  cursor: pointer;
 }
 
 .kb-btn {
@@ -1770,7 +1774,8 @@
     font-size: 16px;
   }
 
-  .kb-nav a {
+  .kb-nav a,
+  .kb-nav button {
     font-size: 10px;
     letter-spacing: 0.12em;
   }
@@ -1946,7 +1951,8 @@
     gap: 8px;
   }
 
-  .kb-nav a {
+  .kb-nav a,
+  .kb-nav button {
     text-align: center;
   }
 
