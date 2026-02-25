@@ -36,14 +36,23 @@ const unwrapPayload = (raw: unknown): unknown => {
 
 const normalizeBusiness = (raw: unknown): Business => {
   const item = asRecord(raw);
+
   return {
     id: String(item.id ?? item.Id ?? ""),
+    ownerId: toStringOrUndefined(item.ownerId ?? item.OwnerId) ?? "",
     name: String(item.name ?? item.Name ?? "Business"),
-    city: toStringOrUndefined(item.city ?? item.City),
-    businessType: toStringOrUndefined(item.businessType ?? item.BusinessType ?? item.type ?? item.Type),
-    status: toStringOrUndefined(item.status ?? item.Status),
+    city: String(item.city ?? item.City ?? ""),
+    type: String(item.type ?? item.Type ?? item.businessType ?? item.BusinessType ?? "Unknown"),
+    address: toStringOrUndefined(item.address ?? item.Address),
+    businessUrl: toStringOrUndefined(item.businessUrl ?? item.BusinessUrl ?? item.websiteUrl ?? item.WebsiteUrl),
     description: toStringOrUndefined(item.description ?? item.Description),
-    ownerId: toStringOrUndefined(item.ownerId ?? item.OwnerId),
+    phoneNumber: toStringOrUndefined(item.phoneNumber ?? item.PhoneNumber),
+    imageUrl: toStringOrUndefined(item.imageUrl ?? item.ImageUrl),
+    businessNumber: String(item.businessNumber ?? item.BusinessNumber ?? item.businesssNumber ?? item.BusinesssNumber ?? ""),
+    status: (toStringOrUndefined(item.status ?? item.Status) ?? "Pending") as Business["status"],
+    createdAt: String(item.createdAt ?? item.CreatedAt ?? new Date().toISOString()),
+    suspensionReason: toStringOrUndefined(item.suspensionReason ?? item.SuspensionReason),
+    isFavorite: typeof item.isFavorite === "boolean" ? item.isFavorite : undefined,
   };
 };
 
