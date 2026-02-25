@@ -40,4 +40,6 @@ export type CreateBusinessInput = {
   businessNumber: string;
 };
 
-export type UpdateBusinessInput = CreateBusinessInput;
+export type UpdateBusinessInput = Omit<CreateBusinessInput, "businessNumber"> & {
+  businessNumber?: string;
+};

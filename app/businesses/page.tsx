@@ -87,7 +87,7 @@ export default async function BusinessesPage({
               <article key={business.id} className="rounded-2xl border border-oak/30 bg-white/90 p-5">
                 <h2 className="text-lg font-semibold text-espresso">{business.name}</h2>
                 <p className="mt-1 text-sm text-espresso/75">
-                  {business.city ?? "Unknown city"} · {business.businessType ?? "General"}
+                  {business.city ?? "Unknown city"} · {business.type ?? "General"}
                 </p>
                 <p className="mt-3 text-sm text-espresso/80">
                   {business.description ?? "No description provided yet."}
