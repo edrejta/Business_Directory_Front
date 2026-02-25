@@ -33,8 +33,11 @@ type BusinessFormState = {
   city: string;
   type: string;
   description: string;
+  address: string;
   businessNumber: string;
   businessUrl: string;
+  phoneNumber: string;
+  imageUrl: string;
 };
 
 type BusinessView =
@@ -42,7 +45,7 @@ type BusinessView =
   | { mode: "create" }
   | { mode: "edit"; business: Business };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:7066";
 
 const initialDealForm: DealForm = {
   title: "",
@@ -58,17 +61,22 @@ const initialBusinessForm: BusinessFormState = {
   city: "",
   type: "",
   description: "",
+  address: "",
   businessNumber: "",
   businessUrl: "",
+  phoneNumber: "",
+  imageUrl: "",
 };
 
 export default function DashboardBusiness() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+
   const [form, setForm] = useState<DealForm>(initialDealForm);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
   const [openDays, setOpenDays] = useState<OpenDaysForm>({
     mondayOpen: true,
     tuesdayOpen: true,
@@ -238,12 +246,15 @@ export default function DashboardBusiness() {
     setBizError(null);
     setBizFieldErrors({});
     setBizForm({
-      name: b.name ?? "",
-      city: b.city ?? "",
-      type: b.type ?? "",
-      description: b.description ?? "",
-      businessNumber: b.businessNumber ?? "",
-      businessUrl: b.businessUrl ?? "",
+      name: (b as any).name ?? "",
+      city: (b as any).city ?? "",
+      type: (b as any).type ?? "",
+      description: (b as any).description ?? "",
+      address: (b as any).address ?? "",
+      businessNumber: (b as any).businessNumber ?? "",
+      businessUrl: (b as any).businessUrl ?? "",
+      phoneNumber: (b as any).phoneNumber ?? "",
+      imageUrl: (b as any).imageUrl ?? "",
     });
     setBizView({ mode: "edit", business: b });
   }
@@ -291,10 +302,20 @@ export default function DashboardBusiness() {
           city: bizForm.city.trim(),
           type: bizForm.type.trim(),
           description: bizForm.description.trim() || undefined,
+          address: bizForm.address.trim() || undefined,
           businessUrl: normalizedUrl || undefined,
         };
 
-        const updated = await updateBusiness(user.token, activeBusiness.id, input);
+        const updated = await updateBusiness(
+          user.token,
+          activeBusiness.id,
+          {
+            ...(input as any),
+            phoneNumber: bizForm.phoneNumber.trim() || undefined,
+            imageUrl: bizForm.imageUrl.trim() || undefined,
+          } as any,
+        );
+
         setBusinesses((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
         setBizMessage("Business updated successfully.");
         setBizView({ mode: "list" });
@@ -304,11 +325,20 @@ export default function DashboardBusiness() {
           city: bizForm.city.trim(),
           type: bizForm.type.trim(),
           description: bizForm.description.trim() || undefined,
+          address: bizForm.address.trim() || undefined,
           businessNumber: bizForm.businessNumber.trim(),
           businessUrl: normalizedUrl || undefined,
         };
 
-        const created = await createBusiness(user.token, input);
+        const created = await createBusiness(
+          user.token,
+          {
+            ...(input as any),
+            phoneNumber: bizForm.phoneNumber.trim() || undefined,
+            imageUrl: bizForm.imageUrl.trim() || undefined,
+          } as any,
+        );
+
         setBusinesses((prev) => [created, ...prev]);
         setBizMessage("Business submitted successfully.");
         setBizView({ mode: "list" });
@@ -354,7 +384,9 @@ export default function DashboardBusiness() {
               <select
                 className="rounded-lg border border-oak/30 bg-white px-3 py-2"
                 value={form.category}
-                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value as DealForm["category"] }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, category: e.target.value as DealForm["category"] }))
+                }
               >
                 <option value="Discounts">Discounts</option>
                 <option value="FlashSales">Flash Sales</option>
@@ -439,7 +471,7 @@ export default function DashboardBusiness() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-espresso">My Businesses</h2>
-                <p className="mt-1 text-espresso/80">Submit a new business or edit an existing one.</p>
+                <p className="mt-1 text-espresso/80">Dërgo një biznes të ri ose përditëso një biznes ekzistues.</p>
               </div>
 
               {bizView.mode === "list" ? (
@@ -474,23 +506,42 @@ export default function DashboardBusiness() {
                   <div className="grid gap-3">
                     {businesses.map((b) => (
                       <div key={b.id} className="rounded-xl border border-oak/25 bg-white p-4">
-                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                          <div>
-                            <p className="text-lg font-bold text-espresso">{b.name}</p>
-                            <p className="text-sm text-espresso/70">
-                              {b.city ?? "—"} · {b.type ?? "—"} · Status: {b.status ?? "—"}
-                            </p>
-                            <p className="mt-1 text-sm text-espresso/70">Business number: {b.businessNumber ?? "—"}</p>
-                            <p className="text-sm text-espresso/70">
-                              Website:{" "}
-                              {b.businessUrl ? (
-                                <a className="underline" href={b.businessUrl} target="_blank" rel="noreferrer">
-                                  {b.businessUrl}
-                                </a>
-                              ) : (
-                                "—"
-                              )}
-                            </p>
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div className="flex gap-4">
+                            {(b as any).imageUrl ? (
+                              <img
+                                src={(b as any).imageUrl}
+                                alt="logo"
+                                className="h-14 w-14 rounded-lg border border-oak/20 object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            ) : (
+                              <div className="h-14 w-14 rounded-lg border border-oak/20 bg-paper" />
+                            )}
+
+                            <div>
+                              <p className="text-lg font-bold text-espresso">{(b as any).name}</p>
+                              <p className="text-sm text-espresso/70">
+                                {(b as any).city ?? "—"} · {(b as any).type ?? "—"} · Status: {(b as any).status ?? "—"}
+                              </p>
+                              <p className="mt-1 text-sm text-espresso/70">Address: {(b as any).address ?? "—"}</p>
+                              <p className="text-sm text-espresso/70">Business number: {(b as any).businessNumber ?? "—"}</p>
+                              <p className="text-sm text-espresso/70">
+                                Phone: {(b as any).phoneNumber ?? "—"}
+                              </p>
+                              <p className="text-sm text-espresso/70">
+                                Website:{" "}
+                                {(b as any).businessUrl ? (
+                                  <a className="underline" href={(b as any).businessUrl} target="_blank" rel="noreferrer">
+                                    {(b as any).businessUrl}
+                                  </a>
+                                ) : (
+                                  "—"
+                                )}
+                              </p>
+                            </div>
                           </div>
 
                           <button
@@ -502,7 +553,7 @@ export default function DashboardBusiness() {
                           </button>
                         </div>
 
-                        {b.description ? <p className="mt-3 text-espresso/80">{b.description}</p> : null}
+                        {(b as any).description ? <p className="mt-3 text-espresso/80">{(b as any).description}</p> : null}
                       </div>
                     ))}
                   </div>
@@ -547,6 +598,19 @@ export default function DashboardBusiness() {
                   </div>
 
                   <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">Address</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.address}
+                      onChange={(e) => setBizForm((p) => ({ ...p, address: e.target.value }))}
+                      placeholder="Street, number, area..."
+                    />
+                    {bizFieldErrors.address ? <p className="text-sm text-red-700">{bizFieldErrors.address}</p> : null}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-1">
                     <label className="text-sm font-semibold text-espresso">
                       Business Number {isEditBusiness ? "(locked)" : ""}
                     </label>
@@ -562,22 +626,58 @@ export default function DashboardBusiness() {
                     {!isEditBusiness && bizFieldErrors.businessNumber ? (
                       <p className="text-sm text-red-700">{bizFieldErrors.businessNumber}</p>
                     ) : null}
-                    {isEditBusiness ? (
-                      <p className="text-xs text-espresso/60">Business number can’t be changed after creation.</p>
+                    <div className="h-10">
+                      <p className="text-xs leading-5 text-espresso/60 line-clamp-2">
+                        Këshillë: Shkruaj Numrin e Regjistrimit të Biznesit (NRB) që e gjen në ARBK.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">Business URL</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.businessUrl}
+                      onChange={(e) => setBizForm((p) => ({ ...p, businessUrl: e.target.value }))}
+                      placeholder="example.com or https://example.com"
+                    />
+                    {bizFieldErrors.businessUrl ? (
+                      <p className="text-sm text-red-700">{bizFieldErrors.businessUrl}</p>
                     ) : null}
+                    <div className="h-10">
+                      <p className="text-xs leading-5 text-espresso/60 line-clamp-2">
+                        Këshillë: shkruaj “example.com” dhe ne do t’i shtojmë automatikisht “https://”.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold text-espresso">Business URL</label>
-                  <input
-                    className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                    value={bizForm.businessUrl}
-                    onChange={(e) => setBizForm((p) => ({ ...p, businessUrl: e.target.value }))}
-                    placeholder="example.com or https://example.com"
-                  />
-                  {bizFieldErrors.businessUrl ? <p className="text-sm text-red-700">{bizFieldErrors.businessUrl}</p> : null}
-                  <p className="text-xs text-espresso/60">Tip: you can type example.com — we’ll add https:// automatically.</p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">Phone Number</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.phoneNumber}
+                      onChange={(e) => setBizForm((p) => ({ ...p, phoneNumber: e.target.value }))}
+                      placeholder="+383..."
+                    />
+                    {bizFieldErrors.phoneNumber ? (
+                      <p className="text-sm text-red-700">{bizFieldErrors.phoneNumber}</p>
+                    ) : null}
+                  </div>
+
+                  <div className="grid gap-1">
+                    <label className="text-sm font-semibold text-espresso">Image URL (Logo)</label>
+                    <input
+                      className="rounded-lg border border-oak/30 bg-white px-3 py-2"
+                      value={bizForm.imageUrl}
+                      onChange={(e) => setBizForm((p) => ({ ...p, imageUrl: e.target.value }))}
+                      placeholder="https://.../logo.png"
+                    />
+                    {bizFieldErrors.imageUrl ? (
+                      <p className="text-sm text-red-700">{bizFieldErrors.imageUrl}</p>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="grid gap-1">
@@ -588,7 +688,9 @@ export default function DashboardBusiness() {
                     onChange={(e) => setBizForm((p) => ({ ...p, description: e.target.value }))}
                     placeholder="Describe your business..."
                   />
-                  {bizFieldErrors.description ? <p className="text-sm text-red-700">{bizFieldErrors.description}</p> : null}
+                  {bizFieldErrors.description ? (
+                    <p className="text-sm text-red-700">{bizFieldErrors.description}</p>
+                  ) : null}
                 </div>
 
                 <button
