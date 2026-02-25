@@ -45,7 +45,7 @@ type BusinessView =
   | { mode: "create" }
   | { mode: "edit"; business: Business };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:7066";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 const initialDealForm: DealForm = {
   title: "",

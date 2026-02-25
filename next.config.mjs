@@ -2,21 +2,26 @@
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
+    const backendBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+    if (!backendBase) {
+      return [];
+    }
+
     const baseRewrites = [
-      { source: '/search', destination: 'http://localhost:5003/search' },
-      { source: '/categories', destination: 'http://localhost:5003/categories' },
-      { source: '/locations', destination: 'http://localhost:5003/locations' },
-      { source: '/featured-businesses', destination: 'http://localhost:5003/featured-businesses' },
-      { source: '/recommendations', destination: 'http://localhost:5003/recommendations' },
-      { source: '/promotions', destination: 'http://localhost:5003/promotions' },
-      { source: '/reviews', destination: 'http://localhost:5003/reviews' },
-      { source: '/subscribe', destination: 'http://localhost:5003/subscribe' },
+      { source: "/search", destination: `${backendBase}/search` },
+      { source: "/categories", destination: `${backendBase}/categories` },
+      { source: "/locations", destination: `${backendBase}/locations` },
+      { source: "/featured-businesses", destination: `${backendBase}/featured-businesses` },
+      { source: "/recommendations", destination: `${backendBase}/recommendations` },
+      { source: "/promotions", destination: `${backendBase}/promotions` },
+      { source: "/reviews", destination: `${backendBase}/reviews` },
+      { source: "/subscribe", destination: `${backendBase}/subscribe` },
     ];
 
     if (process.env.NODE_ENV === "development") {
       return [
-        { source: "/api/:path*", destination: "http://localhost:5003/api/:path*" },
-        { source: "/health", destination: "http://localhost:5003/health" },
+        { source: "/api/:path*", destination: `${backendBase}/api/:path*` },
+        { source: "/health", destination: `${backendBase}/health` },
         ...baseRewrites,
       ];
     }

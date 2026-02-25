@@ -11,7 +11,7 @@ type OpenDays = {
   sundayOpen: boolean;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 async function getOpenDays(businessId?: string): Promise<OpenDays | null> {
   if (!businessId) return null;

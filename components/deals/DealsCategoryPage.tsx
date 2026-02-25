@@ -11,7 +11,7 @@ type Deal = {
   expiresAt?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 async function getDeals(category: string): Promise<Deal[]> {
   try {
