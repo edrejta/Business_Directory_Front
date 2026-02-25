@@ -18,7 +18,7 @@ type Promotion = {
   expiresAt?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 const validCategories: Category[] = ["Discounts", "FlashSales", "EarlyAccess"];
 
 async function getOffers(category?: string): Promise<Promotion[]> {

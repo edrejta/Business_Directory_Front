@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: API contract consumed by current frontend (auth, homepage, admin dashboard).
 servers:
-  - url: http://localhost:5003
-    description: Local development
+  - url: /
+    description: Same-origin default (set host via deployment environment)
 security:
   - bearerAuth: []
 tags:
@@ -684,4 +684,3 @@ components:
         status: { type: string, example: ok }
         timestamp: { type: string, format: date-time }
         version: { type: string, example: 1.0.0 }
-

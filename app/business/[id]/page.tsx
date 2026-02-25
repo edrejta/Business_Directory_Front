@@ -17,7 +17,7 @@ type BusinessDetail = {
   photos?: string[];
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 async function getBusiness(id: string): Promise<BusinessDetail | null> {
   try {
