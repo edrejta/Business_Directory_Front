@@ -304,6 +304,7 @@ export default function DashboardBusiness() {
           description: bizForm.description.trim() || undefined,
           address: bizForm.address.trim() || undefined,
           businessUrl: normalizedUrl || undefined,
+          businessNumber: bizForm.businessNumber.trim(),
         };
 
         const updated = await updateBusiness(
