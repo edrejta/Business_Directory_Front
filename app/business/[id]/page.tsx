@@ -99,7 +99,7 @@ export default async function BusinessDetailsPage({ params }: { params: Promise<
 
   try {
     business = await getApprovedBusinessById(id);
-  } catch (e) {
+  } catch {
     return (
       <main className={styles.page}>
         <section className={styles.error}>
