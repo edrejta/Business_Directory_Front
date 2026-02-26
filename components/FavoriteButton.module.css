@@ -1,0 +1,28 @@
+.button {
+  border: 1px solid #d2c4b4;
+  background: #f5f1eb;
+  color: #6f5f50;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.buttonActive {
+  background: #8f6947;
+  border-color: #8f6947;
+  color: #fff;
+}
+
+.compact {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

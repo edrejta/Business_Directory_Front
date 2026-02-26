@@ -51,7 +51,8 @@ export async function authenticatedJson<T>(path: string, options: AuthenticatedF
   const response = await authenticatedFetch(path, options);
   const data = (await response.json().catch(() => ({}))) as T & { message?: string };
   if (!response.ok) {
-    throw new Error((data as { message?: string }).message ?? "Ndodhi një gabim.");
+    const msg = (data as { message?: string }).message ?? response.statusText ?? "Ndodhi një gabim.";
+    throw new Error(`${response.status} ${msg}`);
   }
   return data as T;
 }

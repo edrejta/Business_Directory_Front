@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import * as ownerApi from "@/lib/api/ownerBusinesses";
 
 type DealForm = {
   title: string;
@@ -53,6 +54,9 @@ export default function DashboardBusiness() {
   });
   const [openDaysLoading, setOpenDaysLoading] = useState(false);
   const [openDaysMessage, setOpenDaysMessage] = useState<string | null>(null);
+  const [ownerBusinesses, setOwnerBusinesses] = useState<Array<{ id: string; businessName: string; status: string }>>([]);
+  const [ownerLoading, setOwnerLoading] = useState(false);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -91,6 +95,23 @@ export default function DashboardBusiness() {
       }
     };
     void loadOpenDays();
+  }, [user?.token]);
+
+  useEffect(() => {
+    const loadMyBusinesses = async () => {
+      if (!user?.token) return;
+      setOwnerLoading(true);
+      try {
+        const list = await ownerApi.getMyBusinesses();
+        setOwnerBusinesses(list.map((b) => ({ id: b.id, businessName: b.businessName, status: b.status })));
+        if (list.length > 0) setSelectedBusinessId((prev) => prev ?? list[0].id);
+      } catch (e) {
+        // ignore failures silently for now
+      } finally {
+        setOwnerLoading(false);
+      }
+    };
+    void loadMyBusinesses();
   }, [user?.token]);
 
   if (isLoading || !user) return null;
@@ -163,113 +184,43 @@ export default function DashboardBusiness() {
       <Navbar />
       <main className="min-h-screen px-6 py-10">
         <div className="mx-auto max-w-5xl rounded-2xl border border-oak/35 bg-paper/95 p-8 shadow-panel">
-          <h1 className="text-3xl font-bold text-espresso">Deals & Promotions</h1>
-          <p className="mt-2 text-espresso/80">
-            Zgjedh kategorine ne dropdown dhe deal paraqitet automatikisht te /discounts, /flash-sales ose /early-access.
-          </p>
-
-          <form className="mt-6 grid gap-4" onSubmit={onSubmit}>
-            <input
-              className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-              placeholder="Deal title"
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
-            <textarea
-              className="min-h-24 rounded-lg border border-oak/30 bg-white px-3 py-2"
-              placeholder="Deal description"
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              required
-            />
-
-            <select
-              className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-              value={form.category}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, category: e.target.value as DealForm["category"] }))
-              }
-            >
-              <option value="Discounts">Discounts</option>
-              <option value="FlashSales">Flash Sales</option>
-              <option value="EarlyAccess">Early Access</option>
-            </select>
-
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <input
-                type="number"
-                step="0.01"
-                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                placeholder="Original price"
-                value={form.originalPrice}
-                onChange={(e) => setForm((prev) => ({ ...prev, originalPrice: e.target.value }))}
-              />
-              <input
-                type="number"
-                step="0.01"
-                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                placeholder="Discounted price"
-                value={form.discountedPrice}
-                onChange={(e) => setForm((prev) => ({ ...prev, discountedPrice: e.target.value }))}
-              />
-              <input
-                type="datetime-local"
-                className="rounded-lg border border-oak/30 bg-white px-3 py-2"
-                value={form.expiresAt}
-                onChange={(e) => setForm((prev) => ({ ...prev, expiresAt: e.target.value }))}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
-            >
-              {submitting ? "Saving..." : "Create Deal"}
-            </button>
-
-            {message ? <p className="text-green-700">{message}</p> : null}
-            {error ? <p className="text-red-700">{error}</p> : null}
-          </form>
+        
 
           <hr className="my-8 border-oak/20" />
 
-          <h2 className="text-2xl font-bold text-espresso">Open Days Checklist</h2>
-          <p className="mt-2 text-espresso/80">Menaxho ditet e hapura per biznesin tend. Kjo shfaqet te /opendays.</p>
-          <form className="mt-4 grid gap-3" onSubmit={onSaveOpenDays}>
-            {[
-              ["mondayOpen", "Monday"],
-              ["tuesdayOpen", "Tuesday"],
-              ["wednesdayOpen", "Wednesday"],
-              ["thursdayOpen", "Thursday"],
-              ["fridayOpen", "Friday"],
-              ["saturdayOpen", "Saturday"],
-              ["sundayOpen", "Sunday"],
-            ].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-3 text-espresso">
-                <input
-                  type="checkbox"
-                  checked={openDays[key as keyof OpenDaysForm]}
-                  onChange={(e) =>
-                    setOpenDays((prev) => ({ ...prev, [key]: e.target.checked }))
-                  }
-                />
-                <span>{label}</span>
-              </label>
-            ))}
+          <h2 className="text-2xl font-bold text-espresso">Your Businesses</h2>
+          {ownerLoading ? (
+            <p className="mt-2 text-espresso/80">Loading your businesses...</p>
+          ) : ownerBusinesses.length === 0 ? (
+            <p className="mt-2 text-espresso/80">You have no businesses yet. Use "Shto biznes" to add one.</p>
+          ) : (
+            <ul className="mt-4 grid gap-3">
+                  {ownerBusinesses.map((b) => (
+                    <li key={b.id} className="rounded-lg border bg-white px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <a className="font-semibold text-espresso" href={`/business/${b.id}`}>
+                            {b.businessName}
+                          </a>
+                          <div className="text-xs text-espresso/70">{b.status}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <a className="text-sm text-blue-600" href={`/business/${b.id}/edit`}>
+                            Edit
+                          </a>
+                          <a className="text-sm text-blue-600" href={`/business/${b.id}/offers`}>
+                            Manage Offers
+                          </a>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+            </ul>
+          )}
 
-            <button
-              type="submit"
-              disabled={openDaysLoading}
-              className="mt-2 w-fit rounded-lg bg-espresso px-4 py-2 font-semibold text-paper disabled:opacity-60"
-            >
-              {openDaysLoading ? "Saving..." : "Save Open Days"}
-            </button>
-
-            {openDaysMessage ? <p className="text-espresso">{openDaysMessage}</p> : null}
-          </form>
-        </div>
+          <hr className="my-8 border-oak/20" />
+          
+           </div>
       </main>
     </>
   );

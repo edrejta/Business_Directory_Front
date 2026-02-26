@@ -3,6 +3,7 @@ import Link from "next/link";
 import coffeeSquareImage from "@/src/assets/image (3).jpg";
 import featuredMainImage from "@/src/assets/image (4).jpg";
 import listingAltImage from "@/src/assets/image (5).jpg";
+import FavoriteButton from "@/components/FavoriteButton";
 
 type Category = "Discounts" | "FlashSales" | "EarlyAccess";
 
@@ -109,7 +110,19 @@ export default async function OffersPage({
                 </div>
                 <div className={styles.footer}>
                   <small>&#9200; {getTimeLeft(offer.expiresAt)}</small>
-                  <a href="/login">Claim</a>
+                  <div className={styles.actions}>
+                    <a href="/login">Claim</a>
+                    {offer.businessId ? (
+                      <FavoriteButton
+                        businessId={offer.businessId}
+                        name={offer.businessName || offer.title}
+                        source="offer"
+                        href={`/business/${offer.businessId}`}
+                        compact
+                        className={styles.favoriteButton}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}

@@ -1,25 +1,30 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import * as rtl from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { describe, it, expect, vi } from "vitest";
 import RegisterForm from "./RegisterForm";
 
 describe("RegisterForm", () => {
   it("renders Username, Email, Password and Regjistrohu button", () => {
-    render(<RegisterForm onSubmit={vi.fn()} />);
-    expect(screen.getByLabelText("Emri i përdoruesit")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /regjistrohu/i })).toBeInTheDocument();
+    const { getByLabelText, getByPlaceholderText, getByRole } = render(
+      <RegisterForm onSubmit={vi.fn()} />
+    );
+    expect(getByLabelText("Emri i përdoruesit")).toBeInTheDocument();
+    expect(getByLabelText("Email")).toBeInTheDocument();
+    expect(getByPlaceholderText("••••••••")).toBeInTheDocument();
+    expect(getByRole("button", { name: /regjistrohu/i })).toBeInTheDocument();
   });
 
   it("calls onSubmit with username, email, password, role on submit", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    render(<RegisterForm onSubmit={onSubmit} />);
-    await user.type(screen.getByLabelText("Emri i përdoruesit"), "johndoe");
-    await user.type(screen.getByLabelText("Email"), "john@example.com");
-    await user.type(screen.getByPlaceholderText("••••••••"), "password123");
-    await user.click(screen.getByRole("button", { name: /regjistrohu/i }));
+    const { getByLabelText, getByPlaceholderText, getByRole } = render(
+      <RegisterForm onSubmit={onSubmit} />
+    );
+    await user.type(getByLabelText("Emri i përdoruesit"), "johndoe");
+    await user.type(getByLabelText("Email"), "john@example.com");
+    await user.type(getByPlaceholderText("••••••••"), "password123");
+    await user.click(getByRole("button", { name: /regjistrohu/i }));
     expect(onSubmit).toHaveBeenCalledWith({
       username: "johndoe",
       email: "john@example.com",
@@ -35,14 +40,18 @@ describe("RegisterForm", () => {
         error="Një përdorues me këtë email ekziston tashmë."
       />
     );
-    expect(
-      screen.getByText("Një përdorues me këtë email ekziston tashmë.")
-    ).toBeInTheDocument();
+    const { getByText } = render(
+      <RegisterForm
+        onSubmit={vi.fn()}
+        error="Një përdorues me këtë email ekziston tashmë."
+      />
+    );
+    expect(getByText("Një përdorues me këtë email ekziston tashmë.")).toBeInTheDocument();
   });
 
   it("when isLoading=true button is disabled", () => {
-    render(<RegisterForm onSubmit={vi.fn()} isLoading />);
-    const btn = screen.getByRole("button", { name: /duke u ngarkuar|regjistrohu/i });
+    const { getByRole } = render(<RegisterForm onSubmit={vi.fn()} isLoading />);
+    const btn = getByRole("button", { name: /duke u ngarkuar|regjistrohu/i });
     expect(btn).toBeDisabled();
   });
 });

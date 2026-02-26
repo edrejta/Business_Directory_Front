@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getApprovedBusinessById } from "@/lib/api/public";
+import BusinessFeedback from "@/components/BusinessFeedback";
 
 export const revalidate = 60;
 
@@ -52,6 +53,10 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           <p className="mt-4 text-sm leading-6 text-espresso/85">
             {business.description ?? "No description provided yet."}
           </p>
+        </section>
+
+        <section className="rounded-2xl border border-oak/35 bg-paper/90 p-6 shadow-panel">
+          <BusinessFeedback businessId={business.id} businessName={business.name} href={`/businesses/${business.id}`} />
         </section>
 
         <section>

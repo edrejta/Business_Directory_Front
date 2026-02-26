@@ -136,6 +136,12 @@
   padding-top: 12px;
 }
 
+.deal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .deal-footer span {
   color: #8a6e56;
   font-size: 13px;
@@ -150,6 +156,10 @@
   font-size: 11px;
   text-transform: uppercase;
   padding: 7px 12px;
+}
+
+.deal-favorite {
+  border-radius: 999px;
 }
 
 .deals-empty {

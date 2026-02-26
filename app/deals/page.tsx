@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import "./deals.css";
+import FavoriteButton from "@/components/FavoriteButton";
 
 type DealCategory = "Discounts" | "FlashSales" | "EarlyAccess";
 
@@ -126,7 +127,19 @@ export default function DealsPage() {
                 <h3>{deal.businessName || "Business"}</h3>
                 <div className="deal-footer">
                   <span>{daysLeft(deal.expiresAt)}</span>
-                  <Link href={deal.businessId ? `/business/${deal.businessId}` : "/login"}>Claim</Link>
+                  <div className="deal-actions">
+                    <Link href={deal.businessId ? `/business/${deal.businessId}` : "/login"}>Claim</Link>
+                    {deal.businessId ? (
+                      <FavoriteButton
+                        businessId={deal.businessId}
+                        name={deal.businessName || deal.title}
+                        source="deal"
+                        href={`/business/${deal.businessId}`}
+                        compact
+                        className="deal-favorite"
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}

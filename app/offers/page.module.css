@@ -121,6 +121,12 @@
   gap: 10px;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .footer small {
   color: #7b6c5f;
   font-size: 13px;
@@ -135,6 +141,10 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 12px;
+}
+
+.favoriteButton {
+  border-radius: 999px;
 }
 
 .empty {

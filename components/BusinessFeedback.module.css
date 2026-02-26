@@ -1,0 +1,143 @@
+.section {
+  margin-top: 1.6rem;
+  border-top: 1px solid #e2dbd2;
+  padding-top: 1.4rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-family: "Playfair Display", serif;
+  color: #3f2f21;
+}
+
+.summary {
+  margin-top: 0.3rem;
+  color: #7a6756;
+  font-size: 0.92rem;
+}
+
+.form {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: #6f5f50;
+}
+
+.select,
+.textarea {
+  border: 1px solid #d8d0c6;
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.primaryButton {
+  border-radius: 0.6rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #6a4c34;
+  background: #6a4c34;
+  color: #fff;
+  font-weight: 600;
+}
+
+.secondaryButton {
+  border-radius: 0.6rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #d8d0c6;
+  background: #fff;
+  color: #3e3124;
+  font-weight: 600;
+}
+
+.helper {
+  color: #7a6756;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #a1402c;
+  font-size: 0.9rem;
+}
+
+.list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.card {
+  border: 1px solid #e2dbd2;
+  border-radius: 0.8rem;
+  padding: 0.8rem;
+  background: #f7f4ef;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #7f6f5e;
+  font-size: 0.85rem;
+}
+
+.rating {
+  color: #aa7b44;
+  font-weight: 700;
+}
+
+.comment {
+  margin: 0.4rem 0 0;
+  color: #5b4a3a;
+}
+
+.commentList {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.commentItem {
+  border-left: 3px solid #e2dbd2;
+  padding: 0.5rem 0.6rem;
+  background: #fff;
+}
+
+.commentForm {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}

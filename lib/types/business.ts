@@ -23,3 +23,44 @@ export interface UpdateBusinessInput {
   businessType?: string;
   description?: string;
 }
+
+export interface OwnerBusiness {
+  id: string;
+  ownerId?: string;
+  businessName: string;
+  address?: string;
+  city?: string;
+  email?: string;
+  phoneNumber?: string;
+  businessType?: number;
+  description?: string;
+  imageUrl?: string;
+  status?: string;
+  createdAt?: string;
+}
+
+export interface UpsertBusinessInput {
+  businessName: string;
+  address?: string;
+  city?: string;
+  email?: string;
+  phoneNumber?: string;
+  businessType?: number;
+  description?: string;
+  imageUrl?: string;
+}
+
+export interface OpenDays {
+  mondayOpen: boolean;
+  tuesdayOpen: boolean;
+  wednesdayOpen: boolean;
+  thursdayOpen: boolean;
+  fridayOpen: boolean;
+  saturdayOpen: boolean;
+  sundayOpen: boolean;
+}
+
+// optional openDays on owner upsert and owner business
+export interface OwnerBusinessWithOpenDays extends OwnerBusiness {
+  openDays?: OpenDays;
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BusinessFeedback from "@/components/BusinessFeedback";
 import styles from "./page.module.css";
 
 type BusinessDetail = {
@@ -37,7 +38,7 @@ async function getBusiness(id: string): Promise<BusinessDetail | null> {
       name: String(payload.name ?? payload.Name ?? "Business"),
       description: String(payload.description ?? payload.Description ?? ""),
       category: businessType || "General",
-      address: String(payload.address ?? payload.Address ?? city),
+      address: String(payload.address ?? payload.Address),
       location: city,
       phone: String(payload.phone ?? payload.Phone ?? ""),
       email: String(payload.email ?? payload.Email ?? ""),
@@ -95,20 +96,8 @@ export default async function BusinessDetailsPage({ params }: { params: Promise<
         <h1 className={styles.title}>{item.name}</h1>
         <h2 className={styles.sectionTitle}>Description</h2>
         <p className={styles.desc}>{item.description || "Nuk ka pershkrim per momentin."}</p>
-        <p className={styles.rating}>
-          {stars(item.rating)} ({item.reviewsCount} reviews)
-        </p>
 
-        {photos.length > 0 && (
-          <>
-            <h2 className={styles.sectionTitle}>Photos</h2>
-            <div className={styles.photos}>
-              {photos.map((src, idx) => (
-                <img key={`${src}-${idx}`} src={src} alt={`${item.name} photo ${idx + 1}`} />
-              ))}
-            </div>
-          </>
-        )}
+
 
         <div className={styles.grid}>
           <div className={styles.box}>
@@ -123,23 +112,10 @@ export default async function BusinessDetailsPage({ params }: { params: Promise<
             <span className={styles.boxLabel}>Phone</span>
             <strong>{item.phone}</strong>
           </div>
-          <div className={styles.box}>
-            <span className={styles.boxLabel}>Email</span>
-            <strong>{item.email}</strong>
-          </div>
+    
         </div>
 
-        <div className={styles.actions}>
-          <a className={`${styles.btn} ${styles.btnPrimary}`} href={`tel:${item.phone}`}>
-            Call Now
-          </a>
-          <a className={`${styles.btn} ${styles.btnAccent}`} href={`https://wa.me/${item.phone.replace(/\D/g, "")}`}>
-            WhatsApp
-          </a>
-          <a className={styles.btn} href={`https://maps.google.com/?q=${mapsTarget}`} target="_blank" rel="noreferrer">
-            Get Directions
-          </a>
-        </div>
+        <BusinessFeedback businessId={item.id} businessName={item.name} />
 
         <Link href="/homepage" className={styles.back}>
           &larr; Back to all businesses
