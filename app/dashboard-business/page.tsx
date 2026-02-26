@@ -109,6 +109,7 @@ enum BusinessTypeEnum {
 
 const CITIES = [...KOSOVO_CITIES];
 const BUSINESS_TYPES = Object.values(BusinessTypeEnum);
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 const initialDealForm: DealForm = {
   title: "",

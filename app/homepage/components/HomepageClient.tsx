@@ -48,7 +48,7 @@ type ApiResult<T> = {
   error: string | null;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 const FALLBACK_IMAGE = heroArchImage.src;
 const ALT_IMAGE = listingAltImage.src;
 const FEATURED_MAIN_IMAGE = featuredMainImage.src;

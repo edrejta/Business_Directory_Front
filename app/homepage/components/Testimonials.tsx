@@ -9,7 +9,7 @@ type Review = {
   comment: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 const FALLBACK_REVIEWS: Review[] = [
   { id: "seed-1", reviewerName: "user.demo", rating: 5, comment: "Sherbim shume i mire dhe ushqim cilesor." },
   { id: "seed-2", reviewerName: "user.demo", rating: 4, comment: "Atmosfere e qete, kafe shume e mire." },
@@ -96,4 +96,3 @@ export function Testimonials() {
     </section>
   );
 }
-

@@ -17,7 +17,7 @@ type Promotion = {
   expiresAt?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 const CATEGORY_FILTERS: Array<{ value: DealCategory; label: string }> = [
   { value: "Discounts", label: "Discounts" },
@@ -136,4 +136,3 @@ export default function DealsPage() {
     </main>
   );
 }
-
