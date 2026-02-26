@@ -16,9 +16,13 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
+RUN addgroup -g 10001 -S appgroup && adduser -S appuser -u 10001 -G appgroup
+
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+
+USER 10001:10001
 
 EXPOSE 3000
 CMD ["node", "server.js"]
