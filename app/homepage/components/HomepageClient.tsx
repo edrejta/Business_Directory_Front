@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Testimonials } from "./Testimonials";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import heroArchImage from "@/src/assets/image.jpg";
 import cityWideImage from "@/src/assets/image (2).jpg";
@@ -53,6 +54,7 @@ const ALT_IMAGE = listingAltImage.src;
 const FEATURED_MAIN_IMAGE = featuredMainImage.src;
 const STREET_IMAGE = cityWideImage.src;
 const COFFEE_IMAGE = coffeeSquareImage.src;
+
 const SAMPLE_BUSINESSES: Business[] = [
   {
     id: "sample-1",
@@ -147,7 +149,9 @@ function estimateReviewCount(id: string) {
 }
 
 export default function HomepageClient() {
+  const router = useRouter();
   const { user, logoutUser, getRedirectPath } = useAuth();
+
   const [query, setQuery] = useState("");
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -162,6 +166,15 @@ export default function HomepageClient() {
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState<string | null>(null);
   const [hasSearchAttempt, setHasSearchAttempt] = useState(false);
+
+  const handleAddBusiness = () => {
+    const next = "/dashboard-business?mode=create";
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(next)}`);
+      return;
+    }
+    router.push(next);
+  };
 
   const runSearch = async (options?: {
     keyword?: string;
@@ -239,9 +252,11 @@ export default function HomepageClient() {
     }
     return hasSearchAttempt ? [] : SAMPLE_BUSINESSES;
   }, [results, hasSearchAttempt]);
+
   const featuredItems = useMemo(() => (featured.length > 0 ? featured.slice(0, 2) : listItems), [featured, listItems]);
   const trustedCount = useMemo(() => (results.length > 0 ? results.length : 2), [results.length]);
   const categoryCount = useMemo(() => (categories.length > 0 ? categories.length : 2), [categories.length]);
+
   const mapPoints = useMemo(() => {
     const normalizeText = (input: string) =>
       input
@@ -393,6 +408,7 @@ export default function HomepageClient() {
             {categories.map((item) => (
               <button
                 key={item}
+                type="button"
                 className={selectedCategories.includes(item) ? "active" : ""}
                 onClick={() =>
                   setSelectedCategories((prev) =>
@@ -412,6 +428,7 @@ export default function HomepageClient() {
             {locations.map((item) => (
               <button
                 key={item}
+                type="button"
                 className={selectedCities.includes(item) ? "active" : ""}
                 onClick={() => {
                   setSelectedCities((prev) => (prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item]));
@@ -425,8 +442,11 @@ export default function HomepageClient() {
         </div>
 
         <div className="kb-filter-actions">
-          <button onClick={() => void runSearch({ keyword: query, markAsAttempt: true })}>Apply Filters</button>
+          <button type="button" onClick={() => void runSearch({ keyword: query, markAsAttempt: true })}>
+            Apply Filters
+          </button>
           <button
+            type="button"
             className="ghost"
             onClick={() => {
               setSelectedCategories([]);
@@ -447,7 +467,11 @@ export default function HomepageClient() {
             <h2>Business Listings</h2>
             {activeLocation ? <p className="kb-active-filter">Filtered by location: {activeLocation}</p> : null}
           </div>
-          <button className="kb-map-view" onClick={() => setViewMode((prev) => (prev === "list" ? "map" : "list"))}>
+          <button
+            type="button"
+            className="kb-map-view"
+            onClick={() => setViewMode((prev) => (prev === "list" ? "map" : "list"))}
+          >
             &#9679; {viewMode === "list" ? "MAP VIEW" : "LIST VIEW"}
           </button>
         </div>
@@ -470,45 +494,47 @@ export default function HomepageClient() {
                       <strong>{buildStars(item.rating || 4)}</strong>
                       <small>({estimateReviewCount(item.id)})</small>
                     </div>
-                  <div className="kb-listing-actions">
-                    <a href={`/business/${item.id}`}>VIEW DETAILS</a>
-                    <div className="kb-listing-icons">
-                      <a
-                        className="kb-listing-icon"
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location || item.name)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Open ${item.name} location`}
-                        title="Open location"
-                      >
-                        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                          <path d="M12 2a7 7 0 0 0-7 7c0 4.8 5.3 10.6 6.2 11.6a1 1 0 0 0 1.6 0C13.7 19.6 19 13.8 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z" />
-                        </svg>
-                      </a>
-                      <a
-                        className="kb-listing-icon"
-                        href={`/business/${item.id}`}
-                        aria-label={`Open ${item.name} profile`}
-                        title="Open business profile"
-                      >
-                        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm6.9 9h-2.1a15 15 0 0 0-1.2-5A8 8 0 0 1 18.9 11ZM12 4.1c.8 1 1.8 3.2 2.4 6H9.6c.6-2.8 1.6-5 2.4-6ZM6.4 6a15 15 0 0 0-1.3 5H3.1A8 8 0 0 1 6.4 6ZM3.1 13h2c.1 1.8.6 3.5 1.3 5A8 8 0 0 1 3.1 13Zm6.5 0h4.8c-.6 2.8-1.6 5-2.4 6-.8-1-1.8-3.2-2.4-6Zm6 5c.7-1.5 1.2-3.2 1.3-5h2A8 8 0 0 1 15.6 18Z" />
-                        </svg>
-                      </a>
-                      <a
-                        className="kb-listing-icon kb-listing-icon-clock"
-                        href={`/opendays?businessId=${item.id}`}
-                        aria-label={`Check ${item.name} opening days`}
-                        title="Opening days"
-                      >
-                        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                          <path d="M12 4a1 1 0 0 1 1 1v6.4l3.3 2a1 1 0 1 1-1 1.7l-3.8-2.3A1 1 0 0 1 11 12V5a1 1 0 0 1 1-1Zm0-2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z" />
-                        </svg>
-                      </a>
+                    <div className="kb-listing-actions">
+                      <a href={`/business/${item.id}`}>VIEW DETAILS</a>
+                      <div className="kb-listing-icons">
+                        <a
+                          className="kb-listing-icon"
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            item.location || item.name,
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open ${item.name} location`}
+                          title="Open location"
+                        >
+                          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                            <path d="M12 2a7 7 0 0 0-7 7c0 4.8 5.3 10.6 6.2 11.6a1 1 0 0 0 1.6 0C13.7 19.6 19 13.8 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z" />
+                          </svg>
+                        </a>
+                        <a
+                          className="kb-listing-icon"
+                          href={`/business/${item.id}`}
+                          aria-label={`Open ${item.name} profile`}
+                          title="Open business profile"
+                        >
+                          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm6.9 9h-2.1a15 15 0 0 0-1.2-5A8 8 0 0 1 18.9 11ZM12 4.1c.8 1 1.8 3.2 2.4 6H9.6c.6-2.8 1.6-5 2.4-6ZM6.4 6a15 15 0 0 0-1.3 5H3.1A8 8 0 0 1 6.4 6ZM3.1 13h2c.1 1.8.6 3.5 1.3 5A8 8 0 0 1 3.1 13Zm6.5 0h4.8c-.6 2.8-1.6 5-2.4 6-.8-1-1.8-3.2-2.4-6Zm6 5c.7-1.5 1.2-3.2 1.3-5h2A8 8 0 0 1 15.6 18Z" />
+                          </svg>
+                        </a>
+                        <a
+                          className="kb-listing-icon kb-listing-icon-clock"
+                          href={`/opendays?businessId=${item.id}`}
+                          aria-label={`Check ${item.name} opening days`}
+                          title="Opening days"
+                        >
+                          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                            <path d="M12 4a1 1 0 0 1 1 1v6.4l3.3 2a1 1 0 1 1-1 1.7l-3.8-2.3A1 1 0 0 1 11 12V5a1 1 0 0 1 1-1Zm0-2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z" />
+                          </svg>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </article>
+                </article>
               ))
             )}
           </div>
@@ -542,9 +568,9 @@ export default function HomepageClient() {
         )}
 
         <div className="kb-pagination">
-          <button>Prev</button>
+          <button type="button">Prev</button>
           <span>Page 1 of 1</span>
-          <button>Next</button>
+          <button type="button">Next</button>
         </div>
       </section>
 
@@ -552,9 +578,9 @@ export default function HomepageClient() {
         <div className="kb-owner-banner-inner">
           <p className="kb-owner-kicker">FOR BUSINESS OWNERS</p>
           <h2>A jeni pronar biznesi? Shtoni biznesin tuaj.</h2>
-          <a className="kb-owner-banner-btn" href="/addbuisnes">
+          <button type="button" className="kb-owner-banner-btn" onClick={handleAddBusiness}>
             ADD YOUR BUSINESS
-          </a>
+          </button>
         </div>
       </section>
 
@@ -594,10 +620,7 @@ export default function HomepageClient() {
               </article>
               <article className="kb-city-card">
                 <img src={STREET_IMAGE} alt="Prishtine" />
-                <button
-                  type="button"
-                  onClick={applyPrishtineFilter}
-                >
+                <button type="button" onClick={applyPrishtineFilter}>
                   EXPLORE PRISHTINE
                 </button>
               </article>
@@ -682,7 +705,12 @@ export default function HomepageClient() {
               }
             }}
           >
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Enter your email" />
+            <input
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              type="email"
+              placeholder="Enter your email"
+            />
             <button type="submit">SUBSCRIBE &#8594;</button>
           </form>
           {subscribeMessage ? <p className="kb-newsletter-message">{subscribeMessage}</p> : null}

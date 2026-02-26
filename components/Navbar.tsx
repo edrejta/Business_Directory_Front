@@ -3,25 +3,24 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
-
-const roleToPath: Record<number, string> = {
-  0: "/dashboard-user",
-  1: "/dashboard-business",
-  2: "/dashboard-admin",
-};
-
-const roleToLabel: Record<number, string> = {
-  0: "User",
-  1: "Business Owner",
-  2: "Admin",
-};
+import { getRedirectPath, getRoleLabel } from "@/lib/auth/redirect";
 
 export default function Navbar() {
   const { user, logoutUser } = useAuth();
 
   const homePath = useMemo(() => {
     if (!user) return "/login";
-    return roleToPath[user.role] || "/login";
+    return getRedirectPath(user.role);
+  }, [user]);
+
+  const roleLabel = useMemo(() => {
+    if (!user) return "Guest";
+    return getRoleLabel(user.role);
+  }, [user]);
+
+  const showBiznesShortcut = useMemo(() => {
+    if (!user) return false;
+    return getRedirectPath(user.role) !== "/dashboard-business";
   }, [user]);
 
   return (
@@ -39,11 +38,20 @@ export default function Navbar() {
             Home
           </Link>
 
+          {user && showBiznesShortcut ? (
+            <Link
+              className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
+              href="/dashboard-business"
+            >
+              Biznes
+            </Link>
+          ) : null}
+
           <Link
             className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
             href={homePath}
           >
-            {user ? roleToLabel[user.role] || "User" : "Guest"}
+            {roleLabel}
           </Link>
 
           {user ? (
