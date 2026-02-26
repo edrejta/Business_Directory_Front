@@ -12,7 +12,6 @@ type Deal = {
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
-
 async function getDeals(category: string): Promise<Deal[]> {
   try {
     const res = await fetch(`${API_BASE}/promotions?category=${encodeURIComponent(category)}`, { cache: "no-store" });
