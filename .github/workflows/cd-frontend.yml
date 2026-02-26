@@ -3,17 +3,14 @@ name: CD Frontend
 on:
   push:
     branches: [dev, main]
-  pull_request:
-    branches: [dev, main]
 
 concurrency:
-  group: cd-${{ github.workflow }}-${{ github.ref }}
+  group: cd-frontend-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   deploy:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -37,23 +34,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and push frontend image
+      - name: Build and push image (SHA)
         run: |
           set -euo pipefail
           az acr login --name ${{ vars.ACR_NAME }}
           docker build -t ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} .
           docker push ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
 
-      - name: Deploy to AKS
+      - name: Deploy to AKS (set image)
         run: |
           set -euo pipefail
           az aks get-credentials -g ${{ vars.AKS_RESOURCE_GROUP }} -n ${{ vars.AKS_CLUSTER_NAME }} --overwrite-existing
-          IMAGE="${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}"
-          PLACEHOLDER_IMAGE="${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:placeholder"
-
-          # optional if you have a service yaml for frontend
-          # kubectl -n dev apply -f k8s/service-frontend.yaml
-
-          sed "s|$PLACEHOLDER_IMAGE|$IMAGE|g" k8s/deployment-frontend.yaml | kubectl -n dev apply -f -
-          kubectl -n dev annotate deployment/bd-frontend kubernetes.io/change-cause="image=$IMAGE" --overwrite
+          kubectl -n dev set image deployment/bd-frontend bd-frontend=${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
           kubectl -n dev rollout status deployment/bd-frontend
