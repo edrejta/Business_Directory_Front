@@ -2,20 +2,18 @@ name: CD Frontend
 
 on:
   push:
-    branches:
-      - dev
-      - main
-      - test/cd-frontend
+    branches: [dev, main]
   pull_request:
-    branches:
-      - dev
-      - main
-      - test/cd-frontend
+    branches: [dev, main]
+
+concurrency:
+  group: cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +26,7 @@ jobs:
           AKS_RESOURCE_GROUP: ${{ vars.AKS_RESOURCE_GROUP }}
           AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
         run: |
+          set -euo pipefail
           [ -n "$AZURE_CREDENTIALS" ] || { echo "Missing secret: AZURE_CREDENTIALS"; exit 1; }
           [ -n "$ACR_NAME" ] || { echo "Missing variable: ACR_NAME"; exit 1; }
           [ -n "$ACR_LOGIN_SERVER" ] || { echo "Missing variable: ACR_LOGIN_SERVER"; exit 1; }
@@ -38,18 +37,23 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - run: az acr login --name ${{ vars.ACR_NAME }}
-
-      - run: |
+      - name: Build and push frontend image
+        run: |
+          set -euo pipefail
+          az acr login --name ${{ vars.ACR_NAME }}
           docker build -t ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} .
           docker push ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
-          docker tag ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }} ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:placeholder
-          docker push ${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:placeholder
 
-      - run: az aks get-credentials -g ${{ vars.AKS_RESOURCE_GROUP }} -n ${{ vars.AKS_CLUSTER_NAME }} --overwrite-existing
+      - name: Deploy to AKS
+        run: |
+          set -euo pipefail
+          az aks get-credentials -g ${{ vars.AKS_RESOURCE_GROUP }} -n ${{ vars.AKS_CLUSTER_NAME }} --overwrite-existing
+          IMAGE="${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}"
+          PLACEHOLDER_IMAGE="${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:placeholder"
 
-      - run: kubectl -n dev set image deployment/bd-frontend bd-frontend=${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}
+          # optional if you have a service yaml for frontend
+          # kubectl -n dev apply -f k8s/service-frontend.yaml
 
-      - run: kubectl -n dev annotate deployment/bd-frontend kubernetes.io/change-cause="image=${{ vars.ACR_LOGIN_SERVER }}/bd-frontend:${{ github.sha }}" --overwrite
-
-      - run: kubectl -n dev rollout status deployment/bd-frontend
+          sed "s|$PLACEHOLDER_IMAGE|$IMAGE|g" k8s/deployment-frontend.yaml | kubectl -n dev apply -f -
+          kubectl -n dev annotate deployment/bd-frontend kubernetes.io/change-cause="image=$IMAGE" --overwrite
+          kubectl -n dev rollout status deployment/bd-frontend
