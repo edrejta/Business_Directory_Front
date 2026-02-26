@@ -24,50 +24,6 @@ function toStringSafe(v: unknown): string {
   return String(v);
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
-
-async function getBusiness(id: string): Promise<BusinessDetail | null> {
-  try {
-    const res = await fetch(`${API_BASE}/api/businesses/public`, { cache: "no-store" });
-    if (!res.ok) return null;
-
-    const raw = (await res.json().catch(() => [])) as unknown;
-    const root = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
-    const list = Array.isArray(root.data ?? root.result) ? (root.data ?? root.result) : raw;
-    const payload = (list as Record<string, unknown>[]).find(
-      (item) => String(item.id ?? item.Id ?? "") === id
-    );
-    if (!payload) return null;
-
-    const city = String(payload.city ?? payload.City ?? "");
-    const businessType = String(
-      payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type ?? ""
-    );
-
-    return {
-      openDays: String(payload.openDays ?? payload.OpenDays ?? ""),
-      id: String(payload.id ?? payload.Id ?? id),
-      name: String(payload.name ?? payload.Name ?? "Business"),
-      description: String(payload.description ?? payload.Description ?? ""),
-      category: businessType || "General",
-      address: String(payload.address ?? payload.Address ?? city),
-      location: city,
-      phone: String(payload.phone ?? payload.Phone ?? ""),
-      email: String(payload.email ?? payload.Email ?? ""),
-      logo: String(payload.logo ?? payload.Logo ?? ""),
-      rating: Number(payload.rating ?? payload.Rating ?? 0),
-      reviewsCount: Number(payload.reviewsCount ?? payload.ReviewsCount ?? 0),
-      coordinates:
-        typeof payload.coordinates === "object" && payload.coordinates !== null
-          ? (payload.coordinates as { lat: number; lng: number })
-          : null,
-      photos: Array.isArray(payload.photos) ? (payload.photos as string[]) : [],
-    };
-  } catch {
-    return null;
-  }
-}
-
 function stars(rating: number): string {
   const full = Math.max(0, Math.min(5, Math.round(rating)));
   return "*".repeat(full) + ".".repeat(5 - full);
