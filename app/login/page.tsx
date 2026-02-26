@@ -1,30 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthPageLayout from "@/components/AuthPageLayout";
 import LoginForm from "@/components/LoginForm";
 import { useAuth } from "@/context/AuthContext";
 import { loginSchema } from "@/lib/validation/auth";
 
-export default function LoginPage() {
+function LoginInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, user, isLoading, getRedirectPath } = useAuth();
+
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const nextPath = useMemo(() => {
+    const raw = searchParams.get("next");
+    if (!raw) return null;
+    if (!raw.startsWith("/")) return null;
+    return raw;
+  }, [searchParams]);
+
   useEffect(() => {
     if (isLoading) return;
     if (user) {
-      router.replace(getRedirectPath(user.role));
+      router.replace(nextPath ?? getRedirectPath(user.role));
     }
-  }, [user, isLoading, router, getRedirectPath]);
+  }, [user, isLoading, router, getRedirectPath, nextPath]);
 
   async function handleSubmit(data: { email: string; password: string }) {
     setError(null);
     setFieldErrors({});
+
     const parsed = loginSchema.safeParse(data);
     if (!parsed.success) {
       const fl = parsed.error.flatten();
@@ -35,10 +45,11 @@ export default function LoginPage() {
       setError(parsed.error.issues[0]?.message ?? "Të dhëna të pavlefshme.");
       return;
     }
+
     setIsSubmitting(true);
     try {
       const response = await login(parsed.data);
-      router.push(getRedirectPath(response.role));
+      router.push(nextPath ?? getRedirectPath(response.role));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Email ose fjalëkalim i gabuar.");
     } finally {
@@ -50,18 +61,13 @@ export default function LoginPage() {
 
   return (
     <AuthPageLayout>
-      <h1 className="animate-title-reveal mb-2 text-2xl font-bold tracking-tight text-espresso">
-        Hyr
-      </h1>
+      <h1 className="animate-title-reveal mb-2 text-2xl font-bold tracking-tight text-espresso">Hyr</h1>
       <div className="mb-5 h-0.5 w-full overflow-hidden rounded bg-oak/30">
         <span className="animate-line-draw block h-full bg-gradient-to-r from-transparent via-oak/50 to-transparent" />
       </div>
-      <LoginForm
-        onSubmit={handleSubmit}
-        error={error}
-        isLoading={isSubmitting}
-        fieldErrors={fieldErrors}
-      />
+
+      <LoginForm onSubmit={handleSubmit} error={error} isLoading={isSubmitting} fieldErrors={fieldErrors} />
+
       <p className="animate-fade-up mt-4 text-center text-sm text-espresso/80 [animation-delay:80ms]">
         Nuk ke llogari?{" "}
         <Link href="/register" className="font-semibold text-espresso underline hover:no-underline">
@@ -69,5 +75,20 @@ export default function LoginPage() {
         </Link>
       </p>
     </AuthPageLayout>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthPageLayout>
+          <div className="mb-2 text-2xl font-bold tracking-tight text-espresso">Hyr</div>
+          <p className="text-sm text-espresso/80">Loading...</p>
+        </AuthPageLayout>
+      }
+    >
+      <LoginInner />
+    </Suspense>
   );
 }
