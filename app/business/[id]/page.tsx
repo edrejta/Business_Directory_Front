@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import BusinessComments from "./BusinessComments";
+import { API_URL } from "@/lib/api/config";
 
 type BusinessDetail = {
   id: string;
@@ -18,39 +19,62 @@ type BusinessDetail = {
   photos?: string[];
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+function extractPayload(raw: unknown): Record<string, unknown> | null {
+  const root = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : null;
+  const candidate = root && typeof root.data === "object" && root.data !== null
+    ? root.data
+    : root && typeof root.result === "object" && root.result !== null
+      ? root.result
+      : raw;
+  return typeof candidate === "object" && candidate !== null ? (candidate as Record<string, unknown>) : null;
+}
+
+function toBusinessDetail(payload: Record<string, unknown>, fallbackId: string): BusinessDetail {
+  const city = String(payload.city ?? payload.City ?? "");
+  const businessType = String(payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type ?? "");
+
+  return {
+    id: String(payload.id ?? payload.Id ?? payload.businessId ?? payload.BusinessId ?? fallbackId),
+    name: String(payload.name ?? payload.Name ?? payload.businessName ?? payload.BusinessName ?? "Business"),
+    description: String(payload.description ?? payload.Description ?? ""),
+    category: businessType || "General",
+    address: String(payload.address ?? payload.Address ?? city),
+    location: city,
+    phone: String(payload.phone ?? payload.Phone ?? payload.phoneNumber ?? payload.PhoneNumber ?? ""),
+    email: String(payload.email ?? payload.Email ?? ""),
+    logo: String(payload.logo ?? payload.Logo ?? payload.imageUrl ?? payload.ImageUrl ?? ""),
+    rating: Number(payload.rating ?? payload.Rating ?? 0),
+    reviewsCount: Number(payload.reviewsCount ?? payload.ReviewsCount ?? 0),
+    coordinates:
+      typeof payload.coordinates === "object" && payload.coordinates !== null
+        ? (payload.coordinates as { lat: number; lng: number })
+        : null,
+    photos: Array.isArray(payload.photos) ? (payload.photos as string[]) : [],
+  };
+}
 
 async function getBusiness(id: string): Promise<BusinessDetail | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/businesses/public`, { cache: "no-store" });
-    if (!res.ok) return null;
-    const raw = (await res.json().catch(() => [])) as unknown;
-    const root = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
-    const list = Array.isArray(root.data ?? root.result ?? raw) ? (root.data ?? root.result ?? raw) : [];
-    const payload = (list as Record<string, unknown>[]).find((item) => String(item.id ?? item.Id ?? "") === id);
-    if (!payload) return null;
+    const byIdRes = await fetch(`${API_URL}/api/businesses/${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (byIdRes.ok) {
+      const byIdRaw = (await byIdRes.json().catch(() => null)) as unknown;
+      const byIdPayload = extractPayload(byIdRaw);
+      if (byIdPayload) {
+        return toBusinessDetail(byIdPayload, id);
+      }
+    }
 
-    const city = String(payload.city ?? payload.City ?? "");
-    const businessType = String(payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type ?? "");
-
-    return {
-      id: String(payload.id ?? payload.Id ?? id),
-      name: String(payload.name ?? payload.Name ?? "Business"),
-      description: String(payload.description ?? payload.Description ?? ""),
-      category: businessType || "General",
-      address: String(payload.address ?? payload.Address ?? city),
-      location: city,
-      phone: String(payload.phone ?? payload.Phone ?? ""),
-      email: String(payload.email ?? payload.Email ?? ""),
-      logo: String(payload.logo ?? payload.Logo ?? ""),
-      rating: Number(payload.rating ?? payload.Rating ?? 0),
-      reviewsCount: Number(payload.reviewsCount ?? payload.ReviewsCount ?? 0),
-      coordinates:
-        typeof payload.coordinates === "object" && payload.coordinates !== null
-          ? (payload.coordinates as { lat: number; lng: number })
-          : null,
-      photos: Array.isArray(payload.photos) ? (payload.photos as string[]) : [],
-    };
+    const listRes = await fetch(`${API_URL}/api/businesses/public`, { cache: "no-store" });
+    if (!listRes.ok) return null;
+    const listRaw = (await listRes.json().catch(() => [])) as unknown;
+    const root = typeof listRaw === "object" && listRaw !== null ? (listRaw as Record<string, unknown>) : {};
+    const list = Array.isArray(root.data ?? root.result ?? root.items ?? listRaw)
+      ? (root.data ?? root.result ?? root.items ?? listRaw)
+      : [];
+    const payload = (list as Record<string, unknown>[]).find(
+      (item) => String(item.id ?? item.Id ?? item.businessId ?? item.BusinessId ?? "") === id,
+    );
+    return payload ? toBusinessDetail(payload, id) : null;
   } catch {
     return null;
   }
