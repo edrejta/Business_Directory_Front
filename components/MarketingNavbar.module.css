@@ -1,0 +1,132 @@
+.shell {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  width: 100%;
+  border-bottom: 1px solid rgba(216, 209, 200, 0.7);
+  background: rgba(239, 237, 233, 0.98);
+  backdrop-filter: blur(8px);
+}
+
+.bar {
+  height: 78px;
+  margin: 0 auto;
+  max-width: 1320px;
+  padding: 0 clamp(16px, 5vw, 180px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #3a2d28;
+  text-decoration: none;
+  font-size: clamp(26px, 2.8vw, 44px);
+  line-height: 1;
+}
+
+.badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #946f4e;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.brandText {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 700;
+}
+
+.menuButton {
+  display: none;
+  border: 1px solid #baaea0;
+  background: #f5f1ec;
+  color: #4f4037;
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.link {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  color: #8a7d70;
+  text-decoration: none;
+  padding: 8px 10px;
+}
+
+.btn {
+  min-width: 92px;
+  text-align: center;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btnOutline {
+  border-color: #b8aca0;
+  color: #4f4037;
+  background: transparent;
+}
+
+.btnSolid {
+  border-color: #946f4e;
+  background: #946f4e;
+  color: #fff;
+}
+
+@media (max-width: 980px) {
+  .menuButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav {
+    position: absolute;
+    top: 78px;
+    left: 0;
+    right: 0;
+    background: #efe9e1;
+    border-bottom: 1px solid rgba(173, 159, 144, 0.7);
+    padding: 12px 16px 16px;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .open {
+    display: flex;
+  }
+
+  .link,
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

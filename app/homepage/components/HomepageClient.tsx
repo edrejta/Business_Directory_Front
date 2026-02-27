@@ -5,6 +5,7 @@ import { Testimonials } from "./Testimonials";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import MarketingNavbar from "@/components/MarketingNavbar";
 import heroArchImage from "@/src/assets/image.jpg";
 import cityWideImage from "@/src/assets/image (2).jpg";
 import coffeeSquareImage from "@/src/assets/image (3).jpg";
@@ -206,7 +207,7 @@ function estimateReviewCount(id: string) {
 
 export default function HomepageClient() {
   const router = useRouter();
-  const { user, logoutUser, getRedirectPath } = useAuth();
+  const { user } = useAuth();
 
   const [query, setQuery] = useState("");
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
@@ -319,40 +320,9 @@ export default function HomepageClient() {
     document.getElementById("business-listings")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const roleHref = user ? getRedirectPath(user.role) : "/login";
-
   return (
     <div className="kb-page">
-      <header className="kb-topbar">
-        <Link className="kb-brand" href="/">
-          <span>K</span>
-          <strong>KosBiz</strong>
-        </Link>
-
-        <nav className="kb-nav">
-          <Link href="/about">About</Link>
-          <Link href="/how-to-use">How To Use</Link>
-          {user ? (
-            <>
-              <Link className="kb-btn kb-btn-outline" href={roleHref}>
-                Dashboard
-              </Link>
-              <button className="kb-btn kb-btn-solid" onClick={logoutUser} type="button">
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link className="kb-btn kb-btn-outline" href="/login">
-                Login
-              </Link>
-              <Link className="kb-btn kb-btn-solid" href="/register">
-                Signup
-              </Link>
-            </>
-          )}
-        </nav>
-      </header>
+      <MarketingNavbar />
 
       <section className="kb-hero">
         <div className="kb-hero-left">
