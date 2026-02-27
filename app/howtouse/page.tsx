@@ -46,8 +46,8 @@ export default function HowToUseSelectorPage() {
         </div>
       </section>
 
-      <footer className="htu-footer">
-        <div className="htu-wrap htu-footer-grid">
+      <footer className="htu-footer" id="contact">
+        <div className="htu-footer-shell htu-footer-grid">
           <div>
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>

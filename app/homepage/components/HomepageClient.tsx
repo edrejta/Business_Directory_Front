@@ -172,13 +172,8 @@ function normalizeBusiness(item: ApiBusiness): Business {
   };
 }
 
-async function fetchCategoriesWithFallback() {
-  const primary = await fetchJson<string[]>("/api/categories", []);
-  const hasPrimaryData = Array.isArray(primary.data) && primary.data.length > 0;
-  if (hasPrimaryData || !primary.error) {
-    return primary;
-  }
-  return fetchJson<string[]>("/categories", []);
+async function fetchCategories() {
+  return fetchJson<string[]>("/api/categories", []);
 }
 
 function normalizeCities(raw: unknown): string[] {
@@ -265,7 +260,7 @@ export default function HomepageClient() {
       const [businessesRes, citiesRes, categoriesRes] = await Promise.all([
         fetchJson<ApiBusiness[]>("/api/businesses/public", []),
         fetchJson<unknown>("/api/cities", []),
-        fetchCategoriesWithFallback(),
+        fetchCategories(),
       ]);
 
       if (!mounted) {
@@ -658,7 +653,7 @@ export default function HomepageClient() {
         </div>
       </section>
 
-      <footer className="kb-footer">
+      <footer className="kb-footer" id="contact">
         <div className="kb-footer-col">
           <h3>Explore</h3>
           <div className="kb-footer-links">

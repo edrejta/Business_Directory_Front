@@ -10,9 +10,8 @@
 
 .bar {
   height: 78px;
-  margin: 0 auto;
-  max-width: 1320px;
-  padding: 0 clamp(16px, 5vw, 180px);
+  width: 100%;
+  padding: 0 clamp(16px, 3.6vw, 56px);
   display: flex;
   align-items: center;
   justify-content: space-between;

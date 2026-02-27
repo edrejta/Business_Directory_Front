@@ -98,8 +98,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <footer className="ab-footer">
-        <div className="ab-wrap ab-footer-grid">
+      <footer className="ab-footer" id="contact">
+        <div className="ab-footer-shell ab-footer-grid">
           <div>
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>

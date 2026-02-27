@@ -122,8 +122,8 @@ export default function HowToUseUserPage() {
         </Link>
       </section>
 
-      <footer className="htu-user-footer">
-        <div className="htu-user-wrap htu-user-footer-grid">
+      <footer className="htu-user-footer" id="contact">
+        <div className="htu-user-footer-shell htu-user-footer-grid">
           <div>
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>

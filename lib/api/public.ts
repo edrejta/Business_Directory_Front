@@ -132,5 +132,5 @@ export async function getApprovedBusinessById(id: string): Promise<Business> {
 }
 
 export async function getHealthStatus(): Promise<any> {
-  return publicJson<any>(`/health`);
+  return publicJson<any>(`/api/health`);
 }

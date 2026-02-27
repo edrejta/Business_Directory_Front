@@ -36,7 +36,7 @@ export default function MarketingNavbar() {
           <Link className={styles.link} href="/how-to-use" onClick={() => setOpen(false)}>
             How To Use
           </Link>
-          <a className={styles.link} href="mailto:support@kosbiz.com" onClick={() => setOpen(false)}>
+          <a className={styles.link} href="#contact" onClick={() => setOpen(false)}>
             Contact
           </a>
           {user ? (
