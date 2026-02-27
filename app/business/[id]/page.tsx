@@ -155,12 +155,6 @@ export default async function BusinessDetailsPage({ params }: { params: Promise<
         </div>
 
         <div className={styles.actions}>
-          <a className={`${styles.btn} ${styles.btnPrimary}`} href={`tel:${item.phone}`}>
-            Call Now
-          </a>
-          <a className={`${styles.btn} ${styles.btnAccent}`} href={`https://wa.me/${item.phone.replace(/\D/g, "")}`}>
-            WhatsApp
-          </a>
           <a className={styles.btn} href={`https://maps.google.com/?q=${mapsTarget}`} target="_blank" rel="noreferrer">
             Get Directions
           </a>

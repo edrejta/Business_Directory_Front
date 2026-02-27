@@ -190,14 +190,25 @@ function normalizeCities(raw: unknown): string[] {
     .filter((value) => value.length > 0);
 }
 
-function buildStars(value: number) {
-  const stars = Math.max(0, Math.min(5, Math.round(value)));
-  return `${"\u2605".repeat(stars)}${"\u2606".repeat(5 - stars)}`;
+function normalizeCityKey(city: string) {
+  return city
+    .trim()
+    .toLowerCase()
+    .replace(/ë/g, "e")
+    .replace(/\s+/g, " ");
 }
 
-function estimateReviewCount(id: string) {
-  const score = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return 20 + (score % 19);
+function getCityAliases(city?: string): string[] {
+  if (!city?.trim()) return [];
+
+  const input = city.trim();
+  const key = normalizeCityKey(input);
+
+  if (key === "prishtina" || key === "prishtine") {
+    return ["Prishtina", "Prishtine"];
+  }
+
+  return [input];
 }
 
 export default function HomepageClient() {
@@ -234,20 +245,40 @@ export default function HomepageClient() {
     setLoading(true);
     setError(null);
 
-    const params = new URLSearchParams();
     const keyword = normalizeSearchKeyword(options?.keyword ?? query);
     const categoryValues = options?.categories ?? selectedCategories;
     const cityValues = options?.cities ?? selectedCities;
+    const selectedCity = cityValues.length > 0 ? cityValues[0] : undefined;
+    const cityCandidates = getCityAliases(selectedCity);
 
-    if (keyword?.trim()) params.set("search", keyword.trim());
-    if (categoryValues.length > 0) params.set("type", categoryValues[0]);
-    if (cityValues.length > 0) params.set("city", cityValues[0]);
+    const queryBusinesses = async (city?: string) => {
+      const params = new URLSearchParams();
+      if (keyword?.trim()) params.set("search", keyword.trim());
+      if (categoryValues.length > 0) params.set("type", categoryValues[0]);
+      if (city?.trim()) params.set("city", city.trim());
 
-    const { data, error: apiError } = await fetchJson<ApiBusiness[]>(
-      `/api/businesses/public${params.toString() ? `?${params.toString()}` : ""}`,
-      [],
-    );
-    const normalized = Array.isArray(data) ? data.map(normalizeBusiness).filter((item) => item.id.length > 0) : [];
+      return fetchJson<ApiBusiness[]>(`/api/businesses/public${params.toString() ? `?${params.toString()}` : ""}`, []);
+    };
+
+    let { data, error: apiError } = await queryBusinesses(selectedCity);
+    let normalized = Array.isArray(data) ? data.map(normalizeBusiness).filter((item) => item.id.length > 0) : [];
+
+    if (normalized.length === 0 && cityCandidates.length > 1) {
+      for (const city of cityCandidates) {
+        if (selectedCity && normalizeCityKey(city) === normalizeCityKey(selectedCity)) continue;
+        const fallbackResult = await queryBusinesses(city);
+        const fallbackNormalized = Array.isArray(fallbackResult.data)
+          ? fallbackResult.data.map(normalizeBusiness).filter((item) => item.id.length > 0)
+          : [];
+
+        if (fallbackNormalized.length > 0) {
+          normalized = fallbackNormalized;
+          apiError = fallbackResult.error;
+          break;
+        }
+      }
+    }
+
     setResults(normalized);
     setError(apiError);
     setLoading(false);
@@ -307,11 +338,11 @@ export default function HomepageClient() {
   const categoryCount = useMemo(() => (categories.length > 0 ? categories.length : 2), [categories.length]);
 
   const applyPrishtineFilter = () => {
-    setActiveLocation("Prishtine");
-    setSelectedCities(["Prishtine"]);
+    setActiveLocation("Prishtina");
+    setSelectedCities(["Prishtina"]);
     setSelectedCategories([]);
     setQuery("");
-    void runSearch({ keyword: "", categories: [], cities: ["Prishtine"] });
+    void runSearch({ keyword: "", categories: [], cities: ["Prishtina"] });
     document.getElementById("business-listings")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -448,7 +479,11 @@ export default function HomepageClient() {
           <div>
             <p className="kb-kicker">OUR LISTINGS</p>
             <h2>Business Listings</h2>
-            {activeLocation ? <p className="kb-active-filter">Filtered by location: {activeLocation}</p> : null}
+            {activeLocation ? (
+              <p className="kb-active-filter">
+                Filtered by location: {activeLocation === "Prishtine" ? "Prishtina" : activeLocation}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="kb-listings-grid">
@@ -464,10 +499,6 @@ export default function HomepageClient() {
                 <div className="kb-listing-body">
                   <h3>{item.name}</h3>
                   <p>{item.description || "Cafe me ambience moderne."}</p>
-                  <div className="kb-rating">
-                    <strong>{buildStars(item.rating || 4)}</strong>
-                    <small>({estimateReviewCount(item.id)})</small>
-                  </div>
                   <div className="kb-listing-actions">
                     <a href={`/business/${item.id}`}>VIEW DETAILS</a>
                     <div className="kb-listing-icons">
@@ -567,7 +598,7 @@ export default function HomepageClient() {
               <article className="kb-city-card">
                 <img src={STREET_IMAGE} alt="Prishtine" />
                 <button type="button" onClick={applyPrishtineFilter}>
-                  EXPLORE PRISHTINE
+                  EXPLORE PRISHTINA
                 </button>
               </article>
             </div>
@@ -628,13 +659,19 @@ export default function HomepageClient() {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: email.trim() }),
                 });
+                const payload = (await response.json().catch(() => ({}))) as { ok?: boolean; message?: string };
 
                 if (!response.ok) {
-                  setSubscribeMessage("Subscription failed.");
+                  setSubscribeMessage(payload.message || "Subscription failed.");
                   return;
                 }
 
-                setSubscribeMessage("Subscribed successfully.");
+                if (payload.ok === false) {
+                  setSubscribeMessage(payload.message || "Subscription failed.");
+                  return;
+                }
+
+                setSubscribeMessage(payload.message || "Subscribed successfully.");
                 setEmail("");
               } catch {
                 setSubscribeMessage("Backend not reachable.");
