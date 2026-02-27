@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import BusinessComments from "./BusinessComments";
 
 type BusinessDetail = {
   id: string;
@@ -144,6 +145,8 @@ export default async function BusinessDetailsPage({ params }: { params: Promise<
         <Link href="/homepage" className={styles.back}>
           &larr; Back to all businesses
         </Link>
+
+        <BusinessComments businessId={item.id} />
       </section>
     </main>
   );

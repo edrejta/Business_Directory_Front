@@ -150,7 +150,6 @@ export default function HowToUseUserPage() {
             <h3>Live Counters</h3>
             <p>2 businesses listed</p>
             <p>2 categories</p>
-            <p>12 users online</p>
           </div>
 
           <div>

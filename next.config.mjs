@@ -7,6 +7,11 @@ const nextConfig = {
       return [];
     }
 
+    const apiRewrites = [
+      { source: "/api/:path*", destination: `${backendBase}/api/:path*` },
+      { source: "/health", destination: `${backendBase}/health` },
+    ];
+
     const baseRewrites = [
       { source: "/search", destination: `${backendBase}/search` },
       { source: "/categories", destination: `${backendBase}/categories` },
@@ -14,19 +19,14 @@ const nextConfig = {
       { source: "/featured-businesses", destination: `${backendBase}/featured-businesses` },
       { source: "/recommendations", destination: `${backendBase}/recommendations` },
       { source: "/promotions", destination: `${backendBase}/promotions` },
-      { source: "/reviews", destination: `${backendBase}/reviews` },
       { source: "/subscribe", destination: `${backendBase}/subscribe` },
     ];
 
     if (process.env.NODE_ENV === "development") {
-      return [
-        { source: "/api/:path*", destination: `${backendBase}/api/:path*` },
-        { source: "/health", destination: `${backendBase}/health` },
-        ...baseRewrites,
-      ];
+      return [...apiRewrites, ...baseRewrites];
     }
 
-    return baseRewrites;
+    return [...apiRewrites, ...baseRewrites];
   },
 }
 

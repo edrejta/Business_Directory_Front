@@ -15,7 +15,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 
 async function getDeals(category: string): Promise<Deal[]> {
   try {
-    const res = await fetch(`${API_BASE}/promotions?category=${encodeURIComponent(category)}`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/api/promotions?category=${encodeURIComponent(category)}`, { cache: "no-store" });
     if (!res.ok) return [];
     const data = (await res.json()) as Deal[];
     return Array.isArray(data) ? data : [];

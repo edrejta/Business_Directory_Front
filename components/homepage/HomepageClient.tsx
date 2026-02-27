@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Testimonials } from "./Testimonials";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import heroArchImage from "@/src/assets/image.jpg";
 import cityWideImage from "@/src/assets/image (2).jpg";
@@ -18,6 +19,7 @@ type Business = {
   rating?: number;
   category?: string;
   location?: string;
+  address?: string;
   phone?: string;
   coordinates?: { lat: number; lng: number } | null;
 };
@@ -25,20 +27,38 @@ type Business = {
 type ApiBusiness = {
   id?: string;
   Id?: string;
+  businessName?: string;
+  BusinessName?: string;
   name?: string;
   Name?: string;
   description?: string;
   Description?: string;
   businessType?: string;
   BusinessType?: string;
+  category?: string;
+  Category?: string;
   type?: string;
   Type?: string;
   city?: string;
   City?: string;
+  address?: string;
+  Address?: string;
   phone?: string;
   Phone?: string;
+  phoneNumber?: string;
+  PhoneNumber?: string;
   logo?: string;
   Logo?: string;
+  imageUrl?: string;
+  ImageUrl?: string;
+  lat?: number | string;
+  lng?: number | string;
+  Lat?: number | string;
+  Lng?: number | string;
+  latitude?: number | string;
+  longitude?: number | string;
+  Latitude?: number | string;
+  Longitude?: number | string;
   coordinates?: { lat: number; lng: number } | null;
 };
 
@@ -53,24 +73,6 @@ const ALT_IMAGE = listingAltImage.src;
 const FEATURED_MAIN_IMAGE = featuredMainImage.src;
 const STREET_IMAGE = cityWideImage.src;
 const COFFEE_IMAGE = coffeeSquareImage.src;
-const SAMPLE_BUSINESSES: Business[] = [
-  {
-    id: "sample-1",
-    name: "Downtown Cafe",
-    description: "Cafe me ambience moderne.",
-    rating: 4,
-    category: "Cafe",
-    logo: FALLBACK_IMAGE,
-  },
-  {
-    id: "sample-2",
-    name: "Artisan Bistro",
-    description: "Bistro me menu sezonale.",
-    rating: 5,
-    category: "Restaurant",
-    logo: ALT_IMAGE,
-  },
-];
 
 const TRENDING_SEARCHES: Array<{ label: string; keyword: string; categories?: string[] }> = [
   { label: "Restaurant near me", keyword: "restaurant", categories: ["Restaurant"] },
@@ -108,17 +110,62 @@ async function fetchJson<T>(path: string, fallback: T): Promise<ApiResult<T>> {
 }
 
 const toText = (value: unknown) => (typeof value === "string" ? value : "");
+const toNumber = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+};
+const isValidCoordinate = (lat: number, lng: number) =>
+  Number.isFinite(lat) &&
+  Number.isFinite(lng) &&
+  lat >= -90 &&
+  lat <= 90 &&
+  lng >= -180 &&
+  lng <= 180;
+
+function extractCoordinates(item: ApiBusiness): { lat: number; lng: number } | null {
+  const candidates: Array<{ lat: unknown; lng: unknown }> = [];
+
+  if (item.coordinates) {
+    candidates.push({ lat: item.coordinates.lat, lng: item.coordinates.lng });
+  }
+
+  candidates.push(
+    { lat: item.lat, lng: item.lng },
+    { lat: item.Lat, lng: item.Lng },
+    { lat: item.latitude, lng: item.longitude },
+    { lat: item.Latitude, lng: item.Longitude },
+  );
+
+  for (const candidate of candidates) {
+    const lat = toNumber(candidate.lat);
+    const lng = toNumber(candidate.lng);
+    if (lat !== null && lng !== null && isValidCoordinate(lat, lng)) {
+      return { lat, lng };
+    }
+  }
+
+  return null;
+}
 
 function normalizeBusiness(item: ApiBusiness): Business {
+  const city = toText(item.city ?? item.City);
+  const address = toText(item.address ?? item.Address);
+  const coordinates = extractCoordinates(item);
+
   return {
     id: toText(item.id ?? item.Id),
-    name: toText(item.name ?? item.Name) || "Business",
+    name: toText(item.businessName ?? item.BusinessName ?? item.name ?? item.Name) || "Business",
     description: toText(item.description ?? item.Description) || undefined,
-    category: toText(item.businessType ?? item.BusinessType ?? item.type ?? item.Type) || undefined,
-    location: toText(item.city ?? item.City) || undefined,
-    phone: toText(item.phone ?? item.Phone) || undefined,
-    logo: toText(item.logo ?? item.Logo) || undefined,
-    coordinates: item.coordinates ?? null,
+    category: toText(item.category ?? item.Category ?? item.businessType ?? item.BusinessType ?? item.type ?? item.Type) || undefined,
+    location: city || undefined,
+    address: address || undefined,
+    phone: toText(item.phoneNumber ?? item.PhoneNumber ?? item.phone ?? item.Phone) || undefined,
+    logo: toText(item.imageUrl ?? item.ImageUrl ?? item.logo ?? item.Logo) || undefined,
+    coordinates,
   };
 }
 
@@ -146,11 +193,22 @@ function estimateReviewCount(id: string) {
   return 20 + (score % 19);
 }
 
+async function fetchCategoriesWithFallback() {
+  const primary = await fetchJson<string[]>("/api/categories", []);
+  const hasPrimaryData = Array.isArray(primary.data) && primary.data.length > 0;
+  if (hasPrimaryData || !primary.error) {
+    return primary;
+  }
+
+  return fetchJson<string[]>("/categories", []);
+}
+
 export default function HomepageClient() {
+  const router = useRouter();
   const { user, logoutUser, getRedirectPath } = useAuth();
+
   const [query, setQuery] = useState("");
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [results, setResults] = useState<Business[]>([]);
   const [featured, setFeatured] = useState<Business[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -161,18 +219,21 @@ export default function HomepageClient() {
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState<string | null>(null);
-  const [hasSearchAttempt, setHasSearchAttempt] = useState(false);
+
+  const handleAddBusiness = () => {
+    const next = "/dashboard-business?mode=create";
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(next)}`);
+      return;
+    }
+    router.push(next);
+  };
 
   const runSearch = async (options?: {
     keyword?: string;
     categories?: string[];
     cities?: string[];
-    markAsAttempt?: boolean;
   }) => {
-    if (options?.markAsAttempt) {
-      setHasSearchAttempt(true);
-    }
-
     setLoading(true);
     setError(null);
 
@@ -199,9 +260,10 @@ export default function HomepageClient() {
     let mounted = true;
 
     const load = async () => {
-      const [businessesRes, citiesRes] = await Promise.all([
+      const [businessesRes, citiesRes, categoriesRes] = await Promise.all([
         fetchJson<ApiBusiness[]>("/api/businesses/public", []),
         fetchJson<unknown>("/api/cities", []),
+        fetchCategoriesWithFallback(),
       ]);
 
       if (!mounted) {
@@ -219,11 +281,21 @@ export default function HomepageClient() {
         new Set(normalizedBusinesses.map((item) => item.location).filter((value): value is string => !!value)),
       );
 
+      const backendCategories = Array.isArray(categoriesRes.data)
+        ? categoriesRes.data.filter((value): value is string => typeof value === "string" && value.length > 0)
+        : [];
+      const cleanedBackendCategories = backendCategories.filter(
+        (value) => value.trim().toLowerCase() !== "unknown",
+      );
+      const cleanedDerivedCategories = derivedCategories.filter(
+        (value) => value.trim().toLowerCase() !== "unknown",
+      );
+
       setResults(normalizedBusinesses);
       setFeatured(normalizedBusinesses.slice(0, 10));
-      setCategories(derivedCategories);
+      setCategories(cleanedBackendCategories.length > 0 ? cleanedBackendCategories : cleanedDerivedCategories);
       setLocations(normalizedCities.length > 0 ? normalizedCities : derivedCities);
-      setError(businessesRes.error || citiesRes.error);
+      setError(businessesRes.error || citiesRes.error || categoriesRes.error);
       setLoading(false);
     };
 
@@ -233,49 +305,11 @@ export default function HomepageClient() {
     };
   }, []);
 
-  const listItems = useMemo(() => {
-    if (results.length > 0) {
-      return results.slice(0, 2);
-    }
-    return hasSearchAttempt ? [] : SAMPLE_BUSINESSES;
-  }, [results, hasSearchAttempt]);
+  const listItems = useMemo(() => results.slice(0, 2), [results]);
+
   const featuredItems = useMemo(() => (featured.length > 0 ? featured.slice(0, 2) : listItems), [featured, listItems]);
   const trustedCount = useMemo(() => (results.length > 0 ? results.length : 2), [results.length]);
   const categoryCount = useMemo(() => (categories.length > 0 ? categories.length : 2), [categories.length]);
-  const mapPoints = useMemo(() => {
-    const normalizeText = (input: string) =>
-      input
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim();
-
-    const cityFallback: Record<string, { lat: number; lng: number }> = {
-      prishtine: { lat: 42.6629, lng: 21.1655 },
-      prishtina: { lat: 42.6629, lng: 21.1655 },
-      prizren: { lat: 42.2139, lng: 20.7397 },
-      peje: { lat: 42.6598, lng: 20.2883 },
-      gjakove: { lat: 42.3803, lng: 20.4308 },
-      gjilan: { lat: 42.4635, lng: 21.4694 },
-      ferizaj: { lat: 42.3702, lng: 21.1558 },
-      mitrovice: { lat: 42.8914, lng: 20.866 },
-    };
-
-    return results
-      .map((item) => {
-        if (item.coordinates?.lat && item.coordinates?.lng) {
-          return { ...item, lat: item.coordinates.lat, lng: item.coordinates.lng };
-        }
-        const key = normalizeText(item.location || "");
-        const fallback = cityFallback[key];
-        if (fallback) {
-          return { ...item, lat: fallback.lat, lng: fallback.lng };
-        }
-        return null;
-      })
-      .filter((item): item is Business & { lat: number; lng: number } => item !== null)
-      .slice(0, 25);
-  }, [results]);
 
   const applyPrishtineFilter = () => {
     setActiveLocation("Prishtine");
@@ -342,7 +376,7 @@ export default function HomepageClient() {
               event.preventDefault();
               const normalizedQuery = normalizeSearchKeyword(query);
               setQuery(normalizedQuery);
-              void runSearch({ keyword: normalizedQuery, markAsAttempt: true });
+              void runSearch({ keyword: normalizedQuery });
             }}
           >
             <input
@@ -364,7 +398,7 @@ export default function HomepageClient() {
                 type="button"
                 onClick={() => {
                   setQuery(item.keyword);
-                  void runSearch({ keyword: item.keyword, categories: item.categories, markAsAttempt: true });
+                  void runSearch({ keyword: item.keyword, categories: item.categories });
                 }}
               >
                 {item.label}
@@ -393,6 +427,7 @@ export default function HomepageClient() {
             {categories.map((item) => (
               <button
                 key={item}
+                type="button"
                 className={selectedCategories.includes(item) ? "active" : ""}
                 onClick={() =>
                   setSelectedCategories((prev) =>
@@ -412,6 +447,7 @@ export default function HomepageClient() {
             {locations.map((item) => (
               <button
                 key={item}
+                type="button"
                 className={selectedCities.includes(item) ? "active" : ""}
                 onClick={() => {
                   setSelectedCities((prev) => (prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item]));
@@ -425,14 +461,17 @@ export default function HomepageClient() {
         </div>
 
         <div className="kb-filter-actions">
-          <button onClick={() => void runSearch({ keyword: query, markAsAttempt: true })}>Apply Filters</button>
+          <button type="button" onClick={() => void runSearch({ keyword: query })}>
+            Apply Filters
+          </button>
           <button
+            type="button"
             className="ghost"
             onClick={() => {
               setSelectedCategories([]);
               setSelectedCities([]);
               setActiveLocation(null);
-              void runSearch({ keyword: query, categories: [], cities: [], markAsAttempt: true });
+              void runSearch({ keyword: query, categories: [], cities: [] });
             }}
           >
             Clear
@@ -447,35 +486,33 @@ export default function HomepageClient() {
             <h2>Business Listings</h2>
             {activeLocation ? <p className="kb-active-filter">Filtered by location: {activeLocation}</p> : null}
           </div>
-          <button className="kb-map-view" onClick={() => setViewMode((prev) => (prev === "list" ? "map" : "list"))}>
-            &#9679; {viewMode === "list" ? "MAP VIEW" : "LIST VIEW"}
-          </button>
         </div>
 
-        {viewMode === "list" ? (
-          <div className="kb-listings-grid">
-            {listItems.length === 0 ? (
-              <p className="kb-status">No businesses found.</p>
-            ) : (
-              listItems.map((item, index) => (
-                <article key={item.id} className="kb-listing-card">
-                  <div className="kb-listing-image">
-                    <img src={item.logo || (index === 0 ? FALLBACK_IMAGE : ALT_IMAGE)} alt={item.name} />
-                    <span>{item.category || (index === 0 ? "Cafe" : "Restaurant")}</span>
+        <div className="kb-listings-grid">
+          {listItems.length === 0 ? (
+            <p className="kb-status">No businesses found.</p>
+          ) : (
+            listItems.map((item, index) => (
+              <article key={item.id} className="kb-listing-card">
+                <div className="kb-listing-image">
+                  <img src={item.logo || (index === 0 ? FALLBACK_IMAGE : ALT_IMAGE)} alt={item.name} />
+                  <span>{item.category || (index === 0 ? "Cafe" : "Restaurant")}</span>
+                </div>
+                <div className="kb-listing-body">
+                  <h3>{item.name}</h3>
+                  <p>{item.description || "Cafe me ambience moderne."}</p>
+                  <div className="kb-rating">
+                    <strong>{buildStars(item.rating || 4)}</strong>
+                    <small>({estimateReviewCount(item.id)})</small>
                   </div>
-                  <div className="kb-listing-body">
-                    <h3>{item.name}</h3>
-                    <p>{item.description || "Cafe me ambience moderne."}</p>
-                    <div className="kb-rating">
-                      <strong>{buildStars(item.rating || 4)}</strong>
-                      <small>({estimateReviewCount(item.id)})</small>
-                    </div>
                   <div className="kb-listing-actions">
                     <a href={`/business/${item.id}`}>VIEW DETAILS</a>
                     <div className="kb-listing-icons">
                       <a
                         className="kb-listing-icon"
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location || item.name)}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          item.address || item.location || item.name,
+                        )}`}
                         target="_blank"
                         rel="noreferrer"
                         aria-label={`Open ${item.name} location`}
@@ -509,42 +546,14 @@ export default function HomepageClient() {
                   </div>
                 </div>
               </article>
-              ))
-            )}
-          </div>
-        ) : (
-          <div className="kb-map-panel">
-            <iframe
-              title="Kosovo business map"
-              className="kb-map-frame"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=20.00%2C41.85%2C21.85%2C43.30&layer=mapnik"
-            />
-            <div className="kb-map-pins" aria-hidden="true">
-              {mapPoints.map((item) => {
-                const x = ((item.lng - 20.0) / (21.85 - 20.0)) * 92 + 4;
-                const y = ((43.3 - item.lat) / (43.3 - 41.85)) * 84 + 8;
-                return (
-                  <a
-                    key={`pin-${item.id}`}
-                    className="kb-map-pin"
-                    href={`/business/${item.id}`}
-                    style={{ left: `${x}%`, top: `${y}%` }}
-                    title={item.name}
-                  >
-                    <span />
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
         <div className="kb-pagination">
-          <button>Prev</button>
+          <button type="button">Prev</button>
           <span>Page 1 of 1</span>
-          <button>Next</button>
+          <button type="button">Next</button>
         </div>
       </section>
 
@@ -552,9 +561,9 @@ export default function HomepageClient() {
         <div className="kb-owner-banner-inner">
           <p className="kb-owner-kicker">FOR BUSINESS OWNERS</p>
           <h2>A jeni pronar biznesi? Shtoni biznesin tuaj.</h2>
-          <a className="kb-owner-banner-btn" href="/addbuisnes">
+          <button type="button" className="kb-owner-banner-btn" onClick={handleAddBusiness}>
             ADD YOUR BUSINESS
-          </a>
+          </button>
         </div>
       </section>
 
@@ -594,10 +603,7 @@ export default function HomepageClient() {
               </article>
               <article className="kb-city-card">
                 <img src={STREET_IMAGE} alt="Prishtine" />
-                <button
-                  type="button"
-                  onClick={applyPrishtineFilter}
-                >
+                <button type="button" onClick={applyPrishtineFilter}>
                   EXPLORE PRISHTINE
                 </button>
               </article>
@@ -639,16 +645,6 @@ export default function HomepageClient() {
         </div>
       </section>
 
-      <section className="kb-dont-miss">
-        <div className="kb-deals-notify">
-          <h3>Don&apos;t miss out</h3>
-          <p>Be the first to discover new deals and promotions from local businesses.</p>
-          <a className="kb-claim-btn" href="/register">
-            REGJISTROHU
-          </a>
-        </div>
-      </section>
-
       <Testimonials />
 
       <section className="kb-newsletter">
@@ -664,7 +660,7 @@ export default function HomepageClient() {
               }
 
               try {
-                const response = await fetch(`${API_BASE}/subscribe`, {
+                const response = await fetch(`/api/subscribe`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: email.trim() }),
@@ -682,7 +678,12 @@ export default function HomepageClient() {
               }
             }}
           >
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Enter your email" />
+            <input
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              type="email"
+              placeholder="Enter your email"
+            />
             <button type="submit">SUBSCRIBE &#8594;</button>
           </form>
           {subscribeMessage ? <p className="kb-newsletter-message">{subscribeMessage}</p> : null}
@@ -701,7 +702,6 @@ export default function HomepageClient() {
           <h3>Live Counters</h3>
           <p>{trustedCount} businesses listed</p>
           <p>{categoryCount} categories</p>
-          <p>12 users online</p>
         </div>
 
         <div>
