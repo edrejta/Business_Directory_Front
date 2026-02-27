@@ -190,14 +190,26 @@ function normalizeCities(raw: unknown): string[] {
     .filter((value) => value.length > 0);
 }
 
-function buildStars(value: number) {
-  const stars = Math.max(0, Math.min(5, Math.round(value)));
-  return `${"\u2605".repeat(stars)}${"\u2606".repeat(5 - stars)}`;
+function normalizeCityKey(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
-function estimateReviewCount(id: string) {
-  const score = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return 20 + (score % 19);
+function getCityAliases(city: string): string[] {
+  const normalized = normalizeCityKey(city);
+  if (normalized === "prishtine" || normalized === "prishtina") {
+    return ["Prishtine", "Prishtina", "Prishtinë"];
+  }
+  return [city];
+}
+
+function resolveCityFromCandidates(city: string, candidates: string[]): string {
+  const aliases = getCityAliases(city).map(normalizeCityKey);
+  const match = candidates.find((entry) => aliases.includes(normalizeCityKey(entry)));
+  return match ?? city;
 }
 
 export default function HomepageClient() {
@@ -239,9 +251,19 @@ export default function HomepageClient() {
     const categoryValues = options?.categories ?? selectedCategories;
     const cityValues = options?.cities ?? selectedCities;
 
+    const knownCities = Array.from(
+      new Set([
+        ...locations,
+        ...results.map((item) => item.location).filter((value): value is string => Boolean(value?.trim())),
+      ]),
+    );
+
     if (keyword?.trim()) params.set("search", keyword.trim());
     if (categoryValues.length > 0) params.set("type", categoryValues[0]);
-    if (cityValues.length > 0) params.set("city", cityValues[0]);
+    if (cityValues.length > 0) {
+      const resolvedCity = resolveCityFromCandidates(cityValues[0], knownCities);
+      params.set("city", resolvedCity);
+    }
 
     const { data, error: apiError } = await fetchJson<ApiBusiness[]>(
       `/api/businesses/public${params.toString() ? `?${params.toString()}` : ""}`,
@@ -307,11 +329,19 @@ export default function HomepageClient() {
   const categoryCount = useMemo(() => (categories.length > 0 ? categories.length : 2), [categories.length]);
 
   const applyPrishtineFilter = () => {
-    setActiveLocation("Prishtine");
-    setSelectedCities(["Prishtine"]);
+    const knownCities = Array.from(
+      new Set([
+        ...locations,
+        ...results.map((item) => item.location).filter((value): value is string => Boolean(value?.trim())),
+      ]),
+    );
+    const resolvedCity = resolveCityFromCandidates("Prishtine", knownCities);
+
+    setActiveLocation(resolvedCity);
+    setSelectedCities([resolvedCity]);
     setSelectedCategories([]);
     setQuery("");
-    void runSearch({ keyword: "", categories: [], cities: ["Prishtine"] });
+    void runSearch({ keyword: "", categories: [], cities: [resolvedCity] });
     document.getElementById("business-listings")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -464,10 +494,6 @@ export default function HomepageClient() {
                 <div className="kb-listing-body">
                   <h3>{item.name}</h3>
                   <p>{item.description || "Cafe me ambience moderne."}</p>
-                  <div className="kb-rating">
-                    <strong>{buildStars(item.rating || 4)}</strong>
-                    <small>({estimateReviewCount(item.id)})</small>
-                  </div>
                   <div className="kb-listing-actions">
                     <a href={`/business/${item.id}`}>VIEW DETAILS</a>
                     <div className="kb-listing-icons">
