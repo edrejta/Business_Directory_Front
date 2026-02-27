@@ -689,22 +689,43 @@ export default function HomepageClient() {
       </section>
 
       <footer className="kb-footer">
-        <div>
-          <h3>Contact</h3>
-          <p>support@kosbiz.com</p>
-          <p>+233 200 000 000</p>
-          <p>About | Terms | Privacy</p>
+        <div className="kb-footer-col">
+          <h3>Explore</h3>
+          <div className="kb-footer-links">
+            <Link className="kb-footer-link" href="/about">
+              About
+            </Link>
+            <Link className="kb-footer-link" href="/how-to-use">
+              How To Use
+            </Link>
+            <Link className="kb-footer-link" href="/deals">
+              Deals
+            </Link>
+          </div>
         </div>
 
-        <div>
-          <h3>Live Counters</h3>
+        <div className="kb-footer-col">
+          <h3>Contact</h3>
+          <div className="kb-footer-links">
+            <a className="kb-footer-link" href="mailto:support@kosbiz.com">
+              support@kosbiz.com
+            </a>
+            <a className="kb-footer-link" href="tel:+38320000000">
+              +383 20 000 000
+            </a>
+          </div>
+        </div>
+
+        <div className="kb-footer-col">
+          <h3>KosBiz</h3>
+          <p>Your trusted Kosovo business directory. Discover local businesses fast.</p>
           <p>{trustedCount} businesses listed</p>
           <p>{categoryCount} categories</p>
         </div>
 
-        <div>
-          <h3>KosBiz</h3>
-          <p>Your trusted Kosovo business directory. Discover local businesses fast.</p>
+        <div className="kb-footer-bottom">
+          <p>(c) {new Date().getFullYear()} KosBiz</p>
+          <p className="kb-footer-meta">Terms | Privacy</p>
         </div>
       </footer>
 
