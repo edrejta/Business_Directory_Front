@@ -28,7 +28,7 @@ async function getOffers(category?: string): Promise<Promotion[]> {
       params.set("category", category);
     }
     const query = params.toString();
-    const response = await fetch(`${API_BASE}/promotions${query ? `?${query}` : ""}`, { cache: "no-store" });
+    const response = await fetch(`${API_BASE}/api/promotions${query ? `?${query}` : ""}`, { cache: "no-store" });
     if (!response.ok) {
       return [];
     }

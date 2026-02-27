@@ -17,7 +17,7 @@ type Promotion = {
   expiresAt?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+const PROMOTIONS_URL = "/api/promotions?onlyActive=true";
 
 const CATEGORY_FILTERS: Array<{ value: DealCategory; label: string }> = [
   { value: "Discounts", label: "Discounts" },
@@ -53,12 +53,22 @@ export default function DealsPage() {
   useEffect(() => {
     let mounted = true;
 
+    const asArray = (input: unknown): Promotion[] => {
+      if (Array.isArray(input)) return input as Promotion[];
+      if (input && typeof input === "object") {
+        const row = input as Record<string, unknown>;
+        if (Array.isArray(row.data)) return row.data as Promotion[];
+        if (Array.isArray(row.result)) return row.result as Promotion[];
+      }
+      return [];
+    };
+
     const loadDeals = async () => {
       try {
-        const response = await fetch(`${API_BASE}/promotions`, { cache: "no-store" });
-        const data = (await response.json().catch(() => [])) as Promotion[];
+        const response = await fetch(PROMOTIONS_URL, { cache: "no-store" });
+        const payload = await response.json().catch(() => []);
         if (!mounted) return;
-        setDeals(Array.isArray(data) ? data : []);
+        setDeals(asArray(payload));
       } catch {
         if (!mounted) return;
         setDeals([]);
