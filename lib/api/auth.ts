@@ -1,4 +1,5 @@
 import { API_URL } from "@/lib/api/config";
+import { saveToken } from "@/lib/auth/storage";
 
 export interface AuthResponse {
   token: string;
@@ -11,66 +12,58 @@ export interface AuthResponse {
 async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
   try {
     const data = await res.json();
-    if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
-      return data.message;
+    if (data && typeof data === "object" && "message" in data && typeof (data as any).message === "string") {
+      return (data as any).message;
     }
-  } catch {
-    // Ignore JSON parse failures and try text next.
-  }
+  } catch {return null;}
 
-  if (typeof res.text === 'function') {
-    try {
-      const text = await res.text();
-      if (text) return text;
-    } catch {
-      // Ignore text read failures and use fallback.
-    }
-  }
+  try {
+    const text = await res.text();
+    if (text) return text;
+  } catch {return null;}
 
   return fallback;
 }
 
-/** Dergon JSON te rregullt: { "email": string, "password": string }. */
-export async function login(input: {
-  email: string;
-  password: string;
-}): Promise<AuthResponse> {
-  const { email, password } = input;
+export async function login(input: { email: string; password: string }): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
   });
+
   if (!res.ok) {
-    const errorText = await extractErrorMessage(res, 'Login failed');
+    const errorText = await extractErrorMessage(res, "Login failed");
     throw new Error(errorText);
   }
-  return res.json();
+
+  const data = (await res.json()) as AuthResponse;
+  if (data?.token) saveToken(data.token);
+  return data;
 }
 
-/** Dergon JSON te rregullt: { "username": string, "email": string, "password": string, "role": number }. */
 export async function register(input: {
   username: string;
   email: string;
   password: string;
   role: number;
 }): Promise<AuthResponse> {
-  const { username, email, password, role } = input;
   const res = await fetch(`${API_URL}/api/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password, role }),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
   });
+
   if (!res.ok) {
-    const errorText = await extractErrorMessage(res, 'Register failed');
+    const errorText = await extractErrorMessage(res, "Register failed");
     throw new Error(errorText);
   }
-  return res.json();
+
+  const data = (await res.json()) as AuthResponse;
+  if (data?.token) saveToken(data.token);
+  return data;
 }
 
-/** Ruaj token-in ne localStorage pas login/register per perdorim me pas */
 export function saveAuthToken(data: AuthResponse): void {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('token', data.token);
-  }
+  if (data?.token) saveToken(data.token);
 }

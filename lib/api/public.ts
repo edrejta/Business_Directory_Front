@@ -1,94 +1,136 @@
-import { API_URL } from "@/lib/api/config";
+import { API_URL } from "./config";
 import type { Business } from "@/lib/types/business";
-
-export interface PublicBusinessFilters {
-  search?: string;
-  city?: string;
-  type?: string;
-}
-
-type PublicFetchOptions = RequestInit & {
-  next?: {
-    revalidate?: number;
-    tags?: string[];
-  };
-};
 
 export class ApiError extends Error {
   status: number;
+  body?: unknown;
 
-  constructor(message: string, status: number) {
+  constructor(status: number, message: string, body?: unknown) {
     super(message);
     this.status = status;
+    this.body = body;
   }
 }
 
-const asRecord = (value: unknown): Record<string, unknown> =>
-  typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
-
-const toStringOrUndefined = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim().length > 0 ? value : undefined;
-
-const unwrapPayload = (raw: unknown): unknown => {
-  const root = asRecord(raw);
-  return root.data ?? root.result ?? raw;
+type PublicFetchOptions = Omit<RequestInit, "headers"> & {
+  headers?: Record<string, string>;
 };
 
-const normalizeBusiness = (raw: unknown): Business => {
+function asRecord(v: unknown): Record<string, any> {
+  return (v && typeof v === "object" ? (v as Record<string, any>) : {}) as Record<string, any>;
+}
+
+function toStringOrUndefined(v: unknown): string | undefined {
+  if (v === null || v === undefined) return undefined;
+  const s = String(v).trim();
+  return s ? s : undefined;
+}
+
+function unwrapPayload(raw: unknown): unknown {
+  const root = asRecord(raw);
+  return root.data ?? root.result ?? raw;
+}
+
+function normalizeBusiness(raw: unknown): Business {
   const item = asRecord(raw);
 
+  const id = item.id ?? item.Id ?? "";
+  const name = item.name ?? item.Name ?? item.businessName ?? item.BusinessName ?? "Business";
+  const type =
+    item.type ??
+    item.Type ??
+    item.businessType ??
+    item.BusinessType ??
+    item.category ??
+    item.Category ??
+    "Unknown";
+
   return {
-    id: String(item.id ?? item.Id ?? ""),
-    ownerId: toStringOrUndefined(item.ownerId ?? item.OwnerId) ?? "",
-    name: String(item.name ?? item.Name ?? "Business"),
+    id: String(id),
+    ownerId: toStringOrUndefined(item.ownerId ?? item.OwnerId ?? item.OwnerID),
+    name: String(name),
     city: String(item.city ?? item.City ?? ""),
-    type: String(item.type ?? item.Type ?? item.businessType ?? item.BusinessType ?? "Unknown"),
+    type: String(type),
     address: toStringOrUndefined(item.address ?? item.Address),
     businessUrl: toStringOrUndefined(item.businessUrl ?? item.BusinessUrl ?? item.websiteUrl ?? item.WebsiteUrl),
     description: toStringOrUndefined(item.description ?? item.Description),
     phoneNumber: toStringOrUndefined(item.phoneNumber ?? item.PhoneNumber),
+    email: toStringOrUndefined(item.email ?? item.Email),
+    openDays: toStringOrUndefined(item.openDays ?? item.OpenDays),
     imageUrl: toStringOrUndefined(item.imageUrl ?? item.ImageUrl),
-    businessNumber: String(item.businessNumber ?? item.BusinessNumber ?? item.businesssNumber ?? item.BusinesssNumber ?? ""),
+    businessNumber: toStringOrUndefined(
+      item.businessNumber ?? item.BusinessNumber ?? item.businesssNumber ?? item.BusinesssNumber,
+    ),
     status: (toStringOrUndefined(item.status ?? item.Status) ?? "Pending") as Business["status"],
-    createdAt: String(item.createdAt ?? item.CreatedAt ?? new Date().toISOString()),
+    createdAt: toStringOrUndefined(item.createdAt ?? item.CreatedAt),
     suspensionReason: toStringOrUndefined(item.suspensionReason ?? item.SuspensionReason),
     isFavorite: typeof item.isFavorite === "boolean" ? item.isFavorite : undefined,
-  };
-};
+  } as Business;
+}
+
+async function parseJsonSafe(res: Response): Promise<any> {
+  const text = await res.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
 
 async function publicJson<T>(path: string, options: PublicFetchOptions = {}): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, options);
-  const data = (await response.json().catch(() => ({}))) as T & { message?: string };
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers ?? {}),
+    },
+    cache: "no-store",
+  });
 
-  if (!response.ok) {
-    throw new ApiError(data.message ?? "Ndodhi një gabim.", response.status);
+  if (!res.ok) {
+    const body = await parseJsonSafe(res);
+    throw new ApiError(res.status, body?.message ?? res.statusText, body);
   }
 
-  return unwrapPayload(data) as T;
+  return (await res.json()) as T;
 }
 
-export function getHealthStatus() {
-  return publicJson<{ status: string }>("/health");
+export async function getApprovedBusinesses(params?: {
+  search?: string;
+  city?: string;
+  type?: string;
+}): Promise<Business[]> {
+  const qs = new URLSearchParams();
+  if (params?.search) qs.set("search", params.search);
+  if (params?.city) qs.set("city", params.city);
+  if (params?.type) qs.set("type", params.type);
+
+  const payload = await publicJson<any>(`/api/businesses/public${qs.toString() ? `?${qs}` : ""}`);
+  const unwrapped = unwrapPayload(payload);
+
+  const list = Array.isArray(unwrapped) ? unwrapped : [];
+  return list.map(normalizeBusiness);
 }
 
-export async function getApprovedBusinesses(filters: PublicBusinessFilters = {}, options: PublicFetchOptions = {}) {
-  const params = new URLSearchParams();
-  if (filters.search) params.set("search", filters.search);
-  if (filters.city) params.set("city", filters.city);
-  if (filters.type) params.set("type", filters.type);
+export async function getApprovedBusinessById(id: string): Promise<Business> {
+  const payload = await publicJson<any>(`/api/businesses/public`);
+  const unwrapped = unwrapPayload(payload);
 
-  const query = params.toString();
-  const data = await publicJson<unknown>(`/api/businesses/public${query ? `?${query}` : ""}`, options);
-  const list = Array.isArray(data) ? data : [];
-  return list.map(normalizeBusiness).filter((item) => item.id.length > 0);
-}
+  const list = Array.isArray(unwrapped) ? unwrapped : [];
+  const found = list.find((x) => {
+    const r = asRecord(x);
+    const rid = r.id ?? r.Id;
+    return String(rid ?? "") === id;
+  });
 
-export async function getApprovedBusinessById(id: string, options: PublicFetchOptions = {}) {
-  const data = await publicJson<unknown>("/api/businesses/public", options);
-  const list = Array.isArray(data) ? data : [];
-  const business = list.map(normalizeBusiness).find((item) => item.id === id);
-  if (!business) {
-    throw new ApiError("Business not found", 404);
+  if (!found) {
+    throw new ApiError(404, "Business not found", payload);
   }
-  return business;
+
+  return normalizeBusiness(found);
+}
+
+export async function getHealthStatus(): Promise<any> {
+  return publicJson<any>(`/health`);
 }

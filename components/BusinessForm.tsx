@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Business, CreateBusinessInput } from "@/lib/types/business";
+import { KOSOVO_CITIES } from "@/lib/constants/kosovoCities";
 
 type Props = {
   mode: "create" | "edit";
@@ -127,13 +128,19 @@ export default function BusinessForm({ mode, initial, onSubmit, onCancel, isSubm
 
         <div className="space-y-1">
           <label className="text-sm font-medium">City *</label>
-          <input
+          <select
             className="w-full rounded-md border px-3 py-2"
             value={form.city}
             onChange={(e) => update("city", e.target.value)}
-            placeholder="e.g. Prishtina"
             required
-          />
+          >
+            <option value="">Zgjidh qytetin</option>
+            {KOSOVO_CITIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="space-y-1">

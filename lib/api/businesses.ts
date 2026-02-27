@@ -1,65 +1,27 @@
 import { API_URL } from "./config";
+import { getToken } from "@/lib/auth/storage";
 import type { Business, CreateBusinessInput, UpdateBusinessInput } from "@/lib/types/business";
 
 export class ApiError extends Error {
   status: number;
   body?: unknown;
 
-  constructor(message: string, status: number, body?: unknown) {
+  constructor(status: number, message: string, body?: unknown) {
     super(message);
-    this.name = "ApiError";
     this.status = status;
     this.body = body;
   }
 }
 
-function authHeaders(token: string) {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
+async function readTextSafe(res: Response): Promise<string> {
+  try {
+    return await res.text();
+  } catch {
+    return "";
+  }
 }
 
-function normalizeBusiness(b: any): Business {
-  const name = b?.name ?? b?.businessName ?? b?.BusinessName ?? "";
-  const type =
-    b?.type ??
-    (typeof b?.businessType === "string" ? b.businessType : undefined) ??
-    (typeof b?.BusinessType === "string" ? b.BusinessType : undefined) ??
-    (typeof b?.businessType === "number" ? String(b.businessType) : undefined) ??
-    (typeof b?.BusinessType === "number" ? String(b.BusinessType) : undefined) ??
-    "";
-
-  return {
-    id: String(b?.id ?? b?.Id ?? ""),
-    ownerId: String(b?.ownerId ?? b?.OwnerId ?? ""),
-
-    name: String(name),
-    type: String(type),
-
-    city: String(b?.city ?? b?.City ?? ""),
-    address: b?.address ?? b?.Address ?? null,
-
-    businessUrl: b?.businessUrl ?? b?.BusinessUrl ?? b?.websiteUrl ?? b?.WebsiteUrl ?? null,
-    description: b?.description ?? b?.Description ?? null,
-
-    phoneNumber: b?.phoneNumber ?? b?.PhoneNumber ?? null,
-    imageUrl: b?.imageUrl ?? b?.ImageUrl ?? null,
-
-    businessNumber: String(
-      b?.businessNumber ?? b?.BusinessNumber ?? b?.businesssNumber ?? b?.BusinesssNumber ?? "",
-    ),
-
-    status: String(b?.status ?? b?.Status ?? ""),
-    createdAt: String(b?.createdAt ?? b?.CreatedAt ?? ""),
-
-    suspensionReason: b?.suspensionReason ?? b?.SuspensionReason ?? null,
-    isFavorite: Boolean(b?.isFavorite ?? b?.IsFavorite ?? false),
-  };
-}
-
-async function readJsonSafe(res: Response) {
-  const text = await res.text();
+async function parseJsonSafeFromText(text: string): Promise<any> {
   if (!text) return null;
   try {
     return JSON.parse(text);
@@ -68,102 +30,105 @@ async function readJsonSafe(res: Response) {
   }
 }
 
-export async function getMyBusinesses(token: string): Promise<Business[]> {
-  const res = await fetch(`${API_URL}/api/Businesses/mine`, {
-    method: "GET",
-    headers: authHeaders(token),
-    cache: "no-store",
-  });
+async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, init);
+  const text = await readTextSafe(res);
 
   if (!res.ok) {
-    const body = await readJsonSafe(res);
-    throw new ApiError("Failed to load businesses", res.status, body);
+    const body = await parseJsonSafeFromText(text);
+    throw new ApiError(res.status, body?.message ?? res.statusText, body);
   }
 
-  const data = await res.json();
-  const list = Array.isArray(data) ? data : data?.data ?? [];
-  return list.map(normalizeBusiness);
+  if (!text) return undefined as unknown as T;
+  return (await parseJsonSafeFromText(text)) as T;
 }
 
-export async function getMyBusinessById(id: string, token: string): Promise<Business> {
-  const res = await fetch(`${API_URL}/api/Businesses/mine/${id}`, {
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function unwrapList(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  if (payload && Array.isArray(payload.result)) return payload.result;
+  return [];
+}
+
+function normalizeBusiness(b: any): Business {
+  return {
+    id: String(b.id ?? b.Id ?? ""),
+    ownerId: (b.ownerId ?? b.OwnerId ?? b.OwnerID ?? undefined) as any,
+    name: String(b.name ?? b.Name ?? b.businessName ?? b.BusinessName ?? ""),
+    city: String(b.city ?? b.City ?? ""),
+    type: String(b.type ?? b.Type ?? b.businessType ?? b.BusinessType ?? ""),
+    address: (b.address ?? b.Address ?? undefined) as any,
+    businessNumber: (b.businessNumber ?? b.BusinessNumber ?? b.businesssNumber ?? b.BusinesssNumber ?? undefined) as any,
+    businessUrl: (b.businessUrl ?? b.BusinessUrl ?? b.websiteUrl ?? b.WebsiteUrl ?? undefined) as any,
+    phoneNumber: (b.phoneNumber ?? b.PhoneNumber ?? undefined) as any,
+    email: (b.email ?? b.Email ?? undefined) as any,
+    openDays: (b.openDays ?? b.OpenDays ?? undefined) as any,
+    imageUrl: (b.imageUrl ?? b.ImageUrl ?? undefined) as any,
+    description: (b.description ?? b.Description ?? undefined) as any,
+    status: (b.status ?? b.Status ?? undefined) as any,
+    createdAt: (b.createdAt ?? b.CreatedAt ?? undefined) as any,
+    suspensionReason: (b.suspensionReason ?? b.SuspensionReason ?? undefined) as any,
+    isFavorite: typeof b.isFavorite === "boolean" ? b.isFavorite : undefined,
+  };
+}
+
+export async function getMyBusinesses(): Promise<Business[]> {
+  const url = `${API_URL}/api/businesses/mine`;
+
+  const payload = await fetchJson<any>(url, {
     method: "GET",
-    headers: authHeaders(token),
-    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
   });
 
-  if (!res.ok) {
-    const body = await readJsonSafe(res);
-    throw new ApiError("Failed to load business", res.status, body);
-  }
-
-  const data = await res.json();
-  return normalizeBusiness(data);
+  return unwrapList(payload).map(normalizeBusiness);
 }
 
-export async function createBusiness(token: string, input: CreateBusinessInput): Promise<Business> {
-  const res = await fetch(`${API_URL}/api/Businesses`, {
+export async function createBusiness(input: CreateBusinessInput): Promise<Business> {
+  const url = `${API_URL}/api/businesses`;
+
+  const payload = await fetchJson<any>(url, {
     method: "POST",
-    headers: authHeaders(token),
-    body: JSON.stringify({
-      name: input.name,
-      type: input.type,
-      city: input.city,
-      address: input.address ?? null,
-      businessUrl: input.businessUrl ?? null,
-      description: input.description ?? null,
-      phoneNumber: (input as any).phoneNumber ?? null,
-      imageUrl: (input as any).imageUrl ?? null,
-      businessNumber: input.businessNumber,
-    }),
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(input),
   });
 
-  if (!res.ok) {
-    const body = await readJsonSafe(res);
-    throw new ApiError("Failed to create business", res.status, body);
-  }
-
-  const data = await res.json();
-  return normalizeBusiness(data);
+  return normalizeBusiness(payload);
 }
 
-export async function updateBusiness(
-  token: string,
-  id: string,
-  input: UpdateBusinessInput,
-): Promise<Business> {
-  const res = await fetch(`${API_URL}/api/Businesses/${id}`, {
+export async function updateBusiness(id: string, input: UpdateBusinessInput): Promise<Business> {
+  const url = `${API_URL}/api/businesses/${encodeURIComponent(id)}`;
+
+  const payload = await fetchJson<any>(url, {
     method: "PUT",
-    headers: authHeaders(token),
-    body: JSON.stringify({
-      name: input.name,
-      type: input.type,
-      city: input.city,
-      address: input.address ?? null,
-      businessUrl: input.businessUrl ?? null,
-      description: input.description ?? null,
-      phoneNumber: (input as any).phoneNumber ?? null,
-      imageUrl: (input as any).imageUrl ?? null,
-    }),
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(input),
   });
 
-  if (!res.ok) {
-    const body = await readJsonSafe(res);
-    throw new ApiError("Failed to update business", res.status, body);
-  }
-
-  const data = await res.json();
-  return normalizeBusiness(data);
+  return normalizeBusiness(payload);
 }
 
-export async function deleteBusiness(token: string, id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/Businesses/${id}`, {
-    method: "DELETE",
-    headers: authHeaders(token),
-  });
+export async function deleteBusiness(id: string): Promise<void> {
+  const url = `${API_URL}/api/businesses/${encodeURIComponent(id)}`;
 
-  if (!res.ok) {
-    const body = await readJsonSafe(res);
-    throw new ApiError("Failed to delete business", res.status, body);
-  }
+  await fetchJson<void>(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+  });
 }
