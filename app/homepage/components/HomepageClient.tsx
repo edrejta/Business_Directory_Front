@@ -5,6 +5,8 @@ import { Testimonials } from "./Testimonials";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getToken } from "@/lib/auth/storage";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 import MarketingNavbar from "@/components/MarketingNavbar";
 import heroArchImage from "@/src/assets/image.jpg";
 import cityWideImage from "@/src/assets/image (2).jpg";
@@ -74,6 +76,7 @@ const ALT_IMAGE = listingAltImage.src;
 const FEATURED_MAIN_IMAGE = featuredMainImage.src;
 const STREET_IMAGE = cityWideImage.src;
 const COFFEE_IMAGE = coffeeSquareImage.src;
+const LISTINGS_PAGE_SIZE = 2;
 
 const TRENDING_SEARCHES: Array<{ label: string; keyword: string; categories?: string[] }> = [
   { label: "Restaurant near me", keyword: "restaurant", categories: ["Restaurant"] },
@@ -110,7 +113,11 @@ async function fetchJson<T>(path: string, fallback: T): Promise<ApiResult<T>> {
   }
 }
 
-const toText = (value: unknown) => (typeof value === "string" ? value : "");
+const toText = (value: unknown) => {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return "";
+};
 const toNumber = (value: unknown) => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string") {
@@ -161,9 +168,7 @@ function normalizeBusiness(item: ApiBusiness): Business {
     id: toText(item.id ?? item.Id),
     name: toText(item.businessName ?? item.BusinessName ?? item.name ?? item.Name) || "Business",
     description: toText(item.description ?? item.Description) || undefined,
-    category:
-      toText(item.category ?? item.Category ?? item.businessType ?? item.BusinessType ?? item.type ?? item.Type) ||
-      undefined,
+    category: toBusinessTypeLabel(item.category ?? item.Category ?? item.businessType ?? item.BusinessType ?? item.type ?? item.Type) || undefined,
     location: city || undefined,
     address: address || undefined,
     phone: toText(item.phoneNumber ?? item.PhoneNumber ?? item.phone ?? item.Phone) || undefined,
@@ -173,7 +178,7 @@ function normalizeBusiness(item: ApiBusiness): Business {
 }
 
 async function fetchCategories() {
-  return fetchJson<string[]>("/api/categories", []);
+  return fetchJson<string[]>("/api/homepagecompat/categories", []);
 }
 
 function normalizeCities(raw: unknown): string[] {
@@ -228,10 +233,11 @@ export default function HomepageClient() {
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleAddBusiness = () => {
     const next = "/dashboard-business?mode=create";
-    if (!user) {
+    if (!user || !getToken()) {
       router.push(`/login?next=${encodeURIComponent(next)}`);
       return;
     }
@@ -271,6 +277,7 @@ export default function HomepageClient() {
     );
     const normalized = Array.isArray(data) ? data.map(normalizeBusiness).filter((item) => item.id.length > 0) : [];
     setResults(normalized);
+    setCurrentPage(1);
     setError(apiError);
     setLoading(false);
   };
@@ -303,7 +310,7 @@ export default function HomepageClient() {
       setResults(normalizedBusinesses);
       setFeatured(normalizedBusinesses.slice(0, 10));
       const backendCategories = Array.isArray(categoriesRes.data)
-        ? categoriesRes.data.filter((value): value is string => typeof value === "string" && value.length > 0)
+        ? categoriesRes.data.map((value) => toBusinessTypeLabel(value)).filter((value) => value.length > 0)
         : [];
       const cleanedBackendCategories = backendCategories.filter(
         (value) => value.trim().toLowerCase() !== "unknown",
@@ -313,6 +320,7 @@ export default function HomepageClient() {
       setCategories(cleanedBackendCategories.length > 0 ? cleanedBackendCategories : cleanedDerivedCategories);
       setLocations(normalizedCities.length > 0 ? normalizedCities : derivedCities);
       setError(businessesRes.error || citiesRes.error || categoriesRes.error);
+      setCurrentPage(1);
       setLoading(false);
     };
 
@@ -322,7 +330,12 @@ export default function HomepageClient() {
     };
   }, []);
 
-  const listItems = useMemo(() => results.slice(0, 2), [results]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(results.length / LISTINGS_PAGE_SIZE)), [results.length]);
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const listItems = useMemo(() => {
+    const start = (safeCurrentPage - 1) * LISTINGS_PAGE_SIZE;
+    return results.slice(start, start + LISTINGS_PAGE_SIZE);
+  }, [results, safeCurrentPage]);
 
   const featuredItems = useMemo(() => (featured.length > 0 ? featured.slice(0, 2) : listItems), [featured, listItems]);
   const trustedCount = useMemo(() => (results.length > 0 ? results.length : 2), [results.length]);
@@ -480,6 +493,9 @@ export default function HomepageClient() {
             <h2>Business Listings</h2>
             {activeLocation ? <p className="kb-active-filter">Filtered by location: {activeLocation}</p> : null}
           </div>
+          <Link className="kb-view-all-link" href="/businesses/all">
+            View all businesses
+          </Link>
         </div>
         <div className="kb-listings-grid">
           {listItems.length === 0 ? (
@@ -540,9 +556,23 @@ export default function HomepageClient() {
         </div>
 
         <div className="kb-pagination">
-          <button type="button">Prev</button>
-          <span>Page 1 of 1</span>
-          <button type="button">Next</button>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))}
+            disabled={safeCurrentPage <= 1}
+          >
+            Prev
+          </button>
+          <span>
+            Page {safeCurrentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, Math.min(prev, totalPages) + 1))}
+            disabled={safeCurrentPage >= totalPages}
+          >
+            Next
+          </button>
         </div>
       </section>
 
@@ -654,13 +684,14 @@ export default function HomepageClient() {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: email.trim() }),
                 });
+                const payload = (await response.json().catch(() => ({}))) as { message?: string };
 
                 if (!response.ok) {
-                  setSubscribeMessage("Subscription failed.");
+                  setSubscribeMessage(payload.message || "Subscription failed.");
                   return;
                 }
 
-                setSubscribeMessage("Subscribed successfully.");
+                setSubscribeMessage(payload.message || "Subscribed successfully.");
                 setEmail("");
               } catch {
                 setSubscribeMessage("Backend not reachable.");
@@ -709,7 +740,7 @@ export default function HomepageClient() {
 
         <div className="kb-footer-col">
           <h3>KosBiz</h3>
-          <p>Your trusted Kosovo business directory. Discover local businesses fast.</p>
+          <p>Discover local businesses fast.</p>
           <p>{trustedCount} businesses listed</p>
           <p>{categoryCount} categories</p>
         </div>

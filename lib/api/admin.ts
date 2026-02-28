@@ -1,4 +1,5 @@
 import { authenticatedJson } from "@/lib/api/client";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 
 export type DashboardMetrics = {
   totalBusinesses: number;
@@ -108,11 +109,14 @@ const normalizeAdminUsers = (raw: unknown): AdminUser[] => {
   return payload.map((entry) => normalizeAdminUser(entry)).filter((entry) => entry.id.length > 0);
 };
 
-const normalizeCategory = (raw: unknown): Category => {
+const normalizeCategory = (raw: unknown, fallbackId?: string): Category => {
   const source = asRecord(raw);
+  const resolvedName = toBusinessTypeLabel(source.name ?? source.Name);
+  const resolvedId = String(source.id ?? source.Id ?? fallbackId ?? resolvedName);
+
   return {
-    id: String(source.id ?? source.Id ?? ""),
-    name: String(source.name ?? source.Name ?? ""),
+    id: resolvedId,
+    name: resolvedName,
     businessesCount: toNumber(
       source.businessesCount ?? source.BusinessesCount ?? source.count ?? source.Count
     ),
@@ -121,18 +125,41 @@ const normalizeCategory = (raw: unknown): Category => {
 
 const normalizeCategories = (raw: unknown): Category[] => {
   const payload = unwrapPayload(raw);
-  if (!Array.isArray(payload)) return [];
-  return payload.map((entry) => normalizeCategory(entry)).filter((entry) => entry.id.length > 0);
+
+  if (Array.isArray(payload)) {
+    return payload
+      .map((entry, index) => normalizeCategory(entry, `category-${index}`))
+      .filter((entry) => entry.name.length > 0);
+  }
+
+  const source = asRecord(payload);
+  const categoriesArray = source.categories ?? source.Categories ?? source.items ?? source.Items;
+  if (Array.isArray(categoriesArray)) {
+    return categoriesArray
+      .map((entry, index) => normalizeCategory(entry, `category-${index}`))
+      .filter((entry) => entry.name.length > 0);
+  }
+
+  // Support dictionary shape: { "Restaurant": 12, "Cafe": 7 }
+  const mapEntries = Object.entries(source).filter(([, value]) => ["string", "number"].includes(typeof value));
+  if (mapEntries.length > 0) {
+    return mapEntries.map(([name, count], index) =>
+      normalizeCategory({ id: `category-${index}`, name, businessesCount: count }),
+    );
+  }
+
+  return [];
 };
 
 const normalizeAdminBusiness = (raw: unknown): AdminBusiness => {
   const source = asRecord(raw);
+  const businessType = toBusinessTypeLabel(source.businessType ?? source.BusinessType ?? source.type ?? source.Type);
   return {
     id: String(source.id ?? source.Id ?? ""),
     name: String(source.name ?? source.Name ?? ""),
     ownerId: toOptionalString(source.ownerId ?? source.OwnerId),
     city: toOptionalString(source.city ?? source.City),
-    businessType: toOptionalString(source.businessType ?? source.BusinessType ?? source.type ?? source.Type),
+    businessType: businessType || undefined,
     status: toOptionalString(source.status ?? source.Status),
     createdAt: toOptionalString(source.createdAt ?? source.CreatedAt),
     updatedAt: toOptionalString(source.updatedAt ?? source.UpdatedAt),

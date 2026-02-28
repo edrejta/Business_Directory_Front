@@ -1,5 +1,6 @@
 import { API_URL } from "./config";
 import { getToken } from "@/lib/auth/storage";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 import type { Business, CreateBusinessInput, UpdateBusinessInput } from "@/lib/types/business";
 
 export class ApiError extends Error {
@@ -61,7 +62,7 @@ function normalizeBusiness(b: any): Business {
     ownerId: (b.ownerId ?? b.OwnerId ?? b.OwnerID ?? undefined) as any,
     name: String(b.name ?? b.Name ?? b.businessName ?? b.BusinessName ?? ""),
     city: String(b.city ?? b.City ?? ""),
-    type: String(b.type ?? b.Type ?? b.businessType ?? b.BusinessType ?? ""),
+    type: toBusinessTypeLabel(b.type ?? b.Type ?? b.businessType ?? b.BusinessType),
     address: (b.address ?? b.Address ?? undefined) as any,
     businessNumber: (b.businessNumber ?? b.BusinessNumber ?? b.businesssNumber ?? b.BusinesssNumber ?? undefined) as any,
     businessUrl: (b.businessUrl ?? b.BusinessUrl ?? b.websiteUrl ?? b.WebsiteUrl ?? undefined) as any,

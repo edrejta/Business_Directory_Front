@@ -204,6 +204,10 @@ function getAllRolesFromUserOrToken(user: any): string[] {
       if (s) roles.push(s);
       return;
     }
+    if (typeof v === "number" && Number.isFinite(v)) {
+      roles.push(String(v));
+      return;
+    }
   };
 
   add(user?.role);
@@ -270,7 +274,9 @@ function DashboardBusinessInner() {
   const isBusinessOwner = useMemo(() => {
     const roles = getAllRolesFromUserOrToken(user);
     const normalized = roles.map(normalizeRoleValue);
-    return normalized.includes("businessowner");
+    return normalized.some((role) =>
+      ["1", "businessowner", "owner", "pronarbiznesi", "business", "biznes"].includes(role),
+    );
   }, [user]);
 
   useEffect(() => {
@@ -352,7 +358,7 @@ function DashboardBusinessInner() {
       setOpenDaysMessage(null);
 
       try {
-        const url = `${API_URL}/api/owner/opendays?businessId=${encodeURIComponent(selectedOpenDaysBusinessId)}`;
+        const url = `${API_URL}/api/opendays/owner?businessId=${encodeURIComponent(selectedOpenDaysBusinessId)}`;
         const response = await fetch(url, { headers: { ...authHeaders() } });
 
         if (!response.ok) {
@@ -424,7 +430,7 @@ function DashboardBusinessInner() {
     setOpenDaysLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/owner/opendays`, {
+      const response = await fetch(`${API_URL}/api/opendays/owner`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
