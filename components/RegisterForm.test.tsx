@@ -34,19 +34,12 @@ describe("RegisterForm", () => {
   });
 
   it("shows error when error prop is set", () => {
-    render(
-      <RegisterForm
-        onSubmit={vi.fn()}
-        error="Një përdorues me këtë email ekziston tashmë."
-      />
+    const msg = "Një përdorues me këtë email ekziston tashmë.";
+    const { getAllByText } = render(
+      <RegisterForm onSubmit={vi.fn()} error={msg} />
     );
-    const { getByText } = render(
-      <RegisterForm
-        onSubmit={vi.fn()}
-        error="Një përdorues me këtë email ekziston tashmë."
-      />
-    );
-    expect(getByText("Një përdorues me këtë email ekziston tashmë.")).toBeInTheDocument();
+    const matches = getAllByText(msg);
+    expect(matches.length).toBeGreaterThan(0);
   });
 
   it("when isLoading=true button is disabled", () => {

@@ -3,12 +3,26 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
+import { getFavorites } from "@/lib/feedback/storage";
 
 export default function NavbarAuth() {
   const { user, logoutUser } = useAuth();
 
   const [mounted, setMounted] = useState(false);
+  const [favCount, setFavCount] = useState(0);
+
   useEffect(() => setMounted(true), []);
+
+  // load favorites count whenever user changes
+  useEffect(() => {
+    if (user) {
+      const key = user.email || user.username || "";
+      setFavCount(getFavorites(key).length);
+    } else {
+      setFavCount(0);
+    }
+  }, [user]);
+
   if (!mounted) return null;
 
   if (!user) {
@@ -27,10 +41,15 @@ export default function NavbarAuth() {
   return (
     <div className="stagger-fade flex items-center gap-3">
       <Link
-        className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
+        className="relative rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
         href="/favorites"
       >
         Favorites
+        {favCount > 0 && (
+          <span className="absolute -top-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-espresso text-xs font-semibold text-paper">
+            {favCount}
+          </span>
+        )}
       </Link>
 
       <Link
