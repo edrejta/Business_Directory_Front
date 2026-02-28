@@ -650,7 +650,7 @@ function App() {
           <p>support@kosbiz.com</p>
           <p>+233 200 000 000</p>
           <p>
-            <a href="/about">About</a> | <a href="/terms">Terms</a> | <a href="/privacy">Privacy</a>
+            <a href="/about">About</a> | <a href="/terms">Terms</a> | <a href="/terms#privacy">Privacy</a>
           </p>
           <div className="socials">
             {['F', 'X', 'I', 'L'].map((item, socialIndex) => (
