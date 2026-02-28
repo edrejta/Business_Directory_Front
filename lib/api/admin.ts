@@ -286,9 +286,11 @@ export async function getAdminAuditLogs(take = 100) {
 }
 
 export async function deleteAdminUser(id: string, reason?: string) {
-  const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+  const trimmedReason = reason?.trim();
+  const query = trimmedReason ? `?reason=${encodeURIComponent(trimmedReason)}` : "";
   return authenticatedJson<{ success?: boolean; message?: string }>(`/api/admin/users/${id}${query}`, {
     method: "DELETE",
+    body: JSON.stringify(trimmedReason ? { reason: trimmedReason } : {}),
   });
 }
 
