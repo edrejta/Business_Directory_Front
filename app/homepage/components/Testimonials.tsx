@@ -5,14 +5,35 @@ import { useMemo, useState } from "react";
 type TestimonialItem = {
   id: string;
   name: string;
-  rating: number;
+  role: string;
   text: string;
 };
 
 const TESTIMONIALS: TestimonialItem[] = [
-  { id: "t1", name: "user.demo", rating: 5, text: "Sherbim shume i mire dhe ushqim cilesor." },
-  { id: "t2", name: "user.demo", rating: 4, text: "Atmosfere e qete, kafe shume e mire." },
-  { id: "t3", name: "user.demo", rating: 5, text: "Gjeta biznesin qe me duhej shume shpejt." },
+  {
+    id: "t1",
+    name: "Mergim Cahani",
+    role: "CEO - Gjirafa, Inc",
+    text: "KosBiz has significantly enhanced our online visibility. Within weeks of listing our company, we observed a measurable increase in qualified inquiries from new clients across Kosovo. The platform reflects a modern and structured approach to digital business presence.",
+  },
+  {
+    id: "t2",
+    name: "Arta K.",
+    role: "Owner - Aroma Coffee House",
+    text: "Since joining KosBiz, our cafe has gained greater exposure among local customers and tourists. The listing has strengthened our online presence and made it easier for customers to discover our location and services.",
+  },
+  {
+    id: "t3",
+    name: "Leon D.",
+    role: "Restaurant Manager - Bella Vista Restaurant",
+    text: "KosBiz provides a professional platform that helps restaurants like ours reach a wider audience. We have noticed increased reservations and customer engagement since being featured.",
+  },
+  {
+    id: "t4",
+    name: "Sara M.",
+    role: "Platform User",
+    text: "KosBiz makes it simple and efficient to find reliable businesses in Kosovo. The interface is clean, the information is clear, and it saves valuable time when searching for trusted services.",
+  },
 ];
 
 export function Testimonials() {
@@ -52,10 +73,7 @@ export function Testimonials() {
                 <span>{item.name.slice(0, 1).toUpperCase()}</span>
                 <div>
                   <strong>{item.name}</strong>
-                  <small>
-                    {"\u2605".repeat(Math.max(0, Math.min(5, Math.round(item.rating))))}
-                    {"\u2606".repeat(Math.max(0, 5 - Math.round(item.rating)))}
-                  </small>
+                  <small>{item.role}</small>
                 </div>
               </div>
             </article>
