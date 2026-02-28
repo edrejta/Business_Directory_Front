@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { createComment } from "@/lib/api/comments";
+import { createComment, deleteComment } from "@/lib/api/comments";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./page.module.css";
 
@@ -59,6 +59,7 @@ function buildStars(rate: number) {
 }
 
 export default function BusinessComments({ businessId }: { businessId: string }) {
+  const ADMIN_ROLE = 2;
   const pathname = usePathname();
   const { user } = useAuth();
   const [comments, setComments] = useState<BusinessComment[]>([]);
@@ -66,8 +67,10 @@ export default function BusinessComments({ businessId }: { businessId: string })
   const [rate, setRate] = useState(5);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const canAdminDeleteComments = user?.role === ADMIN_ROLE;
 
   useEffect(() => {
     let mounted = true;
@@ -154,6 +157,23 @@ export default function BusinessComments({ businessId }: { businessId: string })
     }
   }
 
+  async function onDeleteComment(commentId: string) {
+    if (!canAdminDeleteComments) return;
+
+    setDeletingCommentId(commentId);
+    setSubmitMessage(null);
+    try {
+      await deleteComment(commentId);
+      setComments((prev) => prev.filter((entry) => entry.id !== commentId));
+      setSubmitMessage("Komenti u fshi.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Nuk u fshi komenti.";
+      setSubmitMessage(message);
+    } finally {
+      setDeletingCommentId(null);
+    }
+  }
+
   return (
     <section className={styles.commentsSection}>
       <h2 className={styles.sectionTitle}>Comments</h2>
@@ -202,11 +222,23 @@ export default function BusinessComments({ businessId }: { businessId: string })
       <div className={styles.commentList}>
         {comments.map((comment) => (
           <article key={comment.id} className={styles.commentCard}>
-            <div className={styles.commentUser}>
+            <div className={styles.commentHeader}>
               <div className={styles.commentMeta}>
                 <strong>{comment.username || "user"}</strong>
                 <span>{new Date(comment.createdAt).toLocaleString()}</span>
               </div>
+              {canAdminDeleteComments ? (
+                <button
+                  type="button"
+                  className={styles.commentDelete}
+                  onClick={() => {
+                    void onDeleteComment(comment.id);
+                  }}
+                  disabled={deletingCommentId === comment.id}
+                >
+                  {deletingCommentId === comment.id ? "Duke fshire..." : "Delete"}
+                </button>
+              ) : null}
             </div>
             <div className={styles.commentBody}>
               <p className={styles.commentRating}>{buildStars(comment.rate)}</p>

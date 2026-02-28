@@ -19,7 +19,7 @@ type PendingReviewSectionProps = {
   columns: DataColumn[];
   busyKey: string | null;
   onApproveRequest: (business: AdminBusiness) => void;
-  onRejectRequest: (business: AdminBusiness) => void;
+  onDeleteRequest: (business: AdminBusiness) => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -38,7 +38,7 @@ export default function PendingReviewSection({
   columns,
   busyKey,
   onApproveRequest,
-  onRejectRequest,
+  onDeleteRequest,
   currentPage,
   totalPages,
   onPageChange,
@@ -47,7 +47,7 @@ export default function PendingReviewSection({
   return (
     <SectionCard
       title="Pending Review Inbox"
-      subtitle="Approve or reject pending businesses"
+      subtitle="Approve or permanently delete pending businesses"
       actions={<span className="badge text-bg-warning">{filteredCount} pending</span>}
     >
       <div className="row g-2 mb-3">
@@ -87,10 +87,10 @@ export default function PendingReviewSection({
               disabled: busyKey === `approve-${business.id}`,
             },
             {
-              key: "reject",
-              label: "Reject",
-              onClick: () => onRejectRequest(business),
-              disabled: busyKey === `reject-${business.id}`,
+              key: "delete",
+              label: "Delete Permanently",
+              onClick: () => onDeleteRequest(business),
+              disabled: busyKey === `delete-pending-${business.id}`,
               danger: true,
             },
           ];

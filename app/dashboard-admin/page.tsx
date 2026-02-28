@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   approveAdminBusiness,
+  deleteAdminBusiness,
   deleteAdminUser,
   getAdminAuditLogs,
   getAdminBusinesses,
@@ -15,7 +16,6 @@ import {
   getAdminUsers,
   getHealthStatus,
   getReportSummary,
-  rejectAdminBusiness,
   suspendAdminBusiness,
   updateAdminUserRole,
   type AdminBusiness,
@@ -52,7 +52,7 @@ import { clampPage, formatDateTime, getTotalPages, paginate } from "./utils";
 
 type ConfirmAction =
   | { type: "approve"; business: AdminBusiness }
-  | { type: "reject"; business: AdminBusiness };
+  | { type: "deleteBusiness"; business: AdminBusiness };
 
 type ReasonAction =
   | { type: "changeRole"; user: AdminUser; nextRole: number }
@@ -298,12 +298,12 @@ export default function DashboardAdmin() {
     });
   };
 
-  const runRejectBusiness = async (business: AdminBusiness) => {
+  const runDeletePendingBusiness = async (business: AdminBusiness) => {
     await runAdminAction({
-      key: `reject-${business.id}`,
-      request: () => rejectAdminBusiness(business.id),
+      key: `delete-pending-${business.id}`,
+      request: () => deleteAdminBusiness(business.id),
       refresh: [refreshPendingBusinesses, refreshDashboard],
-      failureMessage: "Reject failed.",
+      failureMessage: "Delete failed.",
     });
   };
 
@@ -350,8 +350,8 @@ export default function DashboardAdmin() {
     if (confirmAction.type === "approve") {
       await runApproveBusiness(confirmAction.business);
     }
-    if (confirmAction.type === "reject") {
-      await runRejectBusiness(confirmAction.business);
+    if (confirmAction.type === "deleteBusiness") {
+      await runDeletePendingBusiness(confirmAction.business);
     }
 
     setConfirmAction(null);
@@ -639,7 +639,7 @@ export default function DashboardAdmin() {
                   columns={pendingColumns}
                   busyKey={busyKey}
                   onApproveRequest={(business) => setConfirmAction({ type: "approve", business })}
-                  onRejectRequest={(business) => setConfirmAction({ type: "reject", business })}
+                  onDeleteRequest={(business) => setConfirmAction({ type: "deleteBusiness", business })}
                   currentPage={currentPendingPage}
                   totalPages={totalPendingPages}
                   onPageChange={setPendingPage}
@@ -721,13 +721,13 @@ export default function DashboardAdmin() {
 
       <ConfirmModal
         isOpen={!!confirmAction}
-        title={confirmAction?.type === "approve" ? "Approve Business" : "Reject Business"}
+        title={confirmAction?.type === "approve" ? "Approve Business" : "Delete Pending Business"}
         message={
           confirmAction
-            ? `${confirmAction.type === "approve" ? "Approve" : "Reject"} ${confirmAction.business.name}?`
+            ? `${confirmAction.type === "approve" ? "Approve" : "Delete"} ${confirmAction.business.name}?`
             : ""
         }
-        confirmLabel={confirmAction?.type === "approve" ? "Approve" : "Reject"}
+        confirmLabel={confirmAction?.type === "approve" ? "Approve" : "Delete"}
         confirmVariant={confirmAction?.type === "approve" ? "primary" : "danger"}
         isLoading={busyKey !== null}
         onClose={() => setConfirmAction(null)}

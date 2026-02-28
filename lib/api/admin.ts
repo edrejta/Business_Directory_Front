@@ -59,7 +59,7 @@ export type AuditLog = {
   createdAt?: string;
 };
 
-export type AdminBusinessStatus = "Pending" | "Approved" | "Rejected" | "Suspended" | string;
+export type AdminBusinessStatus = "Pending" | "Approved" | "Suspended" | string;
 
 export type AdminBusiness = {
   id: string;
@@ -111,14 +111,30 @@ const normalizeAdminUsers = (raw: unknown): AdminUser[] => {
 
 const normalizeCategory = (raw: unknown, fallbackId?: string): Category => {
   const source = asRecord(raw);
-  const resolvedName = toBusinessTypeLabel(source.name ?? source.Name);
-  const resolvedId = String(source.id ?? source.Id ?? fallbackId ?? resolvedName);
+  const typeValue =
+    source.businessType ??
+    source.BusinessType ??
+    source.type ??
+    source.Type ??
+    source.category ??
+    source.Category ??
+    source.name ??
+    source.Name;
+  const resolvedName = toBusinessTypeLabel(typeValue);
+  const resolvedId = String(source.id ?? source.Id ?? source.businessType ?? source.BusinessType ?? fallbackId ?? resolvedName);
 
   return {
     id: resolvedId,
     name: resolvedName,
     businessesCount: toNumber(
-      source.businessesCount ?? source.BusinessesCount ?? source.count ?? source.Count
+      source.businessesCount ??
+        source.BusinessesCount ??
+        source.businessCount ??
+        source.BusinessCount ??
+        source.totalBusinesses ??
+        source.TotalBusinesses ??
+        source.count ??
+        source.Count
     ),
   };
 };
@@ -325,9 +341,10 @@ export async function approveAdminBusiness(id: string) {
   });
 }
 
-export async function rejectAdminBusiness(id: string) {
-  return authenticatedJson<AdminBusiness>(`/api/admin/businesses/${id}/reject`, {
-    method: "PATCH",
+export async function deleteAdminBusiness(id: string, reason?: string) {
+  const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+  return authenticatedJson<{ success?: boolean; message?: string }>(`/api/admin/businesses/${id}${query}`, {
+    method: "DELETE",
   });
 }
 
