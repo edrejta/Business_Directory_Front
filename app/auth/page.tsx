@@ -38,7 +38,8 @@ const endpointGroups = [
       "GET /api/admin/audit-logs?take=100",
       "DELETE /api/admin/users/{id}?reason=...",
       "GET /api/admin/businesses*",
-      "PATCH /api/admin/businesses/{id}/approve|reject|suspend",
+      "PATCH /api/admin/businesses/{id}/approve|suspend",
+      "DELETE /api/admin/businesses/{id}?reason=...",
     ],
   },
 ];

@@ -13,14 +13,14 @@ export default function StatusBadge({ status }: Props) {
 
   const label =
     s === "approved" ? "Approved" :
-    s === "rejected" ? "Rejected" :
     s === "pending" ? "Pending" :
+    s === "suspended" ? "Suspended" :
     status || "Unknown";
 
   const className =
     s === "approved"
       ? "inline-flex items-center rounded-full border px-2 py-1 text-xs"
-      : s === "rejected"
+      : s === "suspended"
       ? "inline-flex items-center rounded-full border px-2 py-1 text-xs"
       : "inline-flex items-center rounded-full border px-2 py-1 text-xs";
 
