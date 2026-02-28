@@ -7,22 +7,37 @@ type KpiCardProps = {
   progress?: number;
 };
 
+const toneColor: Record<NonNullable<KpiCardProps["tone"]>, string> = {
+  primary: "var(--coffee-primary)",
+  warning: "#9a6b1f",
+  success: "#486650",
+  info: "var(--coffee-accent)",
+};
+
 export default function KpiCard({ title, value, tone = "primary", progress = 0 }: KpiCardProps) {
-  const textClass = `text-${tone}`;
-  const progressClass = `bg-${tone}`;
   const safeProgress = Math.max(0, Math.min(100, progress));
+  const color = toneColor[tone];
 
   return (
-    <div className="card border-0 shadow-sm h-100">
-      <div className="card-body">
-        <div className="d-flex align-items-center justify-content-between">
-          <div className="text-muted small">{title}</div>
-          <span className={`rounded-circle ${progressClass}`} style={{ width: 8, height: 8 }} aria-hidden />
-        </div>
-        <div className={`display-6 fw-semibold mt-2 ${textClass}`}>{value}</div>
-        <div className="progress mt-3" role="progressbar" aria-label={`${title} visual`} aria-valuenow={safeProgress} aria-valuemin={0} aria-valuemax={100} style={{ height: 6 }}>
-          <div className={`progress-bar ${progressClass}`} style={{ width: `${safeProgress}%` }} />
-        </div>
+    <div className="h-full rounded-2xl border border-[var(--coffee-border)] bg-[var(--coffee-surface)] p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-xs text-[var(--coffee-muted)]">{title}</div>
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} aria-hidden />
+      </div>
+
+      <div className="mt-2 text-4xl font-semibold" style={{ color }}>
+        {value}
+      </div>
+
+      <div
+        className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--coffee-border)]"
+        role="progressbar"
+        aria-label={`${title} visual`}
+        aria-valuenow={safeProgress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div className="h-full rounded-full" style={{ width: `${safeProgress}%`, backgroundColor: color }} />
       </div>
     </div>
   );

@@ -12,15 +12,16 @@ type SectionCardProps = {
 
 export default function SectionCard({ id, title, subtitle, actions, children }: SectionCardProps) {
   return (
-    <section id={id} className="card border-0 shadow-sm h-100">
-      <div className="card-body p-4 p-xl-5">
-        <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <section id={id} className="h-full rounded-2xl border border-[var(--coffee-border)] bg-[var(--coffee-surface)] shadow-sm">
+      <div className="p-4 xl:p-5">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="h5 mb-1">{title}</h2>
-            {subtitle && <p className="text-muted mb-0 small">{subtitle}</p>}
+            <h2 className="text-lg font-semibold leading-tight">{title}</h2>
+            {subtitle && <p className="mt-1 text-sm text-[var(--coffee-muted)]">{subtitle}</p>}
           </div>
           {actions}
         </div>
+
         {children}
       </div>
     </section>

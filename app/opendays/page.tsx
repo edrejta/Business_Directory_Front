@@ -1,38 +1,17 @@
 import styles from "./page.module.css";
-
-type OpenDays = {
-  businessId: string;
-  mondayOpen: boolean;
-  tuesdayOpen: boolean;
-  wednesdayOpen: boolean;
-  thursdayOpen: boolean;
-  fridayOpen: boolean;
-  saturdayOpen: boolean;
-  sundayOpen: boolean;
-};
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
-
-async function getOpenDays(businessId?: string): Promise<OpenDays | null> {
-  if (!businessId) return null;
-  try {
-    const response = await fetch(`${API_BASE}/api/opendays?businessId=${encodeURIComponent(businessId)}`, {
-      cache: "no-store",
-    });
-    if (!response.ok) return null;
-    return (await response.json()) as OpenDays;
-  } catch {
-    return null;
-  }
-}
+import {
+  fetchOpenDaysForBusiness,
+  resolveRequestedBusinessId,
+} from "@/lib/api/openDays";
 
 export default async function OpenDaysPage({
   searchParams,
 }: {
-  searchParams: Promise<{ businessId?: string }>;
+  searchParams: Promise<{ businessId?: string; id?: string }>;
 }) {
   const params = await searchParams;
-  const data = await getOpenDays(params.businessId);
+  const requestedBusinessId = resolveRequestedBusinessId(params);
+  const { data, errorMessage } = await fetchOpenDaysForBusiness(requestedBusinessId);
 
   const rows: Array<[string, boolean]> = data
     ? [
@@ -51,7 +30,7 @@ export default async function OpenDaysPage({
       <section className={styles.wrap}>
         <h1>Open Days</h1>
         {!data ? (
-          <p className={styles.empty}>Open days not found for this business.</p>
+          <p className={styles.empty}>{errorMessage ?? "Open days not found for this business."}</p>
         ) : (
           <table className={styles.table}>
             <thead>

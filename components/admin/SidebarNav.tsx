@@ -14,14 +14,19 @@ type SidebarNavProps = {
 function SidebarContent({ items }: { items: SidebarItem[] }) {
   return (
     <>
-      <div className="d-flex align-items-center mb-3">
-        <span className="fs-5 fw-semibold">Business Directory</span>
+      <div className="mb-3 flex items-center">
+        <span className="text-lg font-semibold">Business Directory</span>
       </div>
-      <hr className="my-2" />
-      <ul className="nav nav-pills flex-column gap-1 mb-auto mt-2">
+
+      <hr className="my-2 border-[var(--coffee-border)]" />
+
+      <ul className="mt-2 flex flex-col gap-1">
         {items.map((item) => (
-          <li className="nav-item" key={item.id}>
-            <Link href={`#${item.id}`} className="nav-link">
+          <li key={item.id}>
+            <Link
+              href={`#${item.id}`}
+              className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--coffee-text)] transition-colors hover:bg-[var(--coffee-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coffee-primary)]"
+            >
               {item.label}
             </Link>
           </li>
@@ -34,8 +39,8 @@ function SidebarContent({ items }: { items: SidebarItem[] }) {
 export default function SidebarNav({ items }: SidebarNavProps) {
   return (
     <aside
-      className="admin-sidebar-fixed d-none d-md-flex flex-column flex-shrink-0 p-3 border-end bg-body-tertiary"
-      style={{ width: 260, minHeight: "100vh" }}
+      className="admin-sidebar-fixed hidden min-h-screen w-[260px] shrink-0 border-r border-[var(--coffee-border)] bg-[var(--coffee-surface)] p-3 md:flex md:flex-col"
+      aria-label="Admin sidebar"
     >
       <SidebarContent items={items} />
     </aside>

@@ -8,62 +8,24 @@ import { useAuth } from "@/context/AuthContext";
 import { getToken } from "@/lib/auth/storage";
 import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 import MarketingNavbar from "@/components/MarketingNavbar";
+import {
+  REQUEST_FAILED_MESSAGE,
+  UNABLE_TO_REACH_BACKEND_MESSAGE,
+} from "@/lib/constants/messages";
+import {
+  LISTINGS_PAGE_SIZE,
+  normalizeBusiness,
+  normalizeCities,
+  normalizeSearchKeyword,
+  resolveCityFromCandidates,
+  type ApiBusiness,
+  type Business,
+} from "./homepage-utils";
 import heroArchImage from "@/src/assets/image.jpg";
 import cityWideImage from "@/src/assets/image (2).jpg";
 import coffeeSquareImage from "@/src/assets/image (3).jpg";
 import featuredMainImage from "@/src/assets/image (4).jpg";
 import listingAltImage from "@/src/assets/image (5).jpg";
-
-type Business = {
-  id: string;
-  name: string;
-  logo?: string;
-  description?: string;
-  rating?: number;
-  category?: string;
-  location?: string;
-  address?: string;
-  phone?: string;
-  coordinates?: { lat: number; lng: number } | null;
-};
-
-type ApiBusiness = {
-  id?: string;
-  Id?: string;
-  businessName?: string;
-  BusinessName?: string;
-  name?: string;
-  Name?: string;
-  description?: string;
-  Description?: string;
-  businessType?: string;
-  BusinessType?: string;
-  category?: string;
-  Category?: string;
-  type?: string;
-  Type?: string;
-  city?: string;
-  City?: string;
-  address?: string;
-  Address?: string;
-  phone?: string;
-  Phone?: string;
-  phoneNumber?: string;
-  PhoneNumber?: string;
-  logo?: string;
-  Logo?: string;
-  imageUrl?: string;
-  ImageUrl?: string;
-  lat?: number | string;
-  lng?: number | string;
-  Lat?: number | string;
-  Lng?: number | string;
-  latitude?: number | string;
-  longitude?: number | string;
-  Latitude?: number | string;
-  Longitude?: number | string;
-  coordinates?: { lat: number; lng: number } | null;
-};
 
 type ApiResult<T> = {
   data: T;
@@ -76,24 +38,12 @@ const ALT_IMAGE = listingAltImage.src;
 const FEATURED_MAIN_IMAGE = featuredMainImage.src;
 const STREET_IMAGE = cityWideImage.src;
 const COFFEE_IMAGE = coffeeSquareImage.src;
-const LISTINGS_PAGE_SIZE = 2;
 
 const TRENDING_SEARCHES: Array<{ label: string; keyword: string; categories?: string[] }> = [
   { label: "Restaurant near me", keyword: "restaurant", categories: ["Restaurant"] },
   { label: "Pharmacy", keyword: "pharmacy", categories: ["Service"] },
   { label: "Car Wash", keyword: "car wash", categories: ["Service"] },
 ];
-
-function normalizeSearchKeyword(rawKeyword: string) {
-  return rawKeyword
-    .trim()
-    .replace(/near me/gi, "")
-    .replace(/afër meje/gi, "")
-    .replace(/afer meje/gi, "")
-    .replace(/prane meje/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 async function fetchJson<T>(path: string, fallback: T): Promise<ApiResult<T>> {
   try {
@@ -104,117 +54,17 @@ async function fetchJson<T>(path: string, fallback: T): Promise<ApiResult<T>> {
       result?: unknown;
     };
     if (!response.ok) {
-      return { data: fallback, error: raw?.message ?? "Request failed." };
+      return { data: fallback, error: raw?.message ?? REQUEST_FAILED_MESSAGE };
     }
     const payload = (raw.data ?? raw.result ?? raw) as T;
     return { data: payload, error: null };
   } catch {
-    return { data: fallback, error: "Unable to reach backend." };
+    return { data: fallback, error: UNABLE_TO_REACH_BACKEND_MESSAGE };
   }
-}
-
-const toText = (value: unknown) => {
-  if (typeof value === "string") return value;
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return "";
-};
-const toNumber = (value: unknown) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-};
-const isValidCoordinate = (lat: number, lng: number) =>
-  Number.isFinite(lat) &&
-  Number.isFinite(lng) &&
-  lat >= -90 &&
-  lat <= 90 &&
-  lng >= -180 &&
-  lng <= 180;
-
-function extractCoordinates(item: ApiBusiness): { lat: number; lng: number } | null {
-  const candidates: Array<{ lat: unknown; lng: unknown }> = [];
-
-  if (item.coordinates) {
-    candidates.push({ lat: item.coordinates.lat, lng: item.coordinates.lng });
-  }
-
-  candidates.push(
-    { lat: item.lat, lng: item.lng },
-    { lat: item.Lat, lng: item.Lng },
-    { lat: item.latitude, lng: item.longitude },
-    { lat: item.Latitude, lng: item.Longitude },
-  );
-
-  for (const candidate of candidates) {
-    const lat = toNumber(candidate.lat);
-    const lng = toNumber(candidate.lng);
-    if (lat !== null && lng !== null && isValidCoordinate(lat, lng)) {
-      return { lat, lng };
-    }
-  }
-
-  return null;
-}
-
-function normalizeBusiness(item: ApiBusiness): Business {
-  const city = toText(item.city ?? item.City);
-  const address = toText(item.address ?? item.Address);
-  const coordinates = extractCoordinates(item);
-
-  return {
-    id: toText(item.id ?? item.Id),
-    name: toText(item.businessName ?? item.BusinessName ?? item.name ?? item.Name) || "Business",
-    description: toText(item.description ?? item.Description) || undefined,
-    category: toBusinessTypeLabel(item.category ?? item.Category ?? item.businessType ?? item.BusinessType ?? item.type ?? item.Type) || undefined,
-    location: city || undefined,
-    address: address || undefined,
-    phone: toText(item.phoneNumber ?? item.PhoneNumber ?? item.phone ?? item.Phone) || undefined,
-    logo: toText(item.imageUrl ?? item.ImageUrl ?? item.logo ?? item.Logo) || undefined,
-    coordinates,
-  };
 }
 
 async function fetchCategories() {
   return fetchJson<string[]>("/api/homepagecompat/categories", []);
-}
-
-function normalizeCities(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((entry) => {
-      if (typeof entry === "string") return entry;
-      if (typeof entry === "object" && entry !== null) {
-        const row = entry as Record<string, unknown>;
-        return toText(row.name ?? row.Name ?? row.city ?? row.City);
-      }
-      return "";
-    })
-    .filter((value) => value.length > 0);
-}
-
-function normalizeCityKey(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function getCityAliases(city: string): string[] {
-  const normalized = normalizeCityKey(city);
-  if (normalized === "prishtine" || normalized === "prishtina") {
-    return ["Prishtine", "Prishtina", "Prishtinë"];
-  }
-  return [city];
-}
-
-function resolveCityFromCandidates(city: string, candidates: string[]): string {
-  const aliases = getCityAliases(city).map(normalizeCityKey);
-  const match = candidates.find((entry) => aliases.includes(normalizeCityKey(entry)));
-  return match ?? city;
 }
 
 export default function HomepageClient() {

@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
+import {
+  REQUEST_FAILED_MESSAGE,
+  UNABLE_TO_REACH_BACKEND_MESSAGE,
+} from "@/lib/constants/messages";
 import styles from "./page.module.css";
 
 type Business = {
@@ -65,12 +69,12 @@ async function fetchJson<T>(path: string, fallback: T): Promise<ApiResult<T>> {
       result?: unknown;
     };
     if (!response.ok) {
-      return { data: fallback, error: raw?.message ?? "Request failed." };
+      return { data: fallback, error: raw?.message ?? REQUEST_FAILED_MESSAGE };
     }
     const payload = (raw.data ?? raw.result ?? raw) as T;
     return { data: payload, error: null };
   } catch {
-    return { data: fallback, error: "Unable to reach backend." };
+    return { data: fallback, error: UNABLE_TO_REACH_BACKEND_MESSAGE };
   }
 }
 

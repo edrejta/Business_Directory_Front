@@ -7,6 +7,9 @@ type PaginationControlsProps = {
   label: string;
 };
 
+const buttonBase =
+  "inline-flex min-w-8 items-center justify-center rounded-md border border-[var(--coffee-border)] px-2 py-1 text-xs font-medium text-[var(--coffee-text)] transition-colors hover:bg-[var(--coffee-border)] disabled:cursor-not-allowed disabled:opacity-50";
+
 export default function PaginationControls({ currentPage, totalPages, onPageChange, label }: PaginationControlsProps) {
   if (totalPages <= 1) return null;
 
@@ -15,11 +18,11 @@ export default function PaginationControls({ currentPage, totalPages, onPageChan
 
   return (
     <nav className="mt-3" aria-label={label}>
-      <ul className="pagination pagination-sm mb-0 flex-wrap">
-        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+      <ul className="flex flex-wrap items-center gap-1">
+        <li>
           <button
             type="button"
-            className="page-link"
+            className={buttonBase}
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
@@ -34,15 +37,23 @@ export default function PaginationControls({ currentPage, totalPages, onPageChan
 
           if (shouldRenderGap) {
             items.push(
-              <li className="page-item disabled" aria-hidden="true" key={`gap-${previousPage}-${page}`}>
-                <span className="page-link">...</span>
+              <li aria-hidden="true" key={`gap-${previousPage}-${page}`}>
+                <span className="inline-flex min-w-8 items-center justify-center px-1 text-xs text-[var(--coffee-muted)]">...</span>
               </li>,
             );
           }
 
           items.push(
-            <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
-              <button type="button" className="page-link" onClick={() => onPageChange(page)}>
+            <li key={page}>
+              <button
+                type="button"
+                className={`${buttonBase} ${
+                  page === currentPage
+                    ? "border-[var(--coffee-primary)] bg-[var(--coffee-primary)] text-[var(--coffee-bg)] hover:bg-[var(--coffee-primary)]"
+                    : ""
+                }`}
+                onClick={() => onPageChange(page)}
+              >
                 {page}
               </button>
             </li>,
@@ -51,10 +62,10 @@ export default function PaginationControls({ currentPage, totalPages, onPageChan
           return items;
         })}
 
-        <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+        <li>
           <button
             type="button"
-            className="page-link"
+            className={buttonBase}
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >

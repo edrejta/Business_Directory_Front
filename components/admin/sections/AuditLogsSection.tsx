@@ -22,6 +22,9 @@ type AuditLogsSectionProps = {
   onPageChange: (page: number) => void;
 };
 
+const controlClass =
+  "w-full rounded-md border border-[var(--coffee-border)] bg-[var(--coffee-bg)] px-3 py-2 text-sm text-[var(--coffee-text)] shadow-sm outline-none transition focus:border-[var(--coffee-primary)] focus:ring-2 focus:ring-[var(--coffee-primary)]/30";
+
 export default function AuditLogsSection({
   loadingData,
   auditSearch,
@@ -39,19 +42,20 @@ export default function AuditLogsSection({
 }: AuditLogsSectionProps) {
   return (
     <SectionCard title="Recent Audit Logs" subtitle="Role changes, deletions, and business moderation logs">
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-5">
+      <div className="mb-3 grid gap-2 md:grid-cols-12">
+        <div className="md:col-span-5">
           <input
-            className="form-control"
+            className={controlClass}
             placeholder="Search audit logs"
             value={auditSearch}
             onChange={(event) => setAuditSearch(event.target.value)}
             aria-label="Search audit logs"
           />
         </div>
-        <div className="col-12 col-md-4">
+
+        <div className="md:col-span-4">
           <select
-            className="form-select"
+            className={controlClass}
             value={auditActionFilter}
             onChange={(event) => setAuditActionFilter(event.target.value)}
             aria-label="Filter logs by action"
@@ -68,12 +72,12 @@ export default function AuditLogsSection({
 
       <DataTable columns={columns} loading={loadingData} empty={rows.length === 0} emptyMessage="No audit logs found.">
         {rows.map((entry) => (
-          <tr key={entry.id}>
-            <td>{entry.action ?? "-"}</td>
-            <td className="text-nowrap">{getTargetEmail(entry.targetUserId)}</td>
-            <td>{entry.reason ?? "-"}</td>
-            <td className="text-nowrap">{entry.id}</td>
-            <td>{formatDateTime(entry.createdAt)}</td>
+          <tr key={entry.id} className="border-t border-[var(--coffee-border)]">
+            <td className="px-3 py-2">{entry.action ?? "-"}</td>
+            <td className="whitespace-nowrap px-3 py-2">{getTargetEmail(entry.targetUserId)}</td>
+            <td className="px-3 py-2">{entry.reason ?? "-"}</td>
+            <td className="whitespace-nowrap px-3 py-2">{entry.id}</td>
+            <td className="px-3 py-2">{formatDateTime(entry.createdAt)}</td>
           </tr>
         ))}
       </DataTable>

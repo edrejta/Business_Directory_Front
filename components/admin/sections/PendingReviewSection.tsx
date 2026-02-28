@@ -26,6 +26,9 @@ type PendingReviewSectionProps = {
   formatDateTime: (value?: string) => string;
 };
 
+const controlClass =
+  "w-full rounded-md border border-[var(--coffee-border)] bg-[var(--coffee-bg)] px-3 py-2 text-sm text-[var(--coffee-text)] shadow-sm outline-none transition focus:border-[var(--coffee-primary)] focus:ring-2 focus:ring-[var(--coffee-primary)]/30";
+
 export default function PendingReviewSection({
   loadingData,
   filteredCount,
@@ -48,21 +51,26 @@ export default function PendingReviewSection({
     <SectionCard
       title="Pending Review Inbox"
       subtitle="Approve or permanently delete pending businesses"
-      actions={<span className="badge text-bg-warning">{filteredCount} pending</span>}
+      actions={
+        <span className="rounded-full border border-amber-700/30 bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">
+          {filteredCount} pending
+        </span>
+      }
     >
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-6">
+      <div className="mb-3 grid gap-2 md:grid-cols-12">
+        <div className="md:col-span-6">
           <input
-            className="form-control"
+            className={controlClass}
             placeholder="Search pending businesses"
             value={pendingSearch}
             onChange={(event) => setPendingSearch(event.target.value)}
             aria-label="Search pending businesses"
           />
         </div>
-        <div className="col-12 col-md-4">
+
+        <div className="md:col-span-4">
           <select
-            className="form-select"
+            className={controlClass}
             value={pendingCityFilter}
             onChange={(event) => setPendingCityFilter(event.target.value)}
             aria-label="Filter pending businesses by city"
@@ -81,6 +89,13 @@ export default function PendingReviewSection({
         {rows.map((business) => {
           const actions: DropdownAction[] = [
             {
+              key: "view",
+              label: "View",
+              onClick: () => {
+                window.location.assign(`/dashboard-admin/business-preview/${business.id}`);
+              },
+            },
+            {
               key: "approve",
               label: "Approve",
               onClick: () => onApproveRequest(business),
@@ -96,15 +111,17 @@ export default function PendingReviewSection({
           ];
 
           return (
-            <tr key={business.id}>
-              <td>{business.name}</td>
-              <td>{business.city ?? "-"}</td>
-              <td>{business.businessType ?? "-"}</td>
-              <td>{formatDateTime(business.createdAt)}</td>
-              <td>
-                <span className="badge text-bg-warning">Pending</span>
+            <tr key={business.id} className="border-t border-[var(--coffee-border)]">
+              <td className="px-3 py-2">{business.name}</td>
+              <td className="px-3 py-2">{business.city ?? "-"}</td>
+              <td className="px-3 py-2">{business.businessType ?? "-"}</td>
+              <td className="px-3 py-2">{formatDateTime(business.createdAt)}</td>
+              <td className="px-3 py-2">
+                <span className="rounded-full border border-amber-700/30 bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">
+                  Pending
+                </span>
               </td>
-              <td className="text-end">
+              <td className="px-3 py-2 text-right">
                 <ActionDropdown id={`pending-${business.id}`} actions={actions} />
               </td>
             </tr>

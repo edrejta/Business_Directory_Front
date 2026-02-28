@@ -32,6 +32,9 @@ type RoleManagementSectionProps = {
   onPageChange: (page: number) => void;
 };
 
+const controlClass =
+  "w-full rounded-md border border-[var(--coffee-border)] bg-[var(--coffee-bg)] px-3 py-2 text-sm text-[var(--coffee-text)] shadow-sm outline-none transition focus:border-[var(--coffee-primary)] focus:ring-2 focus:ring-[var(--coffee-primary)]/30";
+
 export default function RoleManagementSection({
   loadingData,
   userSearch,
@@ -53,19 +56,20 @@ export default function RoleManagementSection({
 }: RoleManagementSectionProps) {
   return (
     <SectionCard title="Role Management" subtitle="Change user role and delete users (optional reason)">
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-6">
+      <div className="mb-3 grid gap-2 md:grid-cols-12">
+        <div className="md:col-span-6">
           <input
-            className="form-control"
+            className={controlClass}
             placeholder="Search users by username or email"
             value={userSearch}
             onChange={(event) => setUserSearch(event.target.value)}
             aria-label="Search users"
           />
         </div>
-        <div className="col-12 col-md-4">
+
+        <div className="md:col-span-4">
           <select
-            className="form-select"
+            className={controlClass}
             value={userRoleFilter}
             onChange={(event) => setUserRoleFilter(event.target.value)}
             aria-label="Filter users by role"
@@ -109,18 +113,28 @@ export default function RoleManagementSection({
           ];
 
           return (
-            <tr key={entry.id}>
-              <td>
+            <tr key={entry.id} className="border-t border-[var(--coffee-border)]">
+              <td className="px-3 py-2">
                 {entry.username ?? entry.fullName ?? "-"}
-                {protectedAdmin && <span className="badge text-bg-dark ms-2">Protected Admin</span>}
+                {protectedAdmin && (
+                  <span className="ml-2 rounded-full border border-[var(--coffee-text)]/30 bg-[var(--coffee-text)] px-2 py-1 text-xs font-semibold text-[var(--coffee-bg)]">
+                    Protected Admin
+                  </span>
+                )}
               </td>
-              <td>{entry.email}</td>
-              <td>
-                <span className={`badge ${currentRole === adminRole ? "text-bg-dark" : "text-bg-secondary"}`}>
+              <td className="px-3 py-2">{entry.email}</td>
+              <td className="px-3 py-2">
+                <span
+                  className={`rounded-full border px-2 py-1 text-xs font-semibold ${
+                    currentRole === adminRole
+                      ? "border-[var(--coffee-text)]/30 bg-[var(--coffee-text)] text-[var(--coffee-bg)]"
+                      : "border-[var(--coffee-border)] bg-[var(--coffee-border)] text-[var(--coffee-text)]"
+                  }`}
+                >
                   {getRoleLabel(entry.role)}
                 </span>
               </td>
-              <td className="text-end">
+              <td className="px-3 py-2 text-right">
                 <ActionDropdown id={`user-${entry.id}`} actions={actions} />
               </td>
             </tr>
