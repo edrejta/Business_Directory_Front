@@ -17,11 +17,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid email." }, { status: 400 });
   }
 
-  const targets = [
-    `${API_URL}/api/subscribe`,
-    `${API_URL}/subscribe`,
-    `${API_URL}/api/newsletter/subscribe`,
-  ];
+  const targets = [`${API_URL}/api/subscribe`];
+
+  let lastStatus = 502;
+  let lastMessage = "Subscription failed.";
 
   for (const target of targets) {
     try {
@@ -32,15 +31,23 @@ export async function POST(request: Request) {
         cache: "no-store",
       });
 
-      if (!response.ok) continue;
+      const payload = (await response.json().catch(() => ({}))) as { message?: string };
 
-      const payload = await response.json().catch(() => ({ message: "Subscribed successfully." }));
-      return NextResponse.json(payload, { status: 200 });
+      if (!response.ok) {
+        lastStatus = response.status || 502;
+        lastMessage = payload?.message?.trim() || response.statusText || "Subscription failed.";
+        continue;
+      }
+
+      return NextResponse.json(
+        { message: payload?.message?.trim() || "Subscribed successfully." },
+        { status: 200 },
+      );
     } catch {
-      // Try next target.
+      lastStatus = 502;
+      lastMessage = "Backend not reachable.";
     }
   }
 
-  return NextResponse.json({ message: "Subscribed successfully." }, { status: 200 });
+  return NextResponse.json({ message: lastMessage }, { status: lastStatus });
 }
-

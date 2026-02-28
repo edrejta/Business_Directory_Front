@@ -1,5 +1,6 @@
 import { API_URL } from "./config";
 import type { Business } from "@/lib/types/business";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 
 export class ApiError extends Error {
   status: number;
@@ -36,14 +37,9 @@ function normalizeBusiness(raw: unknown): Business {
 
   const id = item.id ?? item.Id ?? "";
   const name = item.name ?? item.Name ?? item.businessName ?? item.BusinessName ?? "Business";
-  const type =
-    item.type ??
-    item.Type ??
-    item.businessType ??
-    item.BusinessType ??
-    item.category ??
-    item.Category ??
-    "Unknown";
+  const type = toBusinessTypeLabel(
+    item.type ?? item.Type ?? item.businessType ?? item.BusinessType ?? item.category ?? item.Category ?? "Unknown",
+  );
 
   return {
     id: String(id),

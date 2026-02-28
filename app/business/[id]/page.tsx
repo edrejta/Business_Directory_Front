@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import BusinessComments from "./BusinessComments";
 import { API_URL } from "@/lib/api/config";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 
 type BusinessDetail = {
   id: string;
@@ -19,6 +20,11 @@ type BusinessDetail = {
   photos?: string[];
 };
 
+type ReviewStats = {
+  rating: number;
+  reviewsCount: number;
+};
+
 function extractPayload(raw: unknown): Record<string, unknown> | null {
   const root = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : null;
   const candidate = root && typeof root.data === "object" && root.data !== null
@@ -31,7 +37,7 @@ function extractPayload(raw: unknown): Record<string, unknown> | null {
 
 function toBusinessDetail(payload: Record<string, unknown>, fallbackId: string): BusinessDetail {
   const city = String(payload.city ?? payload.City ?? "");
-  const businessType = String(payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type ?? "");
+  const businessType = toBusinessTypeLabel(payload.businessType ?? payload.BusinessType ?? payload.type ?? payload.Type);
 
   return {
     id: String(payload.id ?? payload.Id ?? payload.businessId ?? payload.BusinessId ?? fallbackId),
@@ -53,6 +59,50 @@ function toBusinessDetail(payload: Record<string, unknown>, fallbackId: string):
   };
 }
 
+function extractList(raw: unknown): unknown[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "object" && raw !== null) {
+    const root = raw as Record<string, unknown>;
+    const candidate = root.data ?? root.result ?? root.items;
+    return Array.isArray(candidate) ? candidate : [];
+  }
+  return [];
+}
+
+function toRate(value: unknown): number | null {
+  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  if (!Number.isFinite(n)) return null;
+  return Math.max(1, Math.min(5, n));
+}
+
+async function getReviewStats(businessId: string): Promise<ReviewStats> {
+  try {
+    const res = await fetch(`${API_URL}/api/comments?businessId=${encodeURIComponent(businessId)}&limit=100`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { rating: 0, reviewsCount: 0 };
+    const raw = (await res.json().catch(() => [])) as unknown;
+    const list = extractList(raw);
+    if (list.length === 0) return { rating: 0, reviewsCount: 0 };
+
+    const rates = list
+      .map((entry) => {
+        const row = typeof entry === "object" && entry !== null ? (entry as Record<string, unknown>) : {};
+        return toRate(row.rate ?? row.Rate ?? row.rating ?? row.Rating);
+      })
+      .filter((rate): rate is number => rate !== null);
+
+    if (rates.length === 0) return { rating: 0, reviewsCount: list.length };
+    const avg = rates.reduce((sum, value) => sum + value, 0) / rates.length;
+    return {
+      rating: Math.round(avg * 10) / 10,
+      reviewsCount: list.length,
+    };
+  } catch {
+    return { rating: 0, reviewsCount: 0 };
+  }
+}
+
 async function getBusiness(id: string): Promise<BusinessDetail | null> {
   try {
     const byIdRes = await fetch(`${API_URL}/api/businesses/${encodeURIComponent(id)}`, { cache: "no-store" });
@@ -60,7 +110,9 @@ async function getBusiness(id: string): Promise<BusinessDetail | null> {
       const byIdRaw = (await byIdRes.json().catch(() => null)) as unknown;
       const byIdPayload = extractPayload(byIdRaw);
       if (byIdPayload) {
-        return toBusinessDetail(byIdPayload, id);
+        const detail = toBusinessDetail(byIdPayload, id);
+        const reviewStats = await getReviewStats(detail.id);
+        return { ...detail, ...reviewStats };
       }
     }
 
@@ -74,7 +126,10 @@ async function getBusiness(id: string): Promise<BusinessDetail | null> {
     const payload = (list as Record<string, unknown>[]).find(
       (item) => String(item.id ?? item.Id ?? item.businessId ?? item.BusinessId ?? "") === id,
     );
-    return payload ? toBusinessDetail(payload, id) : null;
+    if (!payload) return null;
+    const detail = toBusinessDetail(payload, id);
+    const reviewStats = await getReviewStats(detail.id);
+    return { ...detail, ...reviewStats };
   } catch {
     return null;
   }
@@ -82,7 +137,7 @@ async function getBusiness(id: string): Promise<BusinessDetail | null> {
 
 function stars(rating: number): string {
   const full = Math.max(0, Math.min(5, Math.round(rating)));
-  return "*".repeat(full) + ".".repeat(5 - full);
+  return "\u2605".repeat(full) + "\u2606".repeat(5 - full);
 }
 
 export default async function BusinessDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -120,9 +175,11 @@ export default async function BusinessDetailsPage({ params }: { params: Promise<
         <h1 className={styles.title}>{item.name}</h1>
         <h2 className={styles.sectionTitle}>Description</h2>
         <p className={styles.desc}>{item.description || "Nuk ka pershkrim per momentin."}</p>
-        <p className={styles.rating}>
-          {stars(item.rating)} ({item.reviewsCount} reviews)
-        </p>
+        {item.reviewsCount > 0 ? (
+          <p className={styles.rating}>
+            {stars(item.rating)} ({item.reviewsCount} {item.reviewsCount === 1 ? "review" : "reviews"})
+          </p>
+        ) : null}
 
         {photos.length > 0 && (
           <>
