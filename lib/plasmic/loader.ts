@@ -2,7 +2,8 @@
 let PLASMIC: any = undefined;
 try {
   // Use require so builds where @plasmicapp/loader-nextjs isn't available won't fail at import time.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const plasmicMod = require("@plasmicapp/loader-nextjs");
   const create = plasmicMod?.createPlasmicLoader ?? plasmicMod?.initPlasmicLoader ?? plasmicMod?.default;
   if (typeof create === "function") {

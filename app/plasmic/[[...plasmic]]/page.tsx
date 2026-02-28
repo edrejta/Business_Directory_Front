@@ -16,7 +16,7 @@ export default async function PlasmicCatchAll({ params }: { params: { plasmic?: 
     return <Component {...(page.params || {})} />
   } catch (err) {
     // If loader not configured or packages not installed, show helpful message.
-    // eslint-disable-next-line no-console
+     
     console.error(err)
     return (
       <div>

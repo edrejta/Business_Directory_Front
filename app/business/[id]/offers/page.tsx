@@ -20,7 +20,9 @@ export default function BusinessOffersPage(props: any) {
         if (!res.ok) return;
         const data = await res.json().catch(() => []);
         setOffers(Array.isArray(data) ? data : data.data ?? []);
-      } catch {}
+      } catch (e) {
+        // ignore errors loading offers
+      }
     };
     void load();
   }, [id]);

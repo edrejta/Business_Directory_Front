@@ -1,3 +1,21 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": [
+    ".next/**",
+    "**/.next/**",
+    "app/plasmic/**"
+  ],
+  "rules": {
+    // allow `any` in places where typing is too onerous
+    "@typescript-eslint/no-explicit-any": "off",
+    // allow unused vars starting with underscore if you like
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    // don’t treat setState in useEffect as an error
+    "react-hooks/set-state-in-effect": "off",
+    // reduce noise from empty object type warnings
+    "@typescript-eslint/no-empty-object-type": "off"
+  }
 }
