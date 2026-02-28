@@ -206,6 +206,11 @@
   gap: 40px;
 }
 
+.htu-footer-shell {
+  width: 100%;
+  padding: 0 clamp(16px, 3.6vw, 56px);
+}
+
 .htu-footer h3 {
   margin: 0 0 14px;
   font-size: clamp(30px, 2.2vw, 42px);
@@ -259,9 +264,9 @@
 }
 
 .htu-copyright {
-  max-width: 1150px;
+  width: 100%;
   margin: 34px auto 0;
-  padding: 14px 20px 0;
+  padding: 14px clamp(16px, 3.6vw, 56px) 0;
   border-top: 1px solid #52433a;
   text-align: center;
   color: #978b80;

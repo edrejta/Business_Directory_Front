@@ -48,8 +48,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           <p className="text-xs font-semibold uppercase tracking-wide text-espresso/70">Approved Business</p>
           <h1 className="mt-2 text-2xl font-bold text-espresso md:text-3xl">{business.name}</h1>
           <p className="mt-3 text-sm text-espresso/80">
-            {business.city ?? "Unknown city"} · {business.businessType ?? "General"} · {business.status ?? "Approved"}
-          </p>
+            {business.city ?? "Unknown city"} · {business.type ?? "General"} · {business.status ?? "Approved"}          </p>
           <p className="mt-4 text-sm leading-6 text-espresso/85">
             {business.description ?? "No description provided yet."}
           </p>

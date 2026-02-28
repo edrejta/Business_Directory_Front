@@ -1,14 +1,39 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(['dist', '.next/**', 'app/plasmic/**']),
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [js.configs.recommended, tseslint.configs.recommended, reactHooks.configs.flat.recommended],
+    ignores: [
+      'dist',
+      '.next/**',
+      'app/plasmic/**',
+      "**/.next/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/out/**",
+      "**/coverage/**",
+      "next-env.d.ts",
+    ],
+  },
+
+  js.configs.recommended,
+
+  {
+    files: ["next.config.*", "**/*.config.{js,mjs,cjs}", "**/*.mjs", "**/*.cjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
+  {
+    files: ["**/*.{ts,tsx}"],
+    extends: [tseslint.configs.recommended, reactHooks.configs.flat.recommended],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -20,4 +45,21 @@ export default defineConfig([
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
     }
   },
-])
+
+  {
+    files: ["lib/api/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      "@typescript-eslint/triple-slash-reference": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-function-type": "off",
+    },
+  },
+]);

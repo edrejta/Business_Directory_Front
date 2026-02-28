@@ -55,8 +55,7 @@ describe("normalizeDashboard", () => {
     ]);
   });
 
-  it("falls back to /api/health when /health fails", async () => {
-    authenticatedJsonMock.mockRejectedValueOnce(new Error("Not found"));
+  it("calls /api/health for health status", async () => {
     authenticatedJsonMock.mockResolvedValueOnce({ status: "ok", version: "1.0.0" });
 
     const health = await getHealthStatus();
@@ -66,7 +65,7 @@ describe("normalizeDashboard", () => {
       timestamp: undefined,
       version: "1.0.0",
     });
-    expect(authenticatedJsonMock).toHaveBeenNthCalledWith(1, "/health", { requireAuth: false });
-    expect(authenticatedJsonMock).toHaveBeenNthCalledWith(2, "/api/health", { requireAuth: false });
+    expect(authenticatedJsonMock).toHaveBeenCalledTimes(1);
+    expect(authenticatedJsonMock).toHaveBeenCalledWith("/api/health", { requireAuth: false });
   });
 });

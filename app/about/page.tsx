@@ -1,5 +1,6 @@
 import Link from "next/link";
 import "./about.css";
+import MarketingNavbar from "@/components/MarketingNavbar";
 import heroMainImage from "@/src/assets/image (7).jpg";
 import marketImage from "@/src/assets/image (2).jpg";
 
@@ -27,23 +28,7 @@ const featureItems = [
 export default function AboutPage() {
   return (
     <main className="ab-page">
-      <header className="ab-topbar">
-        <a className="ab-brand" href="/homepage">
-          <span>K</span>
-          <strong>KosBiz</strong>
-        </a>
-
-        <nav className="ab-nav">
-          <a href="/about">About</a>
-          <a href="/how-to-use">How To Use</a>
-          <a className="ab-btn ab-btn-outline" href="/login">
-            Login
-          </a>
-          <a className="ab-btn ab-btn-solid" href="/register">
-            Signup
-          </a>
-        </nav>
-      </header>
+      <MarketingNavbar />
 
       <section className="ab-hero">
         <span className="ab-bg-letter">Q</span>
@@ -113,8 +98,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <footer className="ab-footer">
-        <div className="ab-wrap ab-footer-grid">
+      <footer className="ab-footer" id="contact">
+        <div className="ab-footer-shell ab-footer-grid">
           <div>
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>
@@ -126,7 +111,6 @@ export default function AboutPage() {
             <h3>Live Counters</h3>
             <p>2 businesses listed</p>
             <p>2 categories</p>
-            <p>12 users online</p>
           </div>
 
           <div>

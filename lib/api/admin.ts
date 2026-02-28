@@ -1,4 +1,5 @@
 import { authenticatedJson } from "@/lib/api/client";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 
 export type DashboardMetrics = {
   totalBusinesses: number;
@@ -58,7 +59,7 @@ export type AuditLog = {
   createdAt?: string;
 };
 
-export type AdminBusinessStatus = "Pending" | "Approved" | "Rejected" | "Suspended" | string;
+export type AdminBusinessStatus = "Pending" | "Approved" | "Suspended" | string;
 
 export type AdminBusiness = {
   id: string;
@@ -108,31 +109,73 @@ const normalizeAdminUsers = (raw: unknown): AdminUser[] => {
   return payload.map((entry) => normalizeAdminUser(entry)).filter((entry) => entry.id.length > 0);
 };
 
-const normalizeCategory = (raw: unknown): Category => {
+const normalizeCategory = (raw: unknown, fallbackId?: string): Category => {
   const source = asRecord(raw);
+  const typeValue =
+    source.businessType ??
+    source.BusinessType ??
+    source.type ??
+    source.Type ??
+    source.category ??
+    source.Category ??
+    source.name ??
+    source.Name;
+  const resolvedName = toBusinessTypeLabel(typeValue);
+  const resolvedId = String(source.id ?? source.Id ?? source.businessType ?? source.BusinessType ?? fallbackId ?? resolvedName);
+
   return {
-    id: String(source.id ?? source.Id ?? ""),
-    name: String(source.name ?? source.Name ?? ""),
+    id: resolvedId,
+    name: resolvedName,
     businessesCount: toNumber(
-      source.businessesCount ?? source.BusinessesCount ?? source.count ?? source.Count
+      source.businessesCount ??
+        source.BusinessesCount ??
+        source.businessCount ??
+        source.BusinessCount ??
+        source.totalBusinesses ??
+        source.TotalBusinesses ??
+        source.count ??
+        source.Count
     ),
   };
 };
 
 const normalizeCategories = (raw: unknown): Category[] => {
   const payload = unwrapPayload(raw);
-  if (!Array.isArray(payload)) return [];
-  return payload.map((entry) => normalizeCategory(entry)).filter((entry) => entry.id.length > 0);
+
+  if (Array.isArray(payload)) {
+    return payload
+      .map((entry, index) => normalizeCategory(entry, `category-${index}`))
+      .filter((entry) => entry.name.length > 0);
+  }
+
+  const source = asRecord(payload);
+  const categoriesArray = source.categories ?? source.Categories ?? source.items ?? source.Items;
+  if (Array.isArray(categoriesArray)) {
+    return categoriesArray
+      .map((entry, index) => normalizeCategory(entry, `category-${index}`))
+      .filter((entry) => entry.name.length > 0);
+  }
+
+  // Support dictionary shape: { "Restaurant": 12, "Cafe": 7 }
+  const mapEntries = Object.entries(source).filter(([, value]) => ["string", "number"].includes(typeof value));
+  if (mapEntries.length > 0) {
+    return mapEntries.map(([name, count], index) =>
+      normalizeCategory({ id: `category-${index}`, name, businessesCount: count }),
+    );
+  }
+
+  return [];
 };
 
 const normalizeAdminBusiness = (raw: unknown): AdminBusiness => {
   const source = asRecord(raw);
+  const businessType = toBusinessTypeLabel(source.businessType ?? source.BusinessType ?? source.type ?? source.Type);
   return {
     id: String(source.id ?? source.Id ?? ""),
     name: String(source.name ?? source.Name ?? ""),
     ownerId: toOptionalString(source.ownerId ?? source.OwnerId),
     city: toOptionalString(source.city ?? source.City),
-    businessType: toOptionalString(source.businessType ?? source.BusinessType ?? source.type ?? source.Type),
+    businessType: businessType || undefined,
     status: toOptionalString(source.status ?? source.Status),
     createdAt: toOptionalString(source.createdAt ?? source.CreatedAt),
     updatedAt: toOptionalString(source.updatedAt ?? source.UpdatedAt),
@@ -259,9 +302,11 @@ export async function getAdminAuditLogs(take = 100) {
 }
 
 export async function deleteAdminUser(id: string, reason?: string) {
-  const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+  const trimmedReason = reason?.trim();
+  const query = trimmedReason ? `?reason=${encodeURIComponent(trimmedReason)}` : "";
   return authenticatedJson<{ success?: boolean; message?: string }>(`/api/admin/users/${id}${query}`, {
     method: "DELETE",
+    body: JSON.stringify(trimmedReason ? { reason: trimmedReason } : {}),
   });
 }
 
@@ -276,13 +321,8 @@ export async function getAdminCategories() {
 }
 
 export async function getHealthStatus() {
-  try {
-    const response = await authenticatedJson<unknown>("/health", { requireAuth: false });
-    return normalizeHealthStatus(response);
-  } catch {
-    const fallback = await authenticatedJson<unknown>("/api/health", { requireAuth: false });
-    return normalizeHealthStatus(fallback);
-  }
+  const response = await authenticatedJson<unknown>("/api/health", { requireAuth: false });
+  return normalizeHealthStatus(response);
 }
 
 export async function getAdminBusinesses(status?: string) {
@@ -301,9 +341,10 @@ export async function approveAdminBusiness(id: string) {
   });
 }
 
-export async function rejectAdminBusiness(id: string) {
-  return authenticatedJson<AdminBusiness>(`/api/admin/businesses/${id}/reject`, {
-    method: "PATCH",
+export async function deleteAdminBusiness(id: string, reason?: string) {
+  const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+  return authenticatedJson<{ success?: boolean; message?: string }>(`/api/admin/businesses/${id}${query}`, {
+    method: "DELETE",
   });
 }
 

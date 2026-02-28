@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import NavbarAuth from "./NavbarAuth";
+import { useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { getRedirectPath, getRoleLabel } from "@/lib/auth/redirect";
 
 export default function Navbar() {
   // Render a static shell; the client `NavbarAuth` will handle auth UI.
@@ -14,6 +17,23 @@ export default function Navbar() {
     ]
       .filter(Boolean)
       .join(" ");
+
+  const { user, logoutUser } = useAuth();
+
+  const homePath = useMemo(() => {
+    if (!user) return "/login";
+    return getRedirectPath(user.role);
+  }, [user]);
+
+  const roleLabel = useMemo(() => {
+    if (!user) return "Guest";
+    return getRoleLabel(user.role);
+  }, [user]);
+
+  const showBiznesShortcut = useMemo(() => {
+    if (!user) return false;
+    return getRedirectPath(user.role) !== "/dashboard-business";
+  }, [user]);
 
   return (
     <header className="animate-fade-up border-b border-oak/35 bg-mist/80 backdrop-blur">
@@ -29,6 +49,22 @@ export default function Navbar() {
 
           <Link className={linkClasses(pathname === "/about")} href="/about">
             About
+          </Link>
+
+          {user && showBiznesShortcut && (
+            <Link
+              className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
+              href="/dashboard-business"
+            >
+              Biznes
+            </Link>
+          )}
+
+          <Link
+            className="rounded-full border border-oak/35 bg-sand px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-[#efdfcd]"
+            href={homePath}
+          >
+            {roleLabel}
           </Link>
 
           <NavbarAuth />

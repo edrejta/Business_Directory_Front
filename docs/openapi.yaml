@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: API contract consumed by current frontend (auth, homepage, admin dashboard).
 servers:
-  - url: http://localhost:5003
-    description: Local development
+  - url: /
+    description: Same-origin default (set host via deployment environment)
 security:
   - bearerAuth: []
 tags:
@@ -301,7 +301,7 @@ paths:
           name: status
           schema:
             type: string
-            enum: [Pending, Approved, Rejected, Suspended]
+            enum: [Pending, Approved, Suspended]
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
       responses:
@@ -353,29 +353,34 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/admin/businesses/{id}/approve:
-    patch:
+    delete:
       tags: [Admin]
-      summary: Approve business
+      summary: Delete business
       parameters:
         - $ref: '#/components/parameters/BusinessId'
+        - name: reason
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 500
       responses:
-        '200':
-          description: Updated business
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AdminBusiness'
+        '204':
+          description: Deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /api/admin/businesses/{id}/reject:
+        '409':
+          description: Conflict
+  /api/admin/businesses/{id}/approve:
     patch:
       tags: [Admin]
-      summary: Reject business
+      summary: Approve business
       parameters:
         - $ref: '#/components/parameters/BusinessId'
       responses:
@@ -674,7 +679,7 @@ components:
         businessType: { type: string }
         status:
           type: string
-          enum: [Pending, Approved, Rejected, Suspended]
+          enum: [Pending, Approved, Suspended]
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
@@ -684,4 +689,3 @@ components:
         status: { type: string, example: ok }
         timestamp: { type: string, format: date-time }
         version: { type: string, example: 1.0.0 }
-

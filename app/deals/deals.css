@@ -55,6 +55,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  border-radius: 10px;
 }
 
 .deals-checklist button.active {
@@ -108,8 +109,9 @@
 .deal-card h2 {
   margin: 10px 0 8px;
   font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-  font-size: 30px;
+  font-size: clamp(24px, 4vw, 30px);
   line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .deal-card p {
@@ -117,6 +119,7 @@
   color: #6d6054;
   font-size: 15px;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .deal-card h3 {
@@ -132,6 +135,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding-top: 12px;
 }
@@ -179,12 +183,37 @@
     padding: 24px 12px 40px;
   }
 
+  .deals-head span {
+    font-size: 14px;
+  }
+
+  .deals-checklist {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .deals-checklist button {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+  }
+
   .deals-grid {
     grid-template-columns: 1fr;
   }
 
-  .deal-card h2 {
-    font-size: 26px;
+  .deal-card {
+    min-height: 0;
+  }
+
+  .deal-footer {
+    align-items: stretch;
+  }
+
+  .deal-footer a {
+    width: 100%;
+    text-align: center;
   }
 }
 

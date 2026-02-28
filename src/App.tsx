@@ -111,7 +111,7 @@ function App() {
     safeFetch<string[]>('/locations', ['Accra', 'Kumasi', 'Tamale', 'Takoradi']).then(setLocations)
     safeFetch<Business[]>('/featured-businesses', []).then(setFeatured)
     safeFetch<Business[]>('/recommendations', []).then(setRecommendations)
-    safeFetch<Deal[]>('/promotions', []).then((data) => {
+    safeFetch<Deal[]>('/api/promotions', []).then((data) => {
       setPromotions(data.length > 0 ? data : seedPromotions)
     })
     safeFetch<Business[]>('/search', []).then((data) => {
@@ -172,7 +172,6 @@ function App() {
   const mapPoints = useMemo(() => normalizeMapPoints(results), [results])
   const totalBusinesses = useCountUp(results.length || 1)
   const totalCategories = useCountUp(categories.length || 1)
-  const totalOnline = useCountUp(Math.max(12, Math.floor((results.length || 1) * 2.5)))
 
   const toggleFilter = (value: string, current: string[], setter: (next: string[]) => void) => {
     if (current.includes(value)) {
@@ -651,7 +650,7 @@ function App() {
           <p>support@kosbiz.com</p>
           <p>+233 200 000 000</p>
           <p>
-            <a href="/about">About</a> | <a href="/terms">Terms</a> | <a href="/privacy">Privacy</a>
+            <a href="/about">About</a> | <a href="/terms">Terms</a> | <a href="/terms#privacy">Privacy</a>
           </p>
           <div className="socials">
             {['F', 'X', 'I', 'L'].map((item, socialIndex) => (
@@ -686,7 +685,6 @@ function App() {
           <h3>Live Counters</h3>
           <p>{totalBusinesses} businesses listed</p>
           <p>{totalCategories} categories</p>
-          <p>{totalOnline} users online</p>
         </div>
       </footer>
     </div>

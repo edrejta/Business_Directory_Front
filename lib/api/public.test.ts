@@ -22,15 +22,13 @@ describe("publicApi", () => {
       `${API_URL}/api/businesses/public?search=cafe&city=Tirana&type=Cafe`,
       expect.anything(),
     );
-    expect(result).toEqual([
+
+    expect(result).toMatchObject([
       {
         id: "b1",
         name: "Cafe Uno",
         city: "Tirana",
-        businessType: "Cafe",
-        status: undefined,
-        description: undefined,
-        ownerId: undefined,
+        type: "Cafe",
       },
     ]);
   });

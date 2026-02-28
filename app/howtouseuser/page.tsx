@@ -1,5 +1,6 @@
 import Link from "next/link";
 import "./howtouseuser.css";
+import MarketingNavbar from "@/components/MarketingNavbar";
 
 const steps = [
   {
@@ -92,23 +93,7 @@ function StepRow({
 export default function HowToUseUserPage() {
   return (
     <main className="htu-user-page">
-      <header className="htu-user-topbar">
-        <a className="htu-user-brand" href="/homepage">
-          <span>K</span>
-          <strong>KosBiz</strong>
-        </a>
-
-        <nav className="htu-user-nav">
-          <a href="/about">About</a>
-          <a href="/how-to-use">How To Use</a>
-          <a className="htu-user-btn htu-user-btn-outline" href="/login">
-            Login
-          </a>
-          <a className="htu-user-btn htu-user-btn-solid" href="/register">
-            Signup
-          </a>
-        </nav>
-      </header>
+      <MarketingNavbar />
 
       <section className="htu-user-hero">
         <span className="htu-user-bg-mark">U</span>
@@ -137,8 +122,8 @@ export default function HowToUseUserPage() {
         </Link>
       </section>
 
-      <footer className="htu-user-footer">
-        <div className="htu-user-wrap htu-user-footer-grid">
+      <footer className="htu-user-footer" id="contact">
+        <div className="htu-user-footer-shell htu-user-footer-grid">
           <div>
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>
@@ -150,7 +135,6 @@ export default function HowToUseUserPage() {
             <h3>Live Counters</h3>
             <p>2 businesses listed</p>
             <p>2 categories</p>
-            <p>12 users online</p>
           </div>
 
           <div>
@@ -167,4 +151,3 @@ export default function HowToUseUserPage() {
     </main>
   );
 }
-

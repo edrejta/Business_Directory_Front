@@ -1,26 +1,11 @@
 import Link from "next/link";
 import "./howtouse.css";
+import MarketingNavbar from "@/components/MarketingNavbar";
 
 export default function HowToUseSelectorPage() {
   return (
     <main className="htu-page">
-      <header className="htu-topbar">
-        <a className="htu-brand" href="/homepage">
-          <span>K</span>
-          <strong>KosBiz</strong>
-        </a>
-
-        <nav className="htu-nav">
-          <a href="/about">About</a>
-          <a href="/how-to-use">How To Use</a>
-          <a className="htu-btn htu-btn-outline" href="/login">
-            Login
-          </a>
-          <a className="htu-btn htu-btn-solid" href="/register">
-            Signup
-          </a>
-        </nav>
-      </header>
+      <MarketingNavbar />
 
       <section className="htu-hero">
         <span className="htu-bg-mark">?</span>
@@ -61,8 +46,8 @@ export default function HowToUseSelectorPage() {
         </div>
       </section>
 
-      <footer className="htu-footer">
-        <div className="htu-wrap htu-footer-grid">
+      <footer className="htu-footer" id="contact">
+        <div className="htu-footer-shell htu-footer-grid">
           <div>
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>
@@ -74,7 +59,6 @@ export default function HowToUseSelectorPage() {
             <h3>Live Counters</h3>
             <p>2 businesses listed</p>
             <p>2 categories</p>
-            <p>12 users online</p>
           </div>
 
           <div>
@@ -90,4 +74,3 @@ export default function HowToUseSelectorPage() {
     </main>
   );
 }
-

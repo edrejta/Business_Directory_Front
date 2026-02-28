@@ -4,7 +4,12 @@ const endpointGroups = [
   {
     title: "Public",
     path: "lib/api/public.ts",
-    items: ["GET /health", "GET /api/businesses/public", "GET /api/cities"],
+    items: [
+      "GET /api/health",
+      "GET /api/businesses/public",
+      "GET /api/cities",
+      "GET /api/homepagecompat/categories",
+    ],
   },
   {
     title: "Auth",
@@ -18,7 +23,9 @@ const endpointGroups = [
       "POST|PUT|DELETE /api/businesses",
       "GET /api/businesses/mine",
       "GET /api/users/me, GET|PUT /api/users/{id}",
-      "POST|PUT|DELETE /api/comments",
+      "GET|POST /api/comments",
+      "PUT|DELETE /api/comments/{id}",
+      "GET|POST /api/opendays/owner",
     ],
   },
   {
@@ -31,7 +38,8 @@ const endpointGroups = [
       "GET /api/admin/audit-logs?take=100",
       "DELETE /api/admin/users/{id}?reason=...",
       "GET /api/admin/businesses*",
-      "PATCH /api/admin/businesses/{id}/approve|reject|suspend",
+      "PATCH /api/admin/businesses/{id}/approve|suspend",
+      "DELETE /api/admin/businesses/{id}?reason=...",
     ],
   },
 ];

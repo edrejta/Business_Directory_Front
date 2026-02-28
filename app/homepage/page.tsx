@@ -1,5 +1,5 @@
 import "./homepage.css";
-import HomepageClient from "@/components/homepage/HomepageClient";
+import HomepageClient from "@/app/homepage/components/HomepageClient";
 
 export default function HomepagePage() {
   return <HomepageClient />;

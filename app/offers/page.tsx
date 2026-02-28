@@ -19,7 +19,7 @@ type Promotion = {
   expiresAt?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5003";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 const validCategories: Category[] = ["Discounts", "FlashSales", "EarlyAccess"];
 
 async function getOffers(category?: string): Promise<Promotion[]> {
@@ -29,7 +29,7 @@ async function getOffers(category?: string): Promise<Promotion[]> {
       params.set("category", category);
     }
     const query = params.toString();
-    const response = await fetch(`${API_BASE}/promotions${query ? `?${query}` : ""}`, { cache: "no-store" });
+    const response = await fetch(`${API_BASE}/api/promotions${query ? `?${query}` : ""}`, { cache: "no-store" });
     if (!response.ok) {
       return [];
     }

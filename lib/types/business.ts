@@ -1,28 +1,53 @@
-export type BusinessStatus = "Pending" | "Approved" | "Rejected" | "Suspended" | string;
+export type BusinessStatus = 0 | 1 | 2;
 
-export interface Business {
+export type Business = {
   id: string;
-  name: string;
-  city?: string;
-  businessType?: string;
-  status?: BusinessStatus;
-  description?: string;
   ownerId?: string;
-}
-
-export interface CreateBusinessInput {
   name: string;
-  city?: string;
-  businessType?: string;
+  city: string;
+  type: string;
+  address?: string;
+  businessUrl?: string;
   description?: string;
-}
+  phoneNumber?: string;
+  email?: string;
+  openDays?: string;
+  imageUrl?: string;
+  businessNumber?: string;
+  status?: BusinessStatus | string;
+  createdAt?: string;
+  suspensionReason?: string;
+  isFavorite?: boolean;
+};
 
-export interface UpdateBusinessInput {
-  name?: string;
-  city?: string;
-  businessType?: string;
+export type CreateBusinessInput = {
+  name: string;
+  city: string;
+  type: string;
+  businessNumber: string;
+  address?: string;
+  businessUrl?: string;
   description?: string;
-}
+  phoneNumber?: string;
+  email?: string;
+  openDays?: string;
+  imageUrl?: string;
+  businessNumber?: string;
+};
+
+export type UpdateBusinessInput = {
+  name: string;
+  city: string;
+  type: string;
+  address?: string;
+  businessUrl?: string;
+  description?: string;
+  phoneNumber?: string;
+  email?: string;
+  openDays?: string;
+  imageUrl?: string;
+  businessNumber?: string;
+};
 
 export interface OwnerBusiness {
   id: string;

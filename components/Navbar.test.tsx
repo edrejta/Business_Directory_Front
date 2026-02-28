@@ -9,10 +9,15 @@ vi.mock("next/navigation", () => ({
 vi.mock("./NavbarAuth", () => ({ default: () => <div data-testid="nav-auth" /> }));
 
 import Navbar from "./Navbar";
+import { AuthProvider } from "@/context/AuthContext";
 
 describe("Navbar", () => {
   it("renders Home and About links", () => {
-    const { getByRole } = render(<Navbar />);
+    const { getByRole } = render(
+      <AuthProvider>
+        <Navbar />
+      </AuthProvider>
+    );
 
     const homeLink = getByRole("link", { name: /home/i });
     expect(homeLink).toBeInTheDocument();
