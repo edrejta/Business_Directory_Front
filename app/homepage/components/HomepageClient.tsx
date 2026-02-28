@@ -716,7 +716,15 @@ export default function HomepageClient() {
 
         <div className="kb-footer-bottom">
           <p>(c) {new Date().getFullYear()} KosBiz</p>
-          <p className="kb-footer-meta">Terms | Privacy</p>
+          <p className="kb-footer-meta">
+            <Link className="kb-footer-link" href="/terms">
+              Terms
+            </Link>{" "}
+            |{" "}
+            <Link className="kb-footer-link" href="/privacy">
+              Privacy
+            </Link>
+          </p>
         </div>
       </footer>
 
