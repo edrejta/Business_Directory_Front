@@ -169,6 +169,11 @@ export function useAdminActions({
   const handleReasonSubmit = async () => {
     if (!reasonAction) return;
 
+    if (reasonAction.type === "deleteUser" && modalReason.trim().length === 0) {
+      setSectionError("Please provide a reason before deleting a user.");
+      return;
+    }
+
     if (reasonAction.type === "changeRole") {
       await runChangeRole(reasonAction.user, reasonAction.nextRole, modalReason.trim() || undefined);
     }

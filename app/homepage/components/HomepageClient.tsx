@@ -602,7 +602,7 @@ export default function HomepageClient() {
               Terms
             </Link>{" "}
             |{" "}
-            <Link className="kb-footer-link" href="/privacy">
+            <Link className="kb-footer-link" href="/terms#privacy">
               Privacy
             </Link>
           </p>
