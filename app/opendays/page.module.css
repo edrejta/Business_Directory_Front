@@ -13,6 +13,25 @@
   padding: 24px;
 }
 
+.backBtn {
+  border: 1px solid #ccbfae;
+  background: transparent;
+  color: #6f5e4d;
+  padding: 6px 10px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.backBtn:hover,
+.backBtn:focus-visible {
+  border-color: #8f7458;
+  color: #4f4037;
+  outline: none;
+}
+
 .wrap h1 {
   margin: 0 0 16px;
   font-family: "Playfair Display", Georgia, serif;
@@ -48,4 +67,3 @@
   color: #7e3f32;
   font-weight: 600;
 }
-

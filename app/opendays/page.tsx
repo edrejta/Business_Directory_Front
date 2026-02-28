@@ -1,4 +1,5 @@
 import styles from "./page.module.css";
+import BackButton from "./BackButton";
 import {
   fetchOpenDaysForBusiness,
   resolveRequestedBusinessId,
@@ -28,6 +29,7 @@ export default async function OpenDaysPage({
   return (
     <main className={styles.page}>
       <section className={styles.wrap}>
+        <BackButton />
         <h1>Open Days</h1>
         {!data ? (
           <p className={styles.empty}>{errorMessage ?? "Open days not found for this business."}</p>

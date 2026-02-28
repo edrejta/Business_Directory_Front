@@ -15,6 +15,7 @@ type Business = {
   description?: string;
   category?: string;
   location?: string;
+  address?: string;
 };
 
 type ApiBusiness = {
@@ -34,6 +35,8 @@ type ApiBusiness = {
   Type?: string;
   city?: string;
   City?: string;
+  address?: string;
+  Address?: string;
 };
 
 type ApiResult<T> = {
@@ -87,6 +90,7 @@ function normalizeBusiness(item: ApiBusiness): Business {
       toBusinessTypeLabel(item.category ?? item.Category ?? item.businessType ?? item.BusinessType ?? item.type ?? item.Type) ||
       undefined,
     location: toText(item.city ?? item.City) || undefined,
+    address: toText(item.address ?? item.Address) || undefined,
   };
 }
 
@@ -196,9 +200,33 @@ export default function AllBusinessesPage() {
                   {item.location || "Unknown city"} · {item.category || "Unknown category"}
                 </p>
                 <p className={styles.desc}>{item.description || "No description provided yet."}</p>
-                <Link href={`/business/${item.id}`} className={styles.viewLink}>
-                  View details
-                </Link>
+
+                <div className={styles.actionRow}>
+                  <a
+                    className={styles.actionLink}
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      item.address || item.location || item.name,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open ${item.name} location`}
+                    title="Location"
+                  >
+                    Location
+                  </a>
+
+                  <Link href={`/business/${item.id}`} className={styles.actionLink} aria-label={`View ${item.name}`}>
+                    View
+                  </Link>
+
+                  <Link
+                    href={`/opendays?businessId=${item.id}`}
+                    className={styles.actionLink}
+                    aria-label={`Check ${item.name} open days`}
+                  >
+                    Open Days
+                  </Link>
+                </div>
               </article>
             ))}
           </section>
