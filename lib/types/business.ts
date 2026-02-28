@@ -35,8 +35,10 @@ export interface OwnerBusiness {
   businessType?: number;
   description?: string;
   imageUrl?: string;
+  photos?: string[];
   status?: string;
   createdAt?: string;
+  openDays?: OpenDays;
 }
 
 export interface UpsertBusinessInput {
@@ -48,6 +50,7 @@ export interface UpsertBusinessInput {
   businessType?: number;
   description?: string;
   imageUrl?: string;
+  photos?: string[];
 }
 
 export interface OpenDays {
