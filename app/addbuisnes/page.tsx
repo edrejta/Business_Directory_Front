@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import BusinessForm from "@/components/BusinessForm";
 import { useAuth } from "@/context/AuthContext";
-import type { UpsertBusinessInput } from "@/lib/types/business";
-import * as ownerApi from "@/lib/api/ownerBusinesses";
+import type { CreateBusinessInput } from "@/lib/types/business";
+import { createBusiness } from "@/lib/api/businesses";
 
 export default function AddBusinessPage() {
   const { user, isLoading } = useAuth();
@@ -28,8 +28,8 @@ export default function AddBusinessPage() {
 
   if (isLoading || !user) return null;
 
-  async function handleCreate(input: UpsertBusinessInput) {
-    await ownerApi.createBusiness(input);
+  async function handleCreate(input: CreateBusinessInput) {
+    await createBusiness(input);
     // After create, go to owner dashboard where the new business will appear
     router.push("/dashboard-business");
   }

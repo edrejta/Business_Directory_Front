@@ -32,7 +32,6 @@ export type CreateBusinessInput = {
   email?: string;
   openDays?: string;
   imageUrl?: string;
-  businessNumber?: string;
 };
 
 export type UpdateBusinessInput = {
