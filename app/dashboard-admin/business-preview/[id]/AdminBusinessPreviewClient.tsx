@@ -14,7 +14,6 @@ type PreviewBusiness = {
   businessName?: string;
   city?: string;
   businessType?: string;
-  status?: string;
   description?: string;
   address?: string;
   imageUrl?: string;
@@ -35,10 +34,6 @@ function asText(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-// we no longer show or style status badges on the preview page
-function badgeForStatus(status?: string) {
-  return null;
-}
 
 function normalizeBusiness(raw: Record<string, unknown>): PreviewBusiness {
   const typeRaw = asText(raw.businessType ?? raw.BusinessType ?? raw.type ?? raw.Type);
@@ -98,7 +93,7 @@ export default function AdminBusinessPreviewClient({ id }: AdminBusinessPreviewC
           `/api/admin/businesses/${id}`,
         );
         if (!mounted) return;
-        let merged = normalizeBusiness(adminResp);
+        const merged = normalizeBusiness(adminResp);
 
         // then try to fetch the full business record via the normal API. this may
         // 404 for pending/non-public entries, so we just swallow any errors.

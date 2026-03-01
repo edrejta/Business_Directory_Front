@@ -59,6 +59,7 @@ describe("PendingReviewSection", () => {
     await user.click(actionBtn);
 
     expect(screen.getByRole("button", { name: /preview/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /view site/i })).toBeInTheDocument();
+    // public view link removed from pending actions, just ensure no error when querying
+    expect(screen.queryByRole("button", { name: /view site/i })).toBeNull();
   });
 });
