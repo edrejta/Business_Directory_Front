@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./MarketingNavbar.module.css";
+
+const subscribeNoop = () => () => {};
+const getClientHydrationSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
 
 export default function MarketingNavbar() {
   const { user, logoutUser, getRedirectPath } = useAuth();
   const [open, setOpen] = useState(false);
+  const isHydrated = useSyncExternalStore(subscribeNoop, getClientHydrationSnapshot, getServerHydrationSnapshot);
+  const safeUser = isHydrated ? user : null;
 
-  const dashboardHref = useMemo(() => (user ? getRedirectPath(user.role) : "/login"), [user, getRedirectPath]);
+  const dashboardHref = useMemo(() => (safeUser ? getRedirectPath(safeUser.role) : "/login"), [safeUser, getRedirectPath]);
 
   return (
     <header className={styles.shell}>
@@ -39,7 +45,7 @@ export default function MarketingNavbar() {
           <a className={styles.link} href="#contact" onClick={() => setOpen(false)}>
             Contact
           </a>
-          {user ? (
+          {safeUser ? (
             <>
               <Link className={`${styles.btn} ${styles.btnOutline}`} href={dashboardHref} onClick={() => setOpen(false)}>
                 Dashboard

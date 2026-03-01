@@ -16,13 +16,13 @@ const buttonBase =
 export default function TopNav({ username, roleLabel, homeHref, roleHref, onLogout }: TopNavProps) {
   return (
     <nav className="sticky top-0 z-30 border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)]/95 backdrop-blur">
-      <div className="flex items-center gap-2 px-3 py-2 lg:px-4">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2 lg:px-4">
+        <div className="min-w-0 flex-1 basis-full sm:basis-auto">
           <h1 className="text-base font-semibold leading-5">Admin Dashboard</h1>
           <small className="block truncate text-xs text-[var(--coffee-muted)]">Welcome, {username ?? "admin"}</small>
         </div>
 
-        <div className="ml-2 flex shrink-0 items-center gap-2">
+        <div className="flex w-full flex-wrap justify-end gap-2 sm:ml-2 sm:w-auto sm:shrink-0 sm:items-center">
           <Link
             href={homeHref}
             className={`${buttonBase} border-[var(--coffee-primary)] text-[var(--coffee-primary)] hover:bg-[var(--coffee-border)]`}

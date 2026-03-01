@@ -220,7 +220,7 @@ export default function AllBusinessesPage() {
                   </Link>
 
                   <Link
-                    href={`/opendays?businessId=${item.id}`}
+                    href={`/opendays?businessId=${item.id}&backTo=${encodeURIComponent("/businesses/all")}`}
                     className={styles.actionLink}
                     aria-label={`Check ${item.name} open days`}
                   >
