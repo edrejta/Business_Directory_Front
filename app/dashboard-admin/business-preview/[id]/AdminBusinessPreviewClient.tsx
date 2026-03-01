@@ -43,7 +43,6 @@ function normalizeBusiness(raw: Record<string, unknown>): PreviewBusiness {
     businessName: asText(raw.businessName ?? raw.BusinessName),
     city: asText(raw.city ?? raw.City),
     businessType: toBusinessTypeLabel(typeRaw) || undefined,
-    status: asText(raw.status ?? raw.Status),
     description: asText(raw.description ?? raw.Description),
     address: asText(raw.address ?? raw.Address),
     imageUrl: asText(raw.imageUrl ?? raw.ImageUrl),
