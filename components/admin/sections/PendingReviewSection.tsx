@@ -95,6 +95,7 @@ export default function PendingReviewSection({
                 window.location.assign(`/dashboard-admin/business-preview/${business.id}`);
               },
             },
+            
             {
               key: "approve",
               label: "Approve",
