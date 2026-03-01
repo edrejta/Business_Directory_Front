@@ -104,7 +104,10 @@ export default function AboutPage() {
             <h3>Contact</h3>
             <p>support@kosbiz.com</p>
             <p>+233 200 000 000</p>
-            <p>About &nbsp;|&nbsp; Terms &nbsp;|&nbsp; Privacy</p>
+            <p>
+              <Link href="/about">About</Link> &nbsp;|&nbsp; <Link href="/terms">Terms</Link> &nbsp;|&nbsp;{" "}
+              <Link href="/terms#privacy">Privacy</Link>
+            </p>
           </div>
 
           <div>

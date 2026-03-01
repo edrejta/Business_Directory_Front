@@ -27,11 +27,32 @@
 }
 
 .admin-table-scroll {
+  display: block;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   touch-action: pan-x;
   max-width: 100%;
   overflow-x: auto;
+  scrollbar-gutter: stable;
+  padding-bottom: 6px;
+}
+
+.admin-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--coffee-accent) transparent;
+}
+
+.admin-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.admin-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-table-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--coffee-accent);
+  border-radius: 999px;
 }
 
 @media (min-width: 768px) {
