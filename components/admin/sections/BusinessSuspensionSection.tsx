@@ -76,7 +76,7 @@ export default function BusinessSuspensionSection({
           const actions: DropdownAction[] = [
             {
               key: "view",
-              label: "View",
+              label: "View Site",
               onClick: () => {
                 window.location.assign(`/business/${business.id}`);
               },

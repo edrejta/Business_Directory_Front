@@ -11,15 +11,23 @@ const COLUMNS = [
   { key: "actions", label: "Actions" },
 ];
 
+// minimal shape of an approved business entry for tests
+interface TestBusiness {
+  id: string;
+  name: string;
+  city?: string;
+  businessType?: string;
+}
+
 describe("BusinessSuspensionSection", () => {
   it("shows actions dropdown with view and suspend options", async () => {
     const user = userEvent.setup();
-    const sample = {
+    const sample: TestBusiness = {
       id: "biz-1",
       name: "Sample Biz",
       city: "TestCity",
       businessType: "Food",
-    } as any;
+    };
 
     render(
       <BusinessSuspensionSection

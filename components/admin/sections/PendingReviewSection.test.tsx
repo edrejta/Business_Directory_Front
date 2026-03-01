@@ -12,16 +12,25 @@ const COLUMNS = [
   { key: "actions", label: "Actions" },
 ];
 
+// minimal business type for pending entries
+interface TestPendingBusiness {
+  id: string;
+  name: string;
+  city?: string;
+  businessType?: string;
+  createdAt?: string;
+}
+
 describe("PendingReviewSection", () => {
   it("includes preview and public view actions in dropdown", async () => {
     const user = userEvent.setup();
-    const sample = {
+    const sample: TestPendingBusiness = {
       id: "biz-2",
       name: "Pending Biz",
       city: "Here",
       businessType: "Retail",
       createdAt: "2023-01-01T00:00:00Z",
-    } as any;
+    };
 
     render(
       <PendingReviewSection
