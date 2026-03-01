@@ -36,7 +36,7 @@ function asText(value: unknown): string {
 
 
 function normalizeBusiness(raw: Record<string, unknown>): PreviewBusiness {
-  const typeRaw = asText(raw.businessType ?? raw.BusinessType ?? raw.type ?? raw.Type);
+  const typeRaw = raw.businessType ?? raw.BusinessType ?? raw.type ?? raw.Type;
   return {
     id: asText(raw.id ?? raw.Id),
     name: asText(raw.name ?? raw.Name),
