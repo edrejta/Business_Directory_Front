@@ -236,7 +236,7 @@ export default function DashboardAdmin() {
             onLogout={logoutUser}
           />
 
-          <main className="px-3 py-4 lg:px-8 lg:py-8">
+          <main className="min-w-0 px-3 py-4 lg:px-8 lg:py-8">
             {error && (
               <div className="mb-3 rounded-xl border border-red-400/60 bg-red-100 px-3 py-2 text-sm text-red-900">{error}</div>
             )}
@@ -283,8 +283,8 @@ export default function DashboardAdmin() {
               </div>
             </section>
 
-            <div className="grid gap-5">
-              <div id="pending-review">
+            <div className="min-w-0 grid gap-5">
+              <div id="pending-review" className="min-w-0">
                 <PendingReviewSection
                   loadingData={loadingData}
                   filteredCount={filteredPendingBusinesses.length}
@@ -305,7 +305,7 @@ export default function DashboardAdmin() {
                 />
               </div>
 
-              <div id="role-management">
+              <div id="role-management" className="min-w-0">
                 <RoleManagementSection
                   loadingData={loadingData}
                   userSearch={userSearch}
@@ -327,7 +327,7 @@ export default function DashboardAdmin() {
                 />
               </div>
 
-              <div id="business-suspension">
+              <div id="business-suspension" className="min-w-0">
                 <BusinessSuspensionSection
                   loadingData={loadingData}
                   approvedSearch={approvedSearch}
@@ -345,17 +345,17 @@ export default function DashboardAdmin() {
                 />
               </div>
 
-              <div className="grid gap-5 xl:grid-cols-12">
-                <div id="system-info" className="xl:col-span-5">
+              <div className="min-w-0 grid gap-5 xl:grid-cols-12">
+                <div id="system-info" className="min-w-0 xl:col-span-5">
                   <SystemInfoSection loadingData={loadingData} health={health} reports={reports} />
                 </div>
 
-                <div id="categories" className="xl:col-span-7">
+                <div id="categories" className="min-w-0 xl:col-span-7">
                   <CategoriesSection loadingData={loadingData} categories={categories} columns={CATEGORY_COLUMNS} />
                 </div>
               </div>
 
-              <div id="audit-logs">
+              <div id="audit-logs" className="min-w-0">
                 <AuditLogsSection
                   loadingData={loadingData}
                   auditSearch={auditSearch}

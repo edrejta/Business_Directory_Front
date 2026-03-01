@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 export type DataColumn = {
   key: string;
@@ -31,9 +31,17 @@ export default function DataTable({
   empty = false,
   emptyMessage = "No rows found.",
 }: DataTableProps) {
+  const mobileMinTableWidth = columns.length > 3 ? columns.length * 160 : 0;
+  const tableStyle: CSSProperties | undefined =
+    mobileMinTableWidth > 0
+      ? ({
+          "--admin-mobile-table-min-width": `${mobileMinTableWidth}px`,
+        } as CSSProperties)
+      : undefined;
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--coffee-border)]">
-      <table className="min-w-full text-sm text-[var(--coffee-text)]">
+    <div className="admin-table-scroll w-full overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--coffee-border)]">
+      <table className="admin-mobile-scroll-table min-w-full text-sm text-[var(--coffee-text)]" style={tableStyle}>
         <thead className="bg-[var(--coffee-border)]/70 text-left text-xs uppercase tracking-wide text-[var(--coffee-text)]/80">
           <tr>
             {columns.map((column) => (
