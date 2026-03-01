@@ -6,7 +6,7 @@
   --coffee-primary: #9b8877;
   --coffee-text: #433021;
   --coffee-muted: #6f6257;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 .admin-coffee [id] {
@@ -16,6 +16,19 @@
 .admin-layout-shell,
 .admin-main-shell {
   min-width: 0;
+}
+
+.admin-layout-shell {
+  width: 100%;
+}
+
+.admin-mobile-scroll-table {
+  width: 100%;
+}
+
+.admin-table-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
 @media (min-width: 768px) {
@@ -35,6 +48,16 @@
 
 @media (max-width: 767.98px) {
   .admin-main-shell {
+    max-width: 100%;
     width: 100%;
+  }
+
+  .admin-mobile-scroll-table {
+    min-width: var(--admin-mobile-table-min-width, 100%);
+  }
+
+  .admin-mobile-scroll-table th,
+  .admin-mobile-scroll-table td {
+    white-space: nowrap;
   }
 }
