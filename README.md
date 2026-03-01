@@ -1,73 +1,52 @@
-# React + TypeScript + Vite
+# Business Directory Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Next.js + React frontend for the Business Directory project.
 
-Currently, two official plugins are available:
+## Requirements
+- Node.js 22+
+- npm 10+
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Setup
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create env file:
+   ```bash
+   cp .env.example .env
+   ```
+3. Run dev server:
+   ```bash
+   npm run dev
+   ```
 
-## React Compiler
+## Environment
+- `NEXT_PUBLIC_API_URL`: backend base URL (example: `https://itconnect.it.com`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Scripts
+- `npm run dev`: start development server
+- `npm run build`: create production build
+- `npm run start`: run production server
+- `npm run lint`: lint codebase
+- `npm run format`: apply Prettier formatting
+- `npm run format:check`: verify formatting
+- `npm test`: run unit/component tests
 
-## Expanding the ESLint configuration
+## Key Routes
+- `/homepage`: marketing + listings
+- `/business/[id]`: public business details
+- `/opendays?businessId=<id>`: open days view
+- `/offers`: offers/promotions view
+- `/login`, `/register`: auth
+- `/dashboard-user`, `/dashboard-business`, `/dashboard-admin`: role dashboards
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Deployment
+- Docker image build uses [`Dockerfile`](./Dockerfile)
+- Kubernetes manifests are under `k8s/dev/`
+- CI workflow: `.github/workflows/node.js.yml`
+- CD workflow: `.github/workflows/cd-frontend.yml`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Notes
+- API/domain helpers live in `lib/api/*`
+- Shared types live in `lib/types/*`
+- Validation schemas live in `lib/validation/*`

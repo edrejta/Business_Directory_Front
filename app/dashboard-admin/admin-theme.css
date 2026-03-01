@@ -1,0 +1,88 @@
+.admin-coffee {
+  --coffee-bg: #f0efec;
+  --coffee-surface: #e7e3d8;
+  --coffee-border: #d2ccc1;
+  --coffee-accent: #bba794;
+  --coffee-primary: #9b8877;
+  --coffee-text: #433021;
+  --coffee-muted: #6f6257;
+  overflow-x: visible;
+}
+
+.admin-coffee [id] {
+  scroll-margin-top: 1rem;
+}
+
+.admin-layout-shell,
+.admin-main-shell {
+  min-width: 0;
+}
+
+.admin-layout-shell {
+  width: 100%;
+}
+
+.admin-mobile-scroll-table {
+  width: 100%;
+}
+
+.admin-table-scroll {
+  display: block;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+  padding-bottom: 6px;
+}
+
+.admin-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--coffee-accent) transparent;
+}
+
+.admin-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.admin-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-table-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--coffee-accent);
+  border-radius: 999px;
+}
+
+@media (min-width: 768px) {
+  .admin-sidebar-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 20;
+  }
+
+  .admin-main-shell {
+    margin-left: 260px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .admin-main-shell {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .admin-mobile-scroll-table {
+    width: max-content;
+    min-width: var(--admin-mobile-table-min-width, 100%);
+  }
+
+  .admin-mobile-scroll-table th,
+  .admin-mobile-scroll-table td {
+    white-space: nowrap;
+  }
+}

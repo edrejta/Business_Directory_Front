@@ -1,0 +1,130 @@
+.page {
+  min-height: 100vh;
+  background: #efede9;
+  padding: 3.4rem 1rem 4.5rem;
+}
+
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  color: #9a7b57;
+  font-size: 0.9rem;
+  letter-spacing: 0.24em;
+  font-weight: 600;
+}
+
+.title {
+  margin: 0.7rem 0 0;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.2rem, 4.6vw, 4.1rem);
+  color: #23180f;
+}
+
+.title span {
+  color: #8a6a47;
+  font-style: italic;
+}
+
+.subtitle {
+  margin: 0.9rem 0 0;
+  color: #6f5e4c;
+  font-size: clamp(1.05rem, 1.7vw, 1.55rem);
+}
+
+.grid {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.card {
+  position: relative;
+  text-align: left;
+  min-height: 270px;
+  border: 1px solid #d8cfc3;
+  border-radius: 1.1rem;
+  background: #f3f0eb;
+  padding: 1.35rem 1.45rem 1.2rem;
+}
+
+.number {
+  color: #d3cbc1;
+  font-family: "Playfair Display", serif;
+  font-size: 3.35rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.icon {
+  position: absolute;
+  top: 1.3rem;
+  right: 1.3rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 0.75rem;
+  background: #e8e2db;
+  color: #7b5a38;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+}
+
+.card h2 {
+  margin: 1.2rem 0 0;
+  font-family: "Playfair Display", serif;
+  color: #23180f;
+  font-size: clamp(1.65rem, 2.2vw, 2.3rem);
+}
+
+.card p {
+  margin: 0.8rem 0 0;
+  color: #6f5e4d;
+  line-height: 1.42;
+  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+}
+
+.arrow {
+  position: absolute;
+  right: -0.55rem;
+  top: 48%;
+  color: #d6cec4;
+  font-size: 1.7rem;
+}
+
+.cta {
+  margin: 1.9rem auto 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.9rem 2rem;
+  background: #7b5a37;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.cta:hover {
+  background: #6d4f31;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 220px;
+  }
+
+  .arrow {
+    display: none;
+  }
+}
+

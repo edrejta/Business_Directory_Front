@@ -1,0 +1,154 @@
+.page {
+  min-height: 100vh;
+  padding: 2.2rem 0 3.2rem;
+  background: #efede9;
+  border-top: 1px solid #ddd4c8;
+}
+
+.wrap {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0 1.2rem;
+}
+
+.title {
+  margin: 0 0 1.9rem;
+  text-align: center;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.75rem, 4vw, 3.45rem);
+  line-height: 1.1;
+  font-weight: 700;
+  color: #23180f;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem 2rem;
+}
+
+.card {
+  min-height: 255px;
+  border: 1px solid #d8cfc3;
+  border-radius: 1.05rem;
+  background: #f4f2ee;
+  padding: 1.9rem 2rem 1.7rem;
+}
+
+.top {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.36rem;
+  border-radius: 999px;
+  border: 1px solid #ddd4c8;
+  background: #ece6df;
+  color: #2e2318;
+  padding: 0.34rem 0.9rem;
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.pillIcon {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: currentColor;
+}
+
+.off {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 0;
+  background: #715333;
+  color: #fff;
+  padding: 0.35rem 0.92rem;
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.name {
+  margin: 1.45rem 0 0.95rem;
+  font-size: clamp(2rem, 2.4vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: 0.002em;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  color: #23180f;
+}
+
+.desc {
+  margin: 0;
+  color: #776858;
+  font-size: clamp(1.15rem, 1.45vw, 1.62rem);
+  line-height: 1.4;
+}
+
+.price {
+  margin-top: 1.15rem;
+  font-size: clamp(2rem, 2.2vw, 2.7rem);
+  line-height: 1.1;
+  font-weight: 800;
+  color: #23180f;
+}
+
+.priceOld {
+  margin-left: 0.58rem;
+  color: #887867;
+  text-decoration: line-through;
+  font-size: clamp(1.25rem, 1.4vw, 1.7rem);
+  font-weight: 400;
+}
+
+.empty {
+  border: 1px solid #d8cfc3;
+  border-radius: 1.15rem;
+  padding: 1.6rem 1.2rem;
+  text-align: center;
+  color: #6d5b49;
+  background: #f4f2ee;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 1.4rem 0 2rem;
+  }
+
+  .title {
+    margin-bottom: 1.2rem;
+    font-size: 2.2rem;
+  }
+
+  .wrap {
+    padding: 0 0.8rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .card {
+    min-height: 230px;
+    padding: 1.3rem 1.2rem;
+  }
+
+  .name {
+    margin-top: 1rem;
+    font-size: 1.9rem;
+  }
+
+  .desc {
+    font-size: 1.1rem;
+  }
+
+  .price {
+    font-size: 2rem;
+  }
+}

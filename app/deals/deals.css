@@ -1,0 +1,209 @@
+.deals-page {
+  min-height: 100vh;
+  background: #f0efec;
+  color: #3a2c28;
+  font-family: "Manrope", "Segoe UI", Tahoma, sans-serif;
+  padding: 40px 20px 70px;
+}
+
+.deals-wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.deals-head {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.deals-head p {
+  margin: 0;
+  color: #9a7b60;
+  letter-spacing: 0.22em;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.deals-head h1 {
+  margin: 10px 0 6px;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: clamp(44px, 7vw, 72px);
+  line-height: 0.95;
+}
+
+.deals-head span {
+  color: #75685c;
+  font-size: 16px;
+}
+
+.deals-checklist {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.deals-checklist button {
+  border: 1px solid #d2c4b4;
+  background: #f5f1eb;
+  color: #6f5f50;
+  padding: 9px 12px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+}
+
+.deals-checklist button.active {
+  border-color: #8f6947;
+  background: #8f6947;
+  color: #fff;
+}
+
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.deal-card {
+  border: 1px solid #d8d1c8;
+  background: #f7f3ee;
+  padding: 16px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.deal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 24px rgba(58, 44, 40, 0.12);
+}
+
+.deal-symbol {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid #d8c9b8;
+  background: #efe5da;
+  display: grid;
+  place-items: center;
+  color: #8f6947;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.deal-card small {
+  color: #8f6947;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.deal-card h2 {
+  margin: 10px 0 8px;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: clamp(24px, 4vw, 30px);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.deal-card p {
+  margin: 0;
+  color: #6d6054;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.deal-card h3 {
+  margin: 10px 0 0;
+  color: #8a6e56;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deal-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.deal-footer span {
+  color: #8a6e56;
+  font-size: 13px;
+}
+
+.deal-footer a {
+  border: 1px solid #8f6947;
+  background: #8f6947;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 7px 12px;
+}
+
+.deals-empty {
+  text-align: center;
+  color: #7a6756;
+  margin: 14px 0 0;
+}
+
+@media (max-width: 960px) {
+  .deals-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .deals-page {
+    padding: 24px 12px 40px;
+  }
+
+  .deals-head span {
+    font-size: 14px;
+  }
+
+  .deals-checklist {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .deals-checklist button {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+  }
+
+  .deals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .deal-card {
+    min-height: 0;
+  }
+
+  .deal-footer {
+    align-items: stretch;
+  }
+
+  .deal-footer a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
