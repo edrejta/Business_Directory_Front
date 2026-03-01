@@ -95,13 +95,7 @@ export default function PendingReviewSection({
                 window.location.assign(`/dashboard-admin/business-preview/${business.id}`);
               },
             },
-            {
-              key: "view",
-              label: "View Site",
-              onClick: () => {
-                window.location.assign(`/business/${business.id}`);
-              },
-            },
+            
             {
               key: "approve",
               label: "Approve",
