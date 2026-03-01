@@ -40,8 +40,14 @@ export default function DataTable({
       : undefined;
 
   return (
-    <div className="admin-table-scroll w-full overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--coffee-border)]">
-      <table className="admin-mobile-scroll-table min-w-full text-sm text-[var(--coffee-text)]" style={tableStyle}>
+    <div
+      className="admin-table-scroll w-full overflow-x-scroll overflow-y-hidden rounded-xl border border-[var(--coffee-border)] md:overflow-x-auto"
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
+      <table
+        className="admin-mobile-scroll-table min-w-full text-sm text-[var(--coffee-text)]"
+        style={{ ...tableStyle, minWidth: mobileMinTableWidth > 0 ? `${mobileMinTableWidth}px` : undefined }}
+      >
         <thead className="bg-[var(--coffee-border)]/70 text-left text-xs uppercase tracking-wide text-[var(--coffee-text)]/80">
           <tr>
             {columns.map((column) => (

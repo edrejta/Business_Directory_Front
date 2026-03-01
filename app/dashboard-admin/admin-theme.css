@@ -6,7 +6,7 @@
   --coffee-primary: #9b8877;
   --coffee-text: #433021;
   --coffee-muted: #6f6257;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 .admin-coffee [id] {
@@ -29,6 +29,8 @@
 .admin-table-scroll {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  max-width: 100%;
 }
 
 @media (min-width: 768px) {
