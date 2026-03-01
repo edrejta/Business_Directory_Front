@@ -75,6 +75,13 @@ export default function BusinessSuspensionSection({
         {rows.map((business) => {
           const actions: DropdownAction[] = [
             {
+              key: "view",
+              label: "View",
+              onClick: () => {
+                window.location.assign(`/business/${business.id}`);
+              },
+            },
+            {
               key: "suspend",
               label: "Suspend",
               danger: true,

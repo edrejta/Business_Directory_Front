@@ -89,8 +89,8 @@ export default function PendingReviewSection({
         {rows.map((business) => {
           const actions: DropdownAction[] = [
             {
-              key: "view",
-              label: "View",
+              key: "preview",
+              label: "Preview",
               onClick: () => {
                 window.location.assign(`/dashboard-admin/business-preview/${business.id}`);
               },
