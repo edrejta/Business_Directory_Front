@@ -31,7 +31,7 @@ export default function DataTable({
   empty = false,
   emptyMessage = "No rows found.",
 }: DataTableProps) {
-  const mobileMinTableWidth = columns.length > 3 ? columns.length * 160 : 0;
+  const mobileMinTableWidth = Math.max(columns.length * 180, 560);
   const tableStyle: CSSProperties | undefined =
     mobileMinTableWidth > 0
       ? ({
