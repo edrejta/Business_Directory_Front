@@ -52,7 +52,7 @@ describe("BusinessSuspensionSection", () => {
 
     await user.click(actionBtn);
 
-    expect(screen.getByRole("button", { name: /view site/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /view$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /suspend/i })).toBeInTheDocument();
   });
 });
