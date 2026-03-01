@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { authenticatedJson } from "@/lib/api/client";
+import { toBusinessTypeLabel } from "@/lib/constants/businessTypes";
 
 type PreviewBusiness = {
   id: string;
@@ -17,6 +18,11 @@ type PreviewBusiness = {
   address?: string;
   imageUrl?: string;
   createdAt?: string;
+  businessNumber?: string;
+  businessUrl?: string;
+  phoneNumber?: string;
+  email?: string;
+  openDays?: string;
 };
 
 type AdminBusinessPreviewClientProps = {
@@ -28,17 +34,24 @@ function asText(value: unknown): string {
 }
 
 function normalizeBusiness(raw: Record<string, unknown>): PreviewBusiness {
+  const typeRaw = asText(raw.businessType ?? raw.BusinessType ?? raw.type ?? raw.Type);
+
   return {
     id: asText(raw.id ?? raw.Id),
     name: asText(raw.name ?? raw.Name),
     businessName: asText(raw.businessName ?? raw.BusinessName),
     city: asText(raw.city ?? raw.City),
-    businessType: asText(raw.businessType ?? raw.BusinessType ?? raw.type ?? raw.Type),
+    businessType: toBusinessTypeLabel(typeRaw) || undefined,
     status: asText(raw.status ?? raw.Status),
     description: asText(raw.description ?? raw.Description),
     address: asText(raw.address ?? raw.Address),
     imageUrl: asText(raw.imageUrl ?? raw.ImageUrl),
     createdAt: asText(raw.createdAt ?? raw.CreatedAt),
+    businessNumber: asText(raw.businessNumber ?? raw.BusinessNumber ?? raw.businesssNumber ?? raw.BusinesssNumber),
+    businessUrl: asText(raw.businessUrl ?? raw.BusinessUrl ?? raw.websiteUrl ?? raw.WebsiteUrl),
+    phoneNumber: asText(raw.phoneNumber ?? raw.PhoneNumber ?? raw.phone ?? raw.Phone),
+    email: asText(raw.email ?? raw.Email),
+    openDays: asText(raw.openDays ?? raw.OpenDays),
   };
 }
 
@@ -70,9 +83,28 @@ export default function AdminBusinessPreviewClient({ id }: AdminBusinessPreviewC
       setError(null);
 
       try {
-        const response = await authenticatedJson<Record<string, unknown>>(`/api/admin/businesses/${id}`);
-        if (!mounted) return;
-        setBusiness(normalizeBusiness(response));
+        const adminResp = await authenticatedJson<Record<string, unknown>>(`/api/admin/businesses/${id}`);
+        const merged = normalizeBusiness(adminResp);
+
+        try {
+          const publicResp = await authenticatedJson<Record<string, unknown>>(`/api/businesses/${id}`, {
+            requireAuth: false,
+          });
+          const extra = normalizeBusiness(publicResp);
+
+          for (const key of Object.keys(extra) as Array<keyof PreviewBusiness>) {
+            const value = extra[key];
+            if (value !== undefined && value !== "") {
+              merged[key] = value;
+            }
+          }
+        } catch {
+          // Public endpoint can fail for pending businesses; admin payload is enough.
+        }
+
+        if (mounted) {
+          setBusiness(merged);
+        }
       } catch (err) {
         if (!mounted) return;
         setError(err instanceof Error ? err.message : "Failed to load business preview.");
@@ -119,6 +151,10 @@ export default function AdminBusinessPreviewClient({ id }: AdminBusinessPreviewC
               <p><strong>City:</strong> {business.city || "-"}</p>
               <p><strong>Category:</strong> {business.businessType || "-"}</p>
               <p><strong>Status:</strong> {business.status || "-"}</p>
+              <p><strong>Business number:</strong> {business.businessNumber || "-"}</p>
+              <p><strong>Email:</strong> {business.email || "-"}</p>
+              <p><strong>Phone:</strong> {business.phoneNumber || "-"}</p>
+              <p><strong>Website:</strong> {business.businessUrl || "-"}</p>
               <p><strong>Address:</strong> {business.address || "-"}</p>
               <p><strong>Description:</strong> {business.description || "-"}</p>
             </div>

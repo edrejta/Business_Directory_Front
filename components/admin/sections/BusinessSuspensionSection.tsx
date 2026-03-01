@@ -1,6 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { useRouter } from "next/navigation";
 import type { AdminBusiness } from "@/lib/api/admin";
 import ActionDropdown, { type DropdownAction } from "@/components/admin/ActionDropdown";
 import DataTable, { type DataColumn } from "@/components/admin/DataTable";
@@ -41,6 +42,8 @@ export default function BusinessSuspensionSection({
   totalPages,
   onPageChange,
 }: BusinessSuspensionSectionProps) {
+  const router = useRouter();
+
   return (
     <SectionCard title="Business Suspension" subtitle="Suspend approved businesses (optional reason)">
       <div className="mb-3 grid gap-2 md:grid-cols-12">
@@ -71,9 +74,19 @@ export default function BusinessSuspensionSection({
         </div>
       </div>
 
-      <DataTable columns={columns} loading={loadingData} empty={rows.length === 0} emptyMessage="No approved businesses found.">
+      <DataTable
+        columns={columns}
+        loading={loadingData}
+        empty={rows.length === 0}
+        emptyMessage="No approved businesses found."
+      >
         {rows.map((business) => {
           const actions: DropdownAction[] = [
+            {
+              key: "view",
+              label: "View",
+              onClick: () => router.push(`/business/${business.id}`),
+            },
             {
               key: "suspend",
               label: "Suspend",
