@@ -1,7 +1,6 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { useRouter } from "next/navigation";
 import type { AdminBusiness } from "@/lib/api/admin";
 import ActionDropdown, { type DropdownAction } from "@/components/admin/ActionDropdown";
 import DataTable, { type DataColumn } from "@/components/admin/DataTable";
@@ -48,8 +47,6 @@ export default function PendingReviewSection({
   onPageChange,
   formatDateTime,
 }: PendingReviewSectionProps) {
-  const router = useRouter();
-
   return (
     <SectionCard
       title="Pending Review Inbox"
@@ -88,18 +85,15 @@ export default function PendingReviewSection({
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        loading={loadingData}
-        empty={rows.length === 0}
-        emptyMessage="No pending businesses found."
-      >
+      <DataTable columns={columns} loading={loadingData} empty={rows.length === 0} emptyMessage="No pending businesses found.">
         {rows.map((business) => {
           const actions: DropdownAction[] = [
             {
-              key: "preview",
-              label: "Preview",
-              onClick: () => router.push(`/dashboard-admin/business-preview/${business.id}`),
+              key: "view",
+              label: "View",
+              onClick: () => {
+                window.location.assign(`/dashboard-admin/business-preview/${business.id}`);
+              },
             },
             {
               key: "approve",
